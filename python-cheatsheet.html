@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python DSA Idioms Cheat Sheet — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* page-local helpers (tables + inline code) */
+.ops-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-family: 'Space Mono', monospace; font-size: 12px; }
+.ops-table th { text-align: left; font-size: 10px; letter-spacing: 2px; color: var(--accent); background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 12px; }
+.ops-table td { color: white; border-bottom: 1px solid var(--border); padding: 8px 12px; vertical-align: top; line-height: 1.6; }
+.ops-table td.o { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.ops-table td.o.bad { color: var(--advanced); }
+.ops-table td.o.mid { color: var(--accent3); }
+.ops-table td.t { color: #ffa657; white-space: nowrap; }
+.table-wrap { overflow-x: auto; }
+.explanation code, .callout code, .think-box code, .step code, .ops-table code, .problem-list code {
+  font-family: 'Space Mono', monospace; color: #a5d6ff; background: var(--code-bg);
+  border: 1px solid var(--border); padding: 0 5px; font-size: 0.95em;
+}
+details.answer { margin: 12px 0 4px; font-family: 'Space Mono', monospace; font-size: 12px; color: white; }
+details.answer summary { cursor: pointer; color: var(--accent); letter-spacing: 1px; }
+details.answer .callout { margin-top: 12px; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; }
+.toc a { font-family: 'Space Mono', monospace; font-size: 11px; color: white; text-decoration: none; border: 1px solid var(--border); background: var(--surface); padding: 4px 10px; }
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Python Cheat Sheet</span>
+    <span class="nav-level level-intermediate">REFERENCE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">REFERENCE</div>
+    <h1 class="page-title">Python DSA Idioms <span class="highlight">Cheat Sheet</span></h1>
+    <p class="page-subtitle">Everything you reach for in an interview or contest, on one page: built-in costs, the standard library modules that matter, and copy-ready templates for the classic patterns. Every snippet runs on Python 3.7+.</p>
+  </div>
+  <div class="toc">
+    <a href="#costs">Costs</a><a href="#list">list</a><a href="#dictset">dict &amp; set</a><a href="#collections">collections</a><a href="#heapq">heapq</a><a href="#bisect">bisect</a><a href="#itertools">itertools</a><a href="#functools">functools</a><a href="#sorting">sorting</a><a href="#strings">strings</a><a href="#math">math</a><a href="#grid">2D grids</a><a href="#bfs">BFS</a><a href="#dfs">DFS</a><a href="#binsearch">binary search</a><a href="#window">sliding window</a><a href="#twoptr">two pointers</a><a href="#dsu">union-find</a><a href="#backtrack">backtracking</a><a href="#dijkstra">Dijkstra</a><a href="#topo">topological sort</a><a href="#recursion">recursion limit</a><a href="#pitfalls">pitfalls</a>
+  </div>
+
+  <section class="section" id="costs">
+    <div class="section-label">REFERENCE 01</div>
+    <h2 class="section-title">Time Complexity of Built-ins</h2>
+    <div class="table-wrap"><table class="ops-table">
+      <tr><th>TYPE</th><th>OPERATIONS</th><th>TIME</th></tr>
+      <tr><td class="t">list</td><td><code>a[i]</code> · <code>a[i] = x</code> · <code>len(a)</code> · <code>a.append(x)</code> · <code>a.pop()</code></td><td class="o">O(1) / O(1)*</td></tr>
+      <tr><td class="t">list</td><td><code>a.pop(0)</code> · <code>a.insert(i, x)</code> · <code>del a[i]</code> · <code>a.remove(x)</code></td><td class="o mid">O(n)</td></tr>
+      <tr><td class="t">list</td><td><code>x in a</code> · <code>a.index(x)</code> · <code>a.count(x)</code> · <code>min/max/sum</code> · <code>a.reverse()</code></td><td class="o mid">O(n)</td></tr>
+      <tr><td class="t">list</td><td><code>a[i:j]</code> · <code>a + b</code> · <code>a * k</code> · <code>a.extend(b)</code> · <code>a.copy()</code></td><td class="o mid">O(k) size of result/added</td></tr>
+      <tr><td class="t">list</td><td><code>a.sort()</code> · <code>sorted(a)</code></td><td class="o mid">O(n log n)</td></tr>
+      <tr><td class="t">str</td><td><code>s[i]</code> · <code>len(s)</code></td><td class="o">O(1)</td></tr>
+      <tr><td class="t">str</td><td><code>s + t</code> · <code>s[i:j]</code> · <code>s.split()</code> · <code>''.join(xs)</code> · <code>s.replace</code> · <code>s.lower()</code></td><td class="o mid">O(n)</td></tr>
+      <tr><td class="t">str</td><td><code>sub in s</code> · <code>s.find(sub)</code> · <code>s.count(sub)</code></td><td class="o bad">O(n·m) worst</td></tr>
+      <tr><td class="t">dict</td><td><code>d[k]</code> · <code>d[k] = v</code> · <code>k in d</code> · <code>del d[k]</code> · <code>d.get</code> · <code>d.pop(k)</code></td><td class="o">O(1) avg</td></tr>
+      <tr><td class="t">dict</td><td>iterate · <code>list(d)</code> · <code>d.copy()</code></td><td class="o mid">O(n)</td></tr>
+      <tr><td class="t">set</td><td><code>s.add</code> · <code>s.discard</code> · <code>x in s</code></td><td class="o">O(1) avg</td></tr>
+      <tr><td class="t">set</td><td><code>a | b</code> · <code>a &amp; b</code> · <code>a - b</code> · <code>a ^ b</code> · <code>a &lt;= b</code></td><td class="o mid">O(len(a) + len(b))</td></tr>
+      <tr><td class="t">deque</td><td><code>append</code> · <code>appendleft</code> · <code>pop</code> · <code>popleft</code> · <code>len</code></td><td class="o">O(1)</td></tr>
+      <tr><td class="t">deque</td><td><code>q[i]</code> (middle) · <code>q.rotate(k)</code> · <code>x in q</code></td><td class="o mid">O(n) / O(k)</td></tr>
+      <tr><td class="t">heapq</td><td><code>h[0]</code> peek</td><td class="o">O(1)</td></tr>
+      <tr><td class="t">heapq</td><td><code>heappush</code> · <code>heappop</code> · <code>heapreplace</code> · <code>heappushpop</code></td><td class="o">O(log n)</td></tr>
+      <tr><td class="t">heapq</td><td><code>heapify(list)</code>  ·  <code>nlargest(k, xs)</code> / <code>nsmallest</code></td><td class="o mid">O(n)  ·  O(n log k)</td></tr>
+      <tr><td class="t">bisect</td><td><code>bisect_left</code> · <code>bisect_right</code>  ·  <code>insort</code></td><td class="o">O(log n)  ·  O(n)</td></tr>
+    </table></div>
+    <div class="callout"><code>*</code> amortized. “avg” = average case with a good hash; adversarial inputs can degrade dict/set operations to O(n). Python runs roughly 10⁷ simple operations per second — budget accordingly.</div>
+  </section>
+
+  <section class="section" id="list">
+    <div class="section-label">REFERENCE 02</div>
+    <h2 class="section-title">list</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — list Operations</div>
+      <pre>a = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>]
+a.<span class="fn">append</span>(<span class="num">4</span>); a.<span class="fn">extend</span>([<span class="num">5</span>, <span class="num">6</span>])      <span class="cm"># O(1)* / O(k)</span>
+a.<span class="fn">insert</span>(<span class="num">0</span>, <span class="num">9</span>)                     <span class="cm"># O(n): shifts every element</span>
+a.<span class="fn">pop</span>(); a.<span class="fn">pop</span>(<span class="num">0</span>)                  <span class="cm"># O(1) / O(n)</span>
+<span class="fn">print</span>(a)                           <span class="cm"># [3, 1, 2, 4, 5]</span>
+<span class="fn">print</span>(a.<span class="fn">index</span>(<span class="num">2</span>), a.<span class="fn">count</span>(<span class="num">1</span>))      <span class="cm"># 2 1   O(n) scans; index() raises ValueError if absent</span>
+a.<span class="fn">remove</span>(<span class="num">4</span>)                        <span class="cm"># O(n): first occurrence only</span>
+a.<span class="fn">sort</span>(); <span class="fn">print</span>(a)                 <span class="cm"># [1, 2, 3, 5]</span>
+a.<span class="fn">sort</span>(reverse=<span class="kw">True</span>); <span class="fn">print</span>(a)     <span class="cm"># [5, 3, 2, 1]</span>
+
+b = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+<span class="fn">print</span>(b[-<span class="num">1</span>], <span class="fn">len</span>(b), <span class="fn">sum</span>(b), <span class="fn">min</span>(b), <span class="fn">max</span>(b))   <span class="cm"># 3 3 6 1 3</span>
+<span class="fn">print</span>(b + [<span class="num">4</span>], b * <span class="num">2</span>)              <span class="cm"># [1, 2, 3, 4] [1, 2, 3, 1, 2, 3]</span>
+<span class="fn">print</span>(<span class="num">3</span> <span class="kw">in</span> b, b[::-<span class="num">1</span>])             <span class="cm"># True [3, 2, 1]</span>
+<span class="fn">print</span>(<span class="fn">any</span>(x &gt; <span class="num">2</span> <span class="kw">for</span> x <span class="kw">in</span> b), <span class="fn">all</span>(x &gt; <span class="num">0</span> <span class="kw">for</span> x <span class="kw">in</span> b))   <span class="cm"># True True</span>
+
+matrix = [[<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], [<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]]
+<span class="fn">print</span>([<span class="fn">list</span>(col) <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">zip</span>(*matrix)])   <span class="cm"># [[1, 4], [2, 5], [3, 6]]   transpose</span>
+<span class="fn">print</span>([x <span class="kw">for</span> row <span class="kw">in</span> matrix <span class="kw">for</span> x <span class="kw">in</span> row])    <span class="cm"># [1, 2, 3, 4, 5, 6]          flatten</span>
+<span class="fn">print</span>(<span class="fn">sum</span>(matrix, []))                       <span class="cm"># [1, 2, 3, 4, 5, 6]          (O(n²) - avoid for big input)</span>
+
+stack = []
+stack.<span class="fn">append</span>(<span class="num">1</span>); stack.<span class="fn">append</span>(<span class="num">2</span>)   <span class="cm"># a list IS a stack</span>
+<span class="fn">print</span>(stack.<span class="fn">pop</span>(), stack[-<span class="num">1</span>] <span class="kw">if</span> stack <span class="kw">else</span> <span class="kw">None</span>)   <span class="cm"># 2 1   peek with [-1]</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="dictset">
+    <div class="section-label">REFERENCE 03</div>
+    <h2 class="section-title">dict &amp; set</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — dict</div>
+      <pre>d = {<span class="str">"a"</span>: <span class="num">1</span>}
+d[<span class="str">"b"</span>] = <span class="num">2</span>
+<span class="fn">print</span>(d.<span class="fn">get</span>(<span class="str">"z"</span>), d.<span class="fn">get</span>(<span class="str">"z"</span>, <span class="num">0</span>))   <span class="cm"># None 0</span>
+d.<span class="fn">setdefault</span>(<span class="str">"c"</span>, []).<span class="fn">append</span>(<span class="num">7</span>)    <span class="cm"># create-if-missing, then mutate</span>
+<span class="fn">print</span>(d)                           <span class="cm"># {'a': 1, 'b': 2, 'c': [7]}</span>
+<span class="fn">print</span>(<span class="fn">list</span>(d.<span class="fn">keys</span>()), <span class="fn">list</span>(d.<span class="fn">values</span>())[:<span class="num">2</span>])   <span class="cm"># ['a', 'b', 'c'] [1, 2]</span>
+<span class="kw">for</span> key, val <span class="kw">in</span> d.<span class="fn">items</span>():         <span class="cm"># insertion order is guaranteed since 3.7</span>
+    <span class="kw">pass</span>
+<span class="fn">print</span>(d.<span class="fn">pop</span>(<span class="str">"a"</span>), <span class="str">"a"</span> <span class="kw">in</span> d)        <span class="cm"># 1 False</span>
+<span class="fn">print</span>(d.<span class="fn">pop</span>(<span class="str">"zzz"</span>, <span class="kw">None</span>))          <span class="cm"># None   pop with a default never raises</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(d))                   <span class="cm"># ['b', 'c']</span>
+inv = {v: k <span class="kw">for</span> k, v <span class="kw">in</span> {<span class="str">"x"</span>: <span class="num">1</span>, <span class="str">"y"</span>: <span class="num">2</span>}.<span class="fn">items</span>()}
+<span class="fn">print</span>(inv)                         <span class="cm"># {1: 'x', 2: 'y'}</span>
+<span class="fn">print</span>(<span class="fn">dict</span>(<span class="fn">zip</span>(<span class="str">"ab"</span>, [<span class="num">1</span>, <span class="num">2</span>])))     <span class="cm"># {'a': 1, 'b': 2}</span>
+<span class="fn">print</span>(dict.<span class="fn">fromkeys</span>(<span class="str">"abc"</span>, <span class="num">0</span>))     <span class="cm"># {'a': 0, 'b': 0, 'c': 0}</span>
+merged = {**{<span class="str">"a"</span>: <span class="num">1</span>}, **{<span class="str">"a"</span>: <span class="num">9</span>, <span class="str">"b"</span>: <span class="num">2</span>}}   <span class="cm"># later keys win</span>
+<span class="fn">print</span>(merged)                      <span class="cm"># {'a': 9, 'b': 2}</span>
+scores = {<span class="str">"ana"</span>: <span class="num">7</span>, <span class="str">"bo"</span>: <span class="num">9</span>}
+<span class="fn">print</span>(<span class="fn">max</span>(scores, key=scores.get)) <span class="cm"># bo   key of the largest value</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — set</div>
+      <pre>s, t = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}, {<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>}
+<span class="fn">print</span>(s | t, s &amp; t)                <span class="cm"># {1, 2, 3, 4} {2, 3}</span>
+<span class="fn">print</span>(s - t, s ^ t)                <span class="cm"># {1} {1, 4}</span>
+<span class="fn">print</span>({<span class="num">1</span>, <span class="num">2</span>} &lt;= s, s.<span class="fn">isdisjoint</span>({<span class="num">9</span>}))   <span class="cm"># True True   subset / disjoint</span>
+s.<span class="fn">add</span>(<span class="num">5</span>); s.<span class="fn">discard</span>(<span class="num">99</span>)            <span class="cm"># discard: no error if missing (remove() raises KeyError)</span>
+<span class="fn">print</span>(<span class="fn">len</span>(s), <span class="num">5</span> <span class="kw">in</span> s)              <span class="cm"># 4 True</span>
+empty = <span class="fn">set</span>()                      <span class="cm"># NOT {} - that is an empty dict</span>
+<span class="fn">print</span>(<span class="fn">type</span>({}).__name__, <span class="fn">type</span>(empty).__name__)   <span class="cm"># dict set</span>
+seen = {<span class="fn">frozenset</span>([<span class="num">1</span>, <span class="num">2</span>])}         <span class="cm"># frozenset is hashable, so it can live in a set</span>
+<span class="fn">print</span>(<span class="fn">frozenset</span>([<span class="num">2</span>, <span class="num">1</span>]) <span class="kw">in</span> seen)   <span class="cm"># True</span>
+<span class="fn">print</span>({(<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">2</span>, <span class="num">3</span>)})    <span class="cm"># {(0, 1), (2, 3)}   tuples as keys (grid cells)</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="collections">
+    <div class="section-label">REFERENCE 04</div>
+    <h2 class="section-title">collections: deque, defaultdict, Counter, OrderedDict, namedtuple</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — deque, defaultdict, Counter</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque, defaultdict, <span class="cls">Counter</span>
+
+q = <span class="fn">deque</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])
+q.<span class="fn">appendleft</span>(<span class="num">0</span>); q.<span class="fn">append</span>(<span class="num">4</span>)
+<span class="fn">print</span>(q.<span class="fn">popleft</span>(), q.<span class="fn">pop</span>(), q)     <span class="cm"># 0 4 deque([1, 2, 3])</span>
+q.<span class="fn">rotate</span>(<span class="num">1</span>); <span class="fn">print</span>(q)              <span class="cm"># deque([3, 1, 2])</span>
+<span class="fn">print</span>(q[<span class="num">0</span>], q[-<span class="num">1</span>])                 <span class="cm"># 3 2   peek both ends in O(1)</span>
+window = <span class="fn">deque</span>(maxlen=<span class="num">3</span>)           <span class="cm"># keeps only the last 3 items</span>
+<span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):
+    window.<span class="fn">append</span>(x)
+<span class="fn">print</span>(window)                      <span class="cm"># deque([2, 3, 4], maxlen=3)</span>
+
+graph = <span class="fn">defaultdict</span>(list)          <span class="cm"># missing key -&gt; new empty list</span>
+<span class="kw">for</span> u, v <span class="kw">in</span> [(<span class="num">1</span>, <span class="num">2</span>), (<span class="num">1</span>, <span class="num">3</span>), (<span class="num">2</span>, <span class="num">3</span>)]:
+    graph[u].<span class="fn">append</span>(v)
+    graph[v]                       <span class="cm"># touch v so every node exists as a key</span>
+<span class="fn">print</span>(<span class="fn">dict</span>(graph))                 <span class="cm"># {1: [2, 3], 2: [3], 3: []}</span>
+count = <span class="fn">defaultdict</span>(int)           <span class="cm"># missing key -&gt; 0</span>
+<span class="kw">for</span> ch <span class="kw">in</span> <span class="str">"abca"</span>:
+    count[ch] += <span class="num">1</span>
+<span class="fn">print</span>(<span class="fn">dict</span>(count))                 <span class="cm"># {'a': 2, 'b': 1, 'c': 1}</span>
+groups = <span class="fn">defaultdict</span>(list)         <span class="cm"># group anagrams</span>
+<span class="kw">for</span> w <span class="kw">in</span> [<span class="str">"eat"</span>, <span class="str">"tea"</span>, <span class="str">"tan"</span>, <span class="str">"nat"</span>]:
+    groups[<span class="str">""</span>.<span class="fn">join</span>(<span class="fn">sorted</span>(w))].<span class="fn">append</span>(w)
+<span class="fn">print</span>(<span class="fn">list</span>(groups.<span class="fn">values</span>()))       <span class="cm"># [['eat', 'tea'], ['tan', 'nat']]</span>
+
+c = <span class="cls">Counter</span>(<span class="str">"mississippi"</span>)
+<span class="fn">print</span>(c.<span class="fn">most_common</span>(<span class="num">2</span>))            <span class="cm"># [('i', 4), ('s', 4)]</span>
+<span class="fn">print</span>(c[<span class="str">"z"</span>])                      <span class="cm"># 0   missing keys are 0, no KeyError</span>
+<span class="fn">print</span>(<span class="cls">Counter</span>(<span class="str">"abc"</span>) == <span class="cls">Counter</span>(<span class="str">"cab"</span>))    <span class="cm"># True   anagram check</span>
+<span class="fn">print</span>(<span class="cls">Counter</span>(<span class="str">"aab"</span>) - <span class="cls">Counter</span>(<span class="str">"ab"</span>))      <span class="cm"># Counter({'a': 1})   drops counts &lt;= 0</span>
+<span class="fn">print</span>(<span class="cls">Counter</span>(<span class="str">"ab"</span>) + <span class="cls">Counter</span>(<span class="str">"b"</span>))        <span class="cm"># Counter({'b': 2, 'a': 1})</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="cls">Counter</span>([<span class="num">3</span>, <span class="num">1</span>, <span class="num">3</span>]).<span class="fn">elements</span>()))   <span class="cm"># [1, 3, 3]</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — OrderedDict (LRU Cache) and namedtuple</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">OrderedDict</span>, namedtuple
+
+<span class="kw">class</span> <span class="cls">LRUCache</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, capacity: int):
+        <span class="kw">self</span>.cap = capacity
+        <span class="kw">self</span>.data = <span class="cls">OrderedDict</span>()
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="kw">self</span>, key: int) -&gt; int:
+        <span class="kw">if</span> key <span class="kw">not</span> <span class="kw">in</span> <span class="kw">self</span>.data:
+            <span class="kw">return</span> -<span class="num">1</span>
+        <span class="kw">self</span>.data.<span class="fn">move_to_end</span>(key)          <span class="cm"># mark as most recently used</span>
+        <span class="kw">return</span> <span class="kw">self</span>.data[key]
+
+    <span class="kw">def</span> <span class="fn">put</span>(<span class="kw">self</span>, key: int, value: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.data[key] = value
+        <span class="kw">self</span>.data.<span class="fn">move_to_end</span>(key)
+        <span class="kw">if</span> <span class="fn">len</span>(<span class="kw">self</span>.data) &gt; <span class="kw">self</span>.cap:
+            <span class="kw">self</span>.data.<span class="fn">popitem</span>(last=<span class="kw">False</span>)   <span class="cm"># evict the least recently used</span>
+
+cache = <span class="cls">LRUCache</span>(<span class="num">2</span>)
+cache.<span class="fn">put</span>(<span class="num">1</span>, <span class="num">1</span>); cache.<span class="fn">put</span>(<span class="num">2</span>, <span class="num">2</span>)
+cache.<span class="fn">get</span>(<span class="num">1</span>)                                <span class="cm"># 1 is now most recent</span>
+cache.<span class="fn">put</span>(<span class="num">3</span>, <span class="num">3</span>)                             <span class="cm"># evicts 2</span>
+<span class="fn">print</span>(cache.<span class="fn">get</span>(<span class="num">2</span>), cache.<span class="fn">get</span>(<span class="num">1</span>), cache.<span class="fn">get</span>(<span class="num">3</span>))   <span class="cm"># -1 1 3</span>
+
+<span class="cls">Point</span> = <span class="fn">namedtuple</span>(<span class="str">"Point"</span>, [<span class="str">"x"</span>, <span class="str">"y"</span>])
+p = <span class="cls">Point</span>(<span class="num">3</span>, <span class="num">4</span>)
+<span class="fn">print</span>(p.x, p[<span class="num">1</span>], p)                         <span class="cm"># 3 4 Point(x=3, y=4)</span>
+<span class="fn">print</span>(p.<span class="fn">_replace</span>(x=<span class="num">0</span>))                      <span class="cm"># Point(x=0, y=4)   immutable: returns a new one</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="heapq">
+    <div class="section-label">REFERENCE 05</div>
+    <h2 class="section-title">heapq Recipes</h2>
+    <p class="explanation"><code>heapq</code> turns a plain list into a <strong>binary min-heap</strong>: <code>h[0]</code> is always the smallest. There is no max-heap — push negated numbers (or <code>(-priority, item)</code> tuples). Tuples compare element by element, so <code>(priority, item)</code> gives priority ordering for free.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Min-Heap, Max-Heap, Top-K, Tuple Priorities</div>
+      <pre><span class="kw">import</span> heapq
+<span class="kw">import</span> itertools
+
+nums = [<span class="num">5</span>, <span class="num">1</span>, <span class="num">8</span>, <span class="num">3</span>, <span class="num">9</span>, <span class="num">2</span>]
+h = nums[:]
+heapq.<span class="fn">heapify</span>(h)                          <span class="cm"># O(n), in place</span>
+<span class="fn">print</span>(heapq.<span class="fn">heappop</span>(h), h[<span class="num">0</span>])             <span class="cm"># 1 2   pop smallest / peek</span>
+heapq.<span class="fn">heappush</span>(h, <span class="num">0</span>)
+<span class="fn">print</span>(heapq.<span class="fn">heappushpop</span>(h, <span class="num">7</span>))            <span class="cm"># 0   push then pop: faster than two calls</span>
+<span class="fn">print</span>(heapq.<span class="fn">heapreplace</span>(h, <span class="num">6</span>))            <span class="cm"># 2   pop then push</span>
+
+max_h = [-x <span class="kw">for</span> x <span class="kw">in</span> nums]                <span class="cm"># MAX-heap: store negatives</span>
+heapq.<span class="fn">heapify</span>(max_h)
+<span class="fn">print</span>(-heapq.<span class="fn">heappop</span>(max_h), -max_h[<span class="num">0</span>])   <span class="cm"># 9 8</span>
+
+<span class="fn">print</span>(heapq.<span class="fn">nlargest</span>(<span class="num">3</span>, nums))            <span class="cm"># [9, 8, 5]</span>
+<span class="fn">print</span>(heapq.<span class="fn">nsmallest</span>(<span class="num">2</span>, nums))           <span class="cm"># [1, 2]</span>
+words = [<span class="str">"aa"</span>, <span class="str">"b"</span>, <span class="str">"cccc"</span>, <span class="str">"ddd"</span>]
+<span class="fn">print</span>(heapq.<span class="fn">nlargest</span>(<span class="num">2</span>, words, key=len))  <span class="cm"># ['cccc', 'ddd']</span>
+
+<span class="kw">def</span> <span class="fn">top_k</span>(nums, k):                       <span class="cm"># O(n log k): keep a size-k MIN-heap</span>
+    heap = []
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        heapq.<span class="fn">heappush</span>(heap, x)
+        <span class="kw">if</span> <span class="fn">len</span>(heap) &gt; k:
+            heapq.<span class="fn">heappop</span>(heap)           <span class="cm"># throw away the smallest</span>
+    <span class="kw">return</span> <span class="fn">sorted</span>(heap, reverse=<span class="kw">True</span>)     <span class="cm"># heap[0] is the k-th largest</span>
+<span class="fn">print</span>(<span class="fn">top_k</span>(nums, <span class="num">3</span>))                     <span class="cm"># [9, 8, 5]</span>
+
+tasks = []
+heapq.<span class="fn">heappush</span>(tasks, (<span class="num">2</span>, <span class="str">"write"</span>))
+heapq.<span class="fn">heappush</span>(tasks, (<span class="num">1</span>, <span class="str">"plan"</span>))
+heapq.<span class="fn">heappush</span>(tasks, (<span class="num">2</span>, <span class="str">"test"</span>))        <span class="cm"># tie on 2 -&gt; compares "test" &lt; "write"</span>
+<span class="fn">print</span>([heapq.<span class="fn">heappop</span>(tasks)[<span class="num">1</span>] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>)])   <span class="cm"># ['plan', 'test', 'write']</span>
+
+tie = itertools.<span class="fn">count</span>()                   <span class="cm"># tie-breaker for items that can't be compared</span>
+heap = []
+<span class="kw">for</span> node <span class="kw">in</span> [{<span class="str">"id"</span>: <span class="str">"a"</span>}, {<span class="str">"id"</span>: <span class="str">"b"</span>}]:
+    heapq.<span class="fn">heappush</span>(heap, (<span class="num">1</span>, <span class="fn">next</span>(tie), node))   <span class="cm"># dicts are not orderable</span>
+<span class="fn">print</span>(heapq.<span class="fn">heappop</span>(heap)[<span class="num">2</span>])             <span class="cm"># {'id': 'a'}</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — K-Way Merge</div>
+      <pre><span class="kw">import</span> heapq
+
+lists = [[<span class="num">1</span>, <span class="num">4</span>, <span class="num">7</span>], [<span class="num">2</span>, <span class="num">5</span>], [<span class="num">3</span>, <span class="num">6</span>, <span class="num">9</span>]]
+<span class="fn">print</span>(<span class="fn">list</span>(heapq.<span class="fn">merge</span>(*lists)))          <span class="cm"># [1, 2, 3, 4, 5, 6, 7, 9]   lazy built-in</span>
+
+<span class="kw">def</span> <span class="fn">k_way_merge</span>(lists):                   <span class="cm"># manual: heap of (value, list_i, elem_i)</span>
+    heap = [(lst[<span class="num">0</span>], i, <span class="num">0</span>) <span class="kw">for</span> i, lst <span class="kw">in</span> <span class="fn">enumerate</span>(lists) <span class="kw">if</span> lst]
+    heapq.<span class="fn">heapify</span>(heap)
+    out = []
+    <span class="kw">while</span> heap:
+        val, i, j = heapq.<span class="fn">heappop</span>(heap)
+        out.<span class="fn">append</span>(val)
+        <span class="kw">if</span> j + <span class="num">1</span> &lt; <span class="fn">len</span>(lists[i]):
+            heapq.<span class="fn">heappush</span>(heap, (lists[i][j + <span class="num">1</span>], i, j + <span class="num">1</span>))
+    <span class="kw">return</span> out                            <span class="cm"># O(N log k) for N items in k lists</span>
+
+<span class="fn">print</span>(<span class="fn">k_way_merge</span>(lists))                 <span class="cm"># [1, 2, 3, 4, 5, 6, 7, 9]</span></pre>
+    </div>
+    <div class="callout"><strong>Running median:</strong> keep a max-heap <code>lo</code> (negated) for the smaller half and a min-heap <code>hi</code> for the larger half; rebalance so <code>len(lo) - len(hi)</code> is 0 or 1. The median is <code>-lo[0]</code> or the average of both tops.</div>
+  </section>
+
+  <section class="section" id="bisect">
+    <div class="section-label">REFERENCE 06</div>
+    <h2 class="section-title">bisect Recipes (Binary Search on a Sorted List)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — bisect</div>
+      <pre><span class="kw">import</span> bisect
+
+a = [<span class="num">1</span>, <span class="num">3</span>, <span class="num">3</span>, <span class="num">3</span>, <span class="num">7</span>]
+<span class="fn">print</span>(bisect.<span class="fn">bisect_left</span>(a, <span class="num">3</span>))    <span class="cm"># 1   first index with a[i] &gt;= 3</span>
+<span class="fn">print</span>(bisect.<span class="fn">bisect_right</span>(a, <span class="num">3</span>))   <span class="cm"># 4   first index with a[i] &gt; 3</span>
+<span class="fn">print</span>(bisect.<span class="fn">bisect_right</span>(a, <span class="num">3</span>) - bisect.<span class="fn">bisect_left</span>(a, <span class="num">3</span>))   <span class="cm"># 3   how many 3s</span>
+<span class="fn">print</span>(bisect.<span class="fn">bisect_left</span>(a, <span class="num">5</span>))    <span class="cm"># 4   where 5 would be inserted</span>
+bisect.<span class="fn">insort</span>(a, <span class="num">5</span>); <span class="fn">print</span>(a)      <span class="cm"># [1, 3, 3, 3, 5, 7]   O(n) insert, stays sorted</span>
+
+<span class="kw">def</span> <span class="fn">contains</span>(a, x):                <span class="cm"># O(log n) membership in a sorted list</span>
+    i = bisect.<span class="fn">bisect_left</span>(a, x)
+    <span class="kw">return</span> i &lt; <span class="fn">len</span>(a) <span class="kw">and</span> a[i] == x
+<span class="fn">print</span>(<span class="fn">contains</span>(a, <span class="num">5</span>), <span class="fn">contains</span>(a, <span class="num">4</span>))   <span class="cm"># True False</span>
+
+<span class="kw">def</span> <span class="fn">floor_value</span>(a, x):             <span class="cm"># largest value &lt;= x</span>
+    i = bisect.<span class="fn">bisect_right</span>(a, x)
+    <span class="kw">return</span> a[i - <span class="num">1</span>] <span class="kw">if</span> i <span class="kw">else</span> <span class="kw">None</span>
+<span class="kw">def</span> <span class="fn">ceil_value</span>(a, x):              <span class="cm"># smallest value &gt;= x</span>
+    i = bisect.<span class="fn">bisect_left</span>(a, x)
+    <span class="kw">return</span> a[i] <span class="kw">if</span> i &lt; <span class="fn">len</span>(a) <span class="kw">else</span> <span class="kw">None</span>
+<span class="fn">print</span>(<span class="fn">floor_value</span>(a, <span class="num">4</span>), <span class="fn">ceil_value</span>(a, <span class="num">4</span>), <span class="fn">floor_value</span>(a, <span class="num">0</span>))   <span class="cm"># 3 5 None</span>
+
+<span class="kw">def</span> <span class="fn">count_in_range</span>(a, lo, hi):     <span class="cm"># how many values in [lo, hi]</span>
+    <span class="kw">return</span> bisect.<span class="fn">bisect_right</span>(a, hi) - bisect.<span class="fn">bisect_left</span>(a, lo)
+<span class="fn">print</span>(<span class="fn">count_in_range</span>(a, <span class="num">2</span>, <span class="num">5</span>))     <span class="cm"># 4</span>
+
+cutoffs, grades = [<span class="num">60</span>, <span class="num">70</span>, <span class="num">80</span>, <span class="num">90</span>], <span class="str">"FDCBA"</span>
+<span class="fn">print</span>([grades[bisect.<span class="fn">bisect</span>(cutoffs, s)] <span class="kw">for</span> s <span class="kw">in</span> [<span class="num">55</span>, <span class="num">70</span>, <span class="num">99</span>]])   <span class="cm"># ['F', 'C', 'A']</span>
+
+<span class="kw">def</span> <span class="fn">lis_length</span>(nums):              <span class="cm"># longest increasing subsequence, O(n log n)</span>
+    tails = []
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        i = bisect.<span class="fn">bisect_left</span>(tails, x)
+        <span class="kw">if</span> i == <span class="fn">len</span>(tails):
+            tails.<span class="fn">append</span>(x)
+        <span class="kw">else</span>:
+            tails[i] = x
+    <span class="kw">return</span> <span class="fn">len</span>(tails)
+<span class="fn">print</span>(<span class="fn">lis_length</span>([<span class="num">10</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">7</span>, <span class="num">101</span>, <span class="num">18</span>]))   <span class="cm"># 4</span></pre>
+    </div>
+    <div class="callout warn"><strong>No <code>key=</code> before 3.10:</strong> to search records by a field, keep a parallel list of keys, e.g. <code>starts = [iv[0] for iv in intervals]</code>, and bisect that.</div>
+  </section>
+
+  <section class="section" id="itertools">
+    <div class="section-label">REFERENCE 07</div>
+    <h2 class="section-title">itertools</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Combinatorics, Prefix Sums, Grouping</div>
+      <pre><span class="kw">from</span> itertools <span class="kw">import</span> (permutations, combinations, combinations_with_replacement,
+                       product, accumulate, groupby, chain, islice, count)
+<span class="kw">import</span> operator
+
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>)))   <span class="cm"># [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">list</span>(<span class="fn">permutations</span>(<span class="fn">range</span>(<span class="num">4</span>)))))  <span class="cm"># 24   n!</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">combinations</span>(<span class="str">"abc"</span>, <span class="num">2</span>)))       <span class="cm"># [('a', 'b'), ('a', 'c'), ('b', 'c')]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">combinations_with_replacement</span>([<span class="num">1</span>, <span class="num">2</span>], <span class="num">2</span>)))   <span class="cm"># [(1, 1), (1, 2), (2, 2)]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">product</span>([<span class="num">0</span>, <span class="num">1</span>], repeat=<span class="num">2</span>)))    <span class="cm"># [(0, 0), (0, 1), (1, 0), (1, 1)]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">product</span>(<span class="str">"ab"</span>, <span class="str">"xy"</span>)))          <span class="cm"># [('a', 'x'), ('a', 'y'), ('b', 'x'), ('b', 'y')]</span>
+
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">accumulate</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>])))     <span class="cm"># [1, 3, 6, 10]   prefix sums</span>
+<span class="fn">print</span>([<span class="num">0</span>] + <span class="fn">list</span>(<span class="fn">accumulate</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])))  <span class="cm"># [0, 1, 3, 6]    leading 0 (initial= needs 3.8+)</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">accumulate</span>([<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>], max)))          <span class="cm"># [3, 3, 4, 4, 5]   running max</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">accumulate</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>], operator.mul)))    <span class="cm"># [1, 2, 6, 24]     running product</span>
+
+<span class="fn">print</span>([(k, <span class="fn">len</span>(<span class="fn">list</span>(g))) <span class="kw">for</span> k, g <span class="kw">in</span> <span class="fn">groupby</span>(<span class="str">"aaabccdd"</span>)])   <span class="cm"># [('a', 3), ('b', 1), ('c', 2), ('d', 2)]</span>
+<span class="fn">print</span>(<span class="str">""</span>.<span class="fn">join</span>(k + <span class="fn">str</span>(<span class="fn">len</span>(<span class="fn">list</span>(g))) <span class="kw">for</span> k, g <span class="kw">in</span> <span class="fn">groupby</span>(<span class="str">"aaabcc"</span>)))   <span class="cm"># a3b1c2   run-length encoding</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">chain</span>([<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>], [<span class="num">4</span>, <span class="num">5</span>])))   <span class="cm"># [1, 2, 3, 4, 5]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(chain.<span class="fn">from_iterable</span>([[<span class="num">1</span>], [<span class="num">2</span>, <span class="num">3</span>]])))   <span class="cm"># [1, 2, 3]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">islice</span>(<span class="fn">count</span>(<span class="num">10</span>, <span class="num">5</span>), <span class="num">3</span>)))      <span class="cm"># [10, 15, 20]   first 3 of an infinite counter</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">zip</span>(<span class="str">"abc"</span>, <span class="fn">count</span>())))          <span class="cm"># [('a', 0), ('b', 1), ('c', 2)]</span></pre>
+    </div>
+    <div class="callout warn"><strong>groupby groups only <em>consecutive</em> equal keys</strong> — sort first if you want all equal items together. Each group is a one-shot iterator: consume it (e.g. <code>list(g)</code>) before moving to the next.</div>
+  </section>
+
+  <section class="section" id="functools">
+    <div class="section-label">REFERENCE 08</div>
+    <h2 class="section-title">functools: lru_cache, reduce, cmp_to_key</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Memoization, Folding, Custom Comparators</div>
+      <pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache, reduce, cmp_to_key
+<span class="kw">import</span> operator
+
+@<span class="fn">lru_cache</span>(maxsize=<span class="kw">None</span>)             <span class="cm"># memoize (functools.cache is 3.9+)</span>
+<span class="kw">def</span> <span class="fn">fib</span>(n: int) -&gt; int:
+    <span class="kw">return</span> n <span class="kw">if</span> n &lt; <span class="num">2</span> <span class="kw">else</span> <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>)
+<span class="fn">print</span>(<span class="fn">fib</span>(<span class="num">80</span>))                       <span class="cm"># 23416728348467685</span>
+<span class="fn">print</span>(fib.<span class="fn">cache_info</span>().currsize)     <span class="cm"># 81</span>
+fib.<span class="fn">cache_clear</span>()                    <span class="cm"># reset between independent test cases</span>
+
+@<span class="fn">lru_cache</span>(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">grid_paths</span>(r: int, c: int) -&gt; int:   <span class="cm"># arguments must be hashable (tuples, not lists)</span>
+    <span class="kw">if</span> r == <span class="num">0</span> <span class="kw">or</span> c == <span class="num">0</span>:
+        <span class="kw">return</span> <span class="num">1</span>
+    <span class="kw">return</span> <span class="fn">grid_paths</span>(r - <span class="num">1</span>, c) + <span class="fn">grid_paths</span>(r, c - <span class="num">1</span>)
+<span class="fn">print</span>(<span class="fn">grid_paths</span>(<span class="num">3</span>, <span class="num">3</span>))              <span class="cm"># 20</span>
+
+<span class="fn">print</span>(<span class="fn">reduce</span>(operator.mul, [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>], <span class="num">1</span>))         <span class="cm"># 24</span>
+<span class="fn">print</span>(<span class="fn">reduce</span>(<span class="kw">lambda</span> a, b: a ^ b, [<span class="num">4</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">2</span>]))   <span class="cm"># 4   XOR cancels pairs: the single number</span>
+
+<span class="kw">def</span> <span class="fn">compare</span>(a: str, b: str) -&gt; int:  <span class="cm"># negative: a first, positive: b first</span>
+    <span class="kw">if</span> a + b &gt; b + a:
+        <span class="kw">return</span> -<span class="num">1</span>
+    <span class="kw">if</span> a + b &lt; b + a:
+        <span class="kw">return</span> <span class="num">1</span>
+    <span class="kw">return</span> <span class="num">0</span>
+nums = [<span class="str">"3"</span>, <span class="str">"30"</span>, <span class="str">"34"</span>, <span class="str">"5"</span>, <span class="str">"9"</span>]
+<span class="fn">print</span>(<span class="str">""</span>.<span class="fn">join</span>(<span class="fn">sorted</span>(nums, key=<span class="fn">cmp_to_key</span>(compare))))   <span class="cm"># 9534330   "largest number"</span></pre>
+    </div>
+    <div class="callout"><strong>lru_cache on a method or nested function:</strong> define the cached helper <em>inside</em> the solution method so the cache is fresh for each call; a module-level cache leaks between LeetCode test cases.</div>
+  </section>
+
+  <section class="section" id="sorting">
+    <div class="section-label">REFERENCE 09</div>
+    <h2 class="section-title">Sorting: key, Multi-Key, reverse</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — sorted() and list.sort()</div>
+      <pre><span class="kw">from</span> operator <span class="kw">import</span> itemgetter
+
+people = [(<span class="str">"ana"</span>, <span class="num">31</span>), (<span class="str">"bo"</span>, <span class="num">25</span>), (<span class="str">"cy"</span>, <span class="num">31</span>), (<span class="str">"di"</span>, <span class="num">19</span>)]
+<span class="cm"># by age (stable: equal ages keep their original order)</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(people, key=<span class="kw">lambda</span> p: p[<span class="num">1</span>]))
+<span class="cm"># [('di', 19), ('bo', 25), ('ana', 31), ('cy', 31)]</span>
+
+<span class="cm"># age DESC, then name ASC: negate the numeric field</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(people, key=<span class="kw">lambda</span> p: (-p[<span class="num">1</span>], p[<span class="num">0</span>])))
+<span class="cm"># [('ana', 31), ('cy', 31), ('bo', 25), ('di', 19)]</span>
+
+<span class="fn">print</span>(<span class="fn">sorted</span>(people, key=<span class="fn">itemgetter</span>(<span class="num">1</span>, <span class="num">0</span>), reverse=<span class="kw">True</span>)[<span class="num">0</span>])   <span class="cm"># ('cy', 31)</span>
+
+words = [<span class="str">"Banana"</span>, <span class="str">"apple"</span>, <span class="str">"cherry"</span>]
+<span class="fn">print</span>(<span class="fn">sorted</span>(words))                       <span class="cm"># ['Banana', 'apple', 'cherry']   uppercase sorts first</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(words, key=str.lower))        <span class="cm"># ['apple', 'Banana', 'cherry']</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(words, key=len, reverse=<span class="kw">True</span>))  <span class="cm"># ['Banana', 'cherry', 'apple']</span>
+
+intervals = [[<span class="num">5</span>, <span class="num">6</span>], [<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">4</span>]]
+intervals.<span class="fn">sort</span>()                           <span class="cm"># lists/tuples compare lexicographically</span>
+<span class="fn">print</span>(intervals)                           <span class="cm"># [[1, 3], [2, 4], [5, 6]]</span>
+
+vals = [<span class="num">30</span>, <span class="num">10</span>, <span class="num">40</span>, <span class="num">20</span>]
+order = <span class="fn">sorted</span>(<span class="fn">range</span>(<span class="fn">len</span>(vals)), key=<span class="kw">lambda</span> i: vals[i])
+<span class="fn">print</span>(order)                               <span class="cm"># [1, 3, 0, 2]   argsort: indices in sorted order</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="str">"hello"</span>), <span class="str">""</span>.<span class="fn">join</span>(<span class="fn">sorted</span>(<span class="str">"hello"</span>)))   <span class="cm"># ['e', 'h', 'l', 'l', 'o'] ehllo</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>({<span class="str">"b"</span>: <span class="num">2</span>, <span class="str">"a"</span>: <span class="num">1</span>}.<span class="fn">items</span>(), key=<span class="kw">lambda</span> kv: kv[<span class="num">1</span>]))   <span class="cm"># [('a', 1), ('b', 2)]</span></pre>
+    </div>
+    <div class="callout warn"><code>list.sort()</code> sorts in place and returns <code>None</code>; <code>sorted(x)</code> works on any iterable and returns a new list. Both are Timsort: O(n log n), stable, and O(n) on already-sorted data.</div>
+  </section>
+
+  <section class="section" id="strings">
+    <div class="section-label">REFERENCE 10</div>
+    <h2 class="section-title">String Tricks</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Strings</div>
+      <pre><span class="kw">import</span> string
+
+s = <span class="str">"Hello, World"</span>
+<span class="fn">print</span>(s.<span class="fn">lower</span>(), s.<span class="fn">split</span>(<span class="str">", "</span>))           <span class="cm"># hello, world ['Hello', 'World']</span>
+<span class="fn">print</span>(<span class="str">" a  b "</span>.<span class="fn">split</span>(), <span class="str">"a,b,,c"</span>.<span class="fn">split</span>(<span class="str">","</span>))   <span class="cm"># ['a', 'b'] ['a', 'b', '', 'c']</span>
+<span class="fn">print</span>(<span class="str">"-"</span>.<span class="fn">join</span>([<span class="str">"a"</span>, <span class="str">"b"</span>, <span class="str">"c"</span>]))          <span class="cm"># a-b-c</span>
+<span class="fn">print</span>(<span class="fn">ord</span>(<span class="str">"a"</span>), <span class="fn">chr</span>(<span class="num">98</span>), <span class="fn">ord</span>(<span class="str">"c"</span>) - <span class="fn">ord</span>(<span class="str">"a"</span>))  <span class="cm"># 97 b 2</span>
+<span class="fn">print</span>(<span class="fn">chr</span>(<span class="fn">ord</span>(<span class="str">"a"</span>) + <span class="num">25</span>))                 <span class="cm"># z</span>
+<span class="fn">print</span>([c <span class="kw">for</span> c <span class="kw">in</span> <span class="str">"a1!B"</span> <span class="kw">if</span> c.<span class="fn">isalnum</span>()]) <span class="cm"># ['a', '1', 'B']</span>
+<span class="fn">print</span>(<span class="str">"abc"</span>.<span class="fn">isalpha</span>(), <span class="str">"123"</span>.<span class="fn">isdigit</span>(), <span class="str">" "</span>.<span class="fn">isspace</span>(), <span class="str">"A"</span>.<span class="fn">isupper</span>())   <span class="cm"># True True True True</span>
+<span class="fn">print</span>(string.ascii_lowercase)             <span class="cm"># abcdefghijklmnopqrstuvwxyz</span>
+<span class="fn">print</span>(string.ascii_uppercase[:<span class="num">3</span>], string.digits)   <span class="cm"># ABC 0123456789</span>
+
+name, score = <span class="str">"ana"</span>, <span class="num">9.5</span>
+<span class="fn">print</span>(<span class="str">f"[{name:&gt;5}]|{score:.2f}|{42:05d}|{255:b}|{255:x}"</span>)   <span class="cm"># [  ana]|9.50|00042|11111111|ff</span>
+<span class="fn">print</span>(<span class="str">"{} has {}"</span>.<span class="fn">format</span>(name, <span class="num">3</span>))        <span class="cm"># ana has 3</span>
+
+<span class="fn">print</span>(<span class="str">"abc"</span>.<span class="fn">find</span>(<span class="str">"z"</span>), <span class="str">"abcabc"</span>.<span class="fn">rfind</span>(<span class="str">"b"</span>))      <span class="cm"># -1 4   find returns -1, index() raises</span>
+<span class="fn">print</span>(<span class="str">"banana"</span>.<span class="fn">replace</span>(<span class="str">"a"</span>, <span class="str">"o"</span>, <span class="num">1</span>), <span class="str">"banana"</span>.<span class="fn">count</span>(<span class="str">"an"</span>))   <span class="cm"># bonana 2</span>
+<span class="fn">print</span>(<span class="str">"  pad "</span>.<span class="fn">strip</span>(), <span class="str">"x"</span>.<span class="fn">zfill</span>(<span class="num">3</span>), <span class="str">"ab"</span>.<span class="fn">center</span>(<span class="num">6</span>, <span class="str">"*"</span>))   <span class="cm"># pad 00x **ab**</span>
+<span class="fn">print</span>(s.<span class="fn">startswith</span>(<span class="str">"He"</span>), s.<span class="fn">endswith</span>(<span class="str">"!"</span>), s[::-<span class="num">1</span>])          <span class="cm"># True False dlroW ,olleH</span>
+<span class="fn">print</span>(<span class="str">"abc"</span> &lt; <span class="str">"abd"</span>, <span class="str">"Zebra"</span> &lt; <span class="str">"apple"</span>)   <span class="cm"># True True   compares code points</span>
+
+chars = <span class="fn">list</span>(<span class="str">"hello"</span>)                     <span class="cm"># strings are immutable: edit a list</span>
+chars[<span class="num">0</span>] = <span class="str">"j"</span>
+<span class="fn">print</span>(<span class="str">""</span>.<span class="fn">join</span>(chars))                     <span class="cm"># jello</span>
+
+counts = [<span class="num">0</span>] * <span class="num">26</span>                         <span class="cm"># fixed-size counter for lowercase letters</span>
+<span class="kw">for</span> ch <span class="kw">in</span> <span class="str">"banana"</span>:
+    counts[<span class="fn">ord</span>(ch) - <span class="fn">ord</span>(<span class="str">"a"</span>)] += <span class="num">1</span>
+<span class="fn">print</span>(<span class="fn">tuple</span>(counts)[:<span class="num">3</span>])                  <span class="cm"># (3, 1, 0)   hashable: usable as a dict key</span>
+<span class="fn">print</span>(<span class="fn">int</span>(<span class="str">"101"</span>, <span class="num">2</span>), <span class="fn">bin</span>(<span class="num">5</span>), <span class="fn">int</span>(<span class="str">"ff"</span>, <span class="num">16</span>))   <span class="cm"># 5 0b101 255</span>
+<span class="fn">print</span>(<span class="fn">str</span>(<span class="num">123</span>)[::-<span class="num">1</span>], <span class="fn">int</span>(<span class="str">"007"</span>))         <span class="cm"># 321 7</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="math">
+    <div class="section-label">REFERENCE 11</div>
+    <h2 class="section-title">math &amp; Bit Tricks</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — math</div>
+      <pre><span class="kw">import</span> math
+
+<span class="fn">print</span>(math.inf &gt; <span class="num">10</span>**<span class="num">100</span>, -math.inf, <span class="fn">float</span>(<span class="str">"inf"</span>) == math.inf)   <span class="cm"># True -inf True</span>
+<span class="fn">print</span>(math.<span class="fn">gcd</span>(<span class="num">12</span>, <span class="num">18</span>), <span class="num">12</span> * <span class="num">18</span> // math.<span class="fn">gcd</span>(<span class="num">12</span>, <span class="num">18</span>))   <span class="cm"># 6 36   lcm (math.lcm is 3.9+)</span>
+
+<span class="kw">try</span>:
+    <span class="kw">from</span> math <span class="kw">import</span> isqrt               <span class="cm"># Python 3.8+</span>
+<span class="kw">except</span> <span class="cls">ImportError</span>:                      <span class="cm"># fallback for 3.7: exact integer sqrt</span>
+    <span class="kw">def</span> <span class="fn">isqrt</span>(n: int) -&gt; int:
+        x = <span class="fn">int</span>(math.<span class="fn">sqrt</span>(n))
+        <span class="kw">while</span> x * x &gt; n:
+            x -= <span class="num">1</span>
+        <span class="kw">while</span> (x + <span class="num">1</span>) * (x + <span class="num">1</span>) &lt;= n:
+            x += <span class="num">1</span>
+        <span class="kw">return</span> x
+<span class="fn">print</span>(<span class="fn">isqrt</span>(<span class="num">17</span>), <span class="fn">isqrt</span>(<span class="num">10</span>**<span class="num">30</span>))          <span class="cm"># 4 1000000000000000</span>
+<span class="fn">print</span>(<span class="fn">isqrt</span>(<span class="num">49</span>) ** <span class="num">2</span> == <span class="num">49</span>)              <span class="cm"># True   perfect-square test</span>
+
+<span class="fn">print</span>(<span class="fn">divmod</span>(<span class="num">17</span>, <span class="num">5</span>))                     <span class="cm"># (3, 2)</span>
+MOD = <span class="num">10</span>**<span class="num">9</span> + <span class="num">7</span>
+<span class="fn">print</span>(<span class="fn">pow</span>(<span class="num">2</span>, <span class="num">10</span>, <span class="num">1000</span>))                  <span class="cm"># 24   fast modular power, O(log exponent)</span>
+<span class="fn">print</span>(<span class="fn">pow</span>(<span class="num">3</span>, MOD - <span class="num">2</span>, MOD) * <span class="num">3</span> % MOD)    <span class="cm"># 1    modular inverse (prime MOD); pow(x, -1, m) needs 3.8+</span>
+<span class="fn">print</span>(math.<span class="fn">ceil</span>(<span class="num">7</span> / <span class="num">2</span>), -(-<span class="num">7</span> // <span class="num">2</span>))      <span class="cm"># 4 4  ceiling division - prefer the int version</span>
+<span class="fn">print</span>(math.<span class="fn">floor</span>(-<span class="num">2.5</span>), <span class="fn">round</span>(<span class="num">2.5</span>), <span class="fn">round</span>(<span class="num">3.5</span>))   <span class="cm"># -3 2 4   round() is banker's rounding</span>
+<span class="fn">print</span>(<span class="fn">abs</span>(-<span class="num">3</span>), math.<span class="fn">factorial</span>(<span class="num">5</span>), math.<span class="fn">log2</span>(<span class="num">1024</span>))   <span class="cm"># 3 120 10.0</span>
+<span class="fn">print</span>(math.<span class="fn">factorial</span>(<span class="num">5</span>) // (math.<span class="fn">factorial</span>(<span class="num">2</span>) * math.<span class="fn">factorial</span>(<span class="num">3</span>)))   <span class="cm"># 10   C(5,2); math.comb is 3.8+</span>
+<span class="fn">print</span>(math.<span class="fn">hypot</span>(<span class="num">3</span>, <span class="num">4</span>), math.pi &gt; <span class="num">3.14</span>)  <span class="cm"># 5.0 True</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Bit Manipulation</div>
+      <pre>x = <span class="num">0b1011</span>                       <span class="cm"># 11</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(x), x.<span class="fn">bit_length</span>())    <span class="cm"># 0b1011 4</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(x).<span class="fn">count</span>(<span class="str">"1"</span>))         <span class="cm"># 3      popcount (int.bit_count is 3.10+)</span>
+<span class="fn">print</span>(x &amp; <span class="num">1</span>, x &gt;&gt; <span class="num">1</span>, x &lt;&lt; <span class="num">1</span>)     <span class="cm"># 1 5 22   odd test, //2, *2</span>
+<span class="fn">print</span>(x &amp; (x - <span class="num">1</span>))               <span class="cm"># 10     clears the lowest set bit</span>
+<span class="fn">print</span>(x &amp; -x)                    <span class="cm"># 1      isolates the lowest set bit</span>
+<span class="fn">print</span>(<span class="fn">bool</span>(x &amp; (<span class="num">1</span> &lt;&lt; <span class="num">3</span>)))        <span class="cm"># True   is bit 3 set?</span>
+<span class="fn">print</span>(x | (<span class="num">1</span> &lt;&lt; <span class="num">2</span>), x ^ (<span class="num">1</span> &lt;&lt; <span class="num">0</span>))   <span class="cm"># 15 10   set bit 2 / toggle bit 0</span>
+n = <span class="num">3</span>
+<span class="fn">print</span>([[i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n) <span class="kw">if</span> mask &gt;&gt; i &amp; <span class="num">1</span>] <span class="kw">for</span> mask <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span> &lt;&lt; n)])
+<span class="cm"># [[], [0], [1], [0, 1], [2], [0, 2], [1, 2], [0, 1, 2]]   every subset as a bitmask</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="grid">
+    <div class="section-label">REFERENCE 12</div>
+    <h2 class="section-title">2D Grid Helpers</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Directions, Bounds, Neighbours</div>
+      <pre>grid = [
+    [<span class="num">1</span>, <span class="num">1</span>, <span class="num">0</span>],
+    [<span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>],
+    [<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>],
+]
+ROWS, COLS = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])
+DIRS = [(<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)]          <span class="cm"># down, up, right, left</span>
+DIRS8 = [(dr, dc) <span class="kw">for</span> dr <span class="kw">in</span> (-<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>) <span class="kw">for</span> dc <span class="kw">in</span> (-<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>) <span class="kw">if</span> (dr, dc) != (<span class="num">0</span>, <span class="num">0</span>)]
+
+<span class="kw">def</span> <span class="fn">in_bounds</span>(r: int, c: int) -&gt; bool:
+    <span class="kw">return</span> <span class="num">0</span> &lt;= r &lt; ROWS <span class="kw">and</span> <span class="num">0</span> &lt;= c &lt; COLS         <span class="cm"># chained comparison</span>
+
+<span class="kw">def</span> <span class="fn">neighbors</span>(r: int, c: int):
+    <span class="kw">for</span> dr, dc <span class="kw">in</span> DIRS:
+        nr, nc = r + dr, c + dc
+        <span class="kw">if</span> <span class="fn">in_bounds</span>(nr, nc):
+            <span class="kw">yield</span> nr, nc                           <span class="cm"># generator: lazily yields cells</span>
+
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">neighbors</span>(<span class="num">0</span>, <span class="num">0</span>)))         <span class="cm"># [(1, 0), (0, 1)]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(DIRS8))                    <span class="cm"># 8</span>
+<span class="fn">print</span>(<span class="fn">sum</span>(<span class="fn">map</span>(sum, grid)))           <span class="cm"># 5   count of 1s</span>
+
+visited = [[<span class="kw">False</span>] * COLS <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(ROWS)]    <span class="cm"># NOT [[False] * COLS] * ROWS</span>
+seen = {(<span class="num">0</span>, <span class="num">0</span>)}                                    <span class="cm"># or a set of (r, c) tuples</span>
+<span class="fn">print</span>(<span class="fn">divmod</span>(<span class="num">7</span>, COLS), <span class="num">2</span> * COLS + <span class="num">1</span>)               <span class="cm"># (2, 1) 7   flat index &lt;-&gt; (r, c)</span>
+
+rotated = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> <span class="fn">zip</span>(*grid[::-<span class="num">1</span>])]   <span class="cm"># rotate 90° clockwise</span>
+<span class="fn">print</span>(rotated)                       <span class="cm"># [[1, 0, 1], [0, 1, 1], [1, 0, 0]]</span>
+<span class="fn">print</span>([row[:] <span class="kw">for</span> row <span class="kw">in</span> grid] == grid)             <span class="cm"># True   copy a grid</span>
+text = [<span class="str">"#.#"</span>, <span class="str">"..."</span>]
+board = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> text]                 <span class="cm"># mutable char grid from strings</span>
+board[<span class="num">0</span>][<span class="num">1</span>] = <span class="str">"#"</span>
+<span class="fn">print</span>([<span class="str">""</span>.<span class="fn">join</span>(row) <span class="kw">for</span> row <span class="kw">in</span> board])              <span class="cm"># ['###', '...']</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="bfs">
+    <div class="section-label">TEMPLATE 01</div>
+    <h2 class="section-title">BFS (Shortest Path in Unweighted Graphs, Level Order)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — BFS</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">def</span> <span class="fn">bfs_shortest_path</span>(graph, start, goal):
+    <span class="str">"""Fewest edges from start to goal, or -1. O(V + E)."""</span>
+    queue = <span class="fn">deque</span>([start])
+    dist = {start: <span class="num">0</span>}                 <span class="cm"># doubles as the visited set</span>
+    <span class="kw">while</span> queue:
+        node = queue.<span class="fn">popleft</span>()
+        <span class="kw">if</span> node == goal:
+            <span class="kw">return</span> dist[node]
+        <span class="kw">for</span> nxt <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> dist:       <span class="cm"># mark when ENQUEUED, not when popped</span>
+                dist[nxt] = dist[node] + <span class="num">1</span>
+                queue.<span class="fn">append</span>(nxt)
+    <span class="kw">return</span> -<span class="num">1</span>
+
+<span class="kw">def</span> <span class="fn">bfs_levels</span>(graph, start):
+    queue, seen, levels = <span class="fn">deque</span>([start]), {start}, []
+    <span class="kw">while</span> queue:
+        level = []
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(queue)):   <span class="cm"># exactly the nodes of the current level</span>
+            node = queue.<span class="fn">popleft</span>()
+            level.<span class="fn">append</span>(node)
+            <span class="kw">for</span> nxt <span class="kw">in</span> graph[node]:
+                <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> seen:
+                    seen.<span class="fn">add</span>(nxt)
+                    queue.<span class="fn">append</span>(nxt)
+        levels.<span class="fn">append</span>(level)
+    <span class="kw">return</span> levels
+
+graph = {<span class="str">"A"</span>: [<span class="str">"B"</span>, <span class="str">"C"</span>], <span class="str">"B"</span>: [<span class="str">"D"</span>], <span class="str">"C"</span>: [<span class="str">"D"</span>, <span class="str">"E"</span>], <span class="str">"D"</span>: [<span class="str">"F"</span>], <span class="str">"E"</span>: [<span class="str">"F"</span>], <span class="str">"F"</span>: []}
+<span class="fn">print</span>(<span class="fn">bfs_shortest_path</span>(graph, <span class="str">"A"</span>, <span class="str">"F"</span>))   <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">bfs_levels</span>(graph, <span class="str">"A"</span>))               <span class="cm"># [['A'], ['B', 'C'], ['D', 'E'], ['F']]</span></pre>
+    </div>
+    <div class="callout"><strong>Grid BFS / multi-source BFS:</strong> push <em>all</em> sources (e.g. every rotten orange) into the deque before the loop, with distance 0. Nodes are <code>(r, c)</code> tuples and neighbours come from <code>DIRS</code>.</div>
+  </section>
+
+  <section class="section" id="dfs">
+    <div class="section-label">TEMPLATE 02</div>
+    <h2 class="section-title">DFS (Recursive and Iterative)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — DFS</div>
+      <pre><span class="kw">def</span> <span class="fn">dfs_recursive</span>(graph, start):
+    seen, order = <span class="fn">set</span>(), []
+    <span class="kw">def</span> <span class="fn">dfs</span>(node):
+        seen.<span class="fn">add</span>(node)
+        order.<span class="fn">append</span>(node)
+        <span class="kw">for</span> nxt <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> seen:
+                <span class="fn">dfs</span>(nxt)
+    <span class="fn">dfs</span>(start)
+    <span class="kw">return</span> order
+
+<span class="kw">def</span> <span class="fn">dfs_iterative</span>(graph, start):      <span class="cm"># no recursion limit worries</span>
+    seen, order = <span class="fn">set</span>(), []
+    stack = [start]
+    <span class="kw">while</span> stack:
+        node = stack.<span class="fn">pop</span>()
+        <span class="kw">if</span> node <span class="kw">in</span> seen:
+            <span class="kw">continue</span>
+        seen.<span class="fn">add</span>(node)
+        order.<span class="fn">append</span>(node)
+        <span class="kw">for</span> nxt <span class="kw">in</span> <span class="fn">reversed</span>(graph[node]):   <span class="cm"># reversed -&gt; same order as recursive</span>
+            <span class="kw">if</span> nxt <span class="kw">not</span> <span class="kw">in</span> seen:
+                stack.<span class="fn">append</span>(nxt)
+    <span class="kw">return</span> order
+
+<span class="kw">def</span> <span class="fn">has_cycle_directed</span>(graph):        <span class="cm"># 3 colours: 0 new, 1 on stack, 2 done</span>
+    color = {u: <span class="num">0</span> <span class="kw">for</span> u <span class="kw">in</span> graph}
+    <span class="kw">def</span> <span class="fn">visit</span>(u):
+        color[u] = <span class="num">1</span>
+        <span class="kw">for</span> v <span class="kw">in</span> graph[u]:
+            <span class="kw">if</span> color[v] == <span class="num">1</span> <span class="kw">or</span> (color[v] == <span class="num">0</span> <span class="kw">and</span> <span class="fn">visit</span>(v)):
+                <span class="kw">return</span> <span class="kw">True</span>
+        color[u] = <span class="num">2</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> <span class="fn">any</span>(color[u] == <span class="num">0</span> <span class="kw">and</span> <span class="fn">visit</span>(u) <span class="kw">for</span> u <span class="kw">in</span> graph)
+
+graph = {<span class="num">0</span>: [<span class="num">1</span>, <span class="num">2</span>], <span class="num">1</span>: [<span class="num">3</span>], <span class="num">2</span>: [<span class="num">3</span>], <span class="num">3</span>: [], <span class="num">4</span>: [<span class="num">0</span>]}
+<span class="fn">print</span>(<span class="fn">dfs_recursive</span>(graph, <span class="num">0</span>))        <span class="cm"># [0, 1, 3, 2]</span>
+<span class="fn">print</span>(<span class="fn">dfs_iterative</span>(graph, <span class="num">0</span>))        <span class="cm"># [0, 1, 3, 2]</span>
+<span class="fn">print</span>(<span class="fn">has_cycle_directed</span>(graph), <span class="fn">has_cycle_directed</span>({<span class="num">0</span>: [<span class="num">1</span>], <span class="num">1</span>: [<span class="num">0</span>]}))   <span class="cm"># False True</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="binsearch">
+    <div class="section-label">TEMPLATE 03</div>
+    <h2 class="section-title">Binary Search (Exact Match and “First True”)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Binary Search</div>
+      <pre><span class="kw">def</span> <span class="fn">binary_search</span>(nums, target):      <span class="cm"># exact match on a sorted list</span>
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+    <span class="kw">while</span> lo &lt;= hi:
+        mid = (lo + hi) // <span class="num">2</span>          <span class="cm"># no overflow in Python, no need for lo + (hi-lo)//2</span>
+        <span class="kw">if</span> nums[mid] == target:
+            <span class="kw">return</span> mid
+        <span class="kw">if</span> nums[mid] &lt; target:
+            lo = mid + <span class="num">1</span>
+        <span class="kw">else</span>:
+            hi = mid - <span class="num">1</span>
+    <span class="kw">return</span> -<span class="num">1</span>
+
+<span class="kw">def</span> <span class="fn">first_true</span>(lo, hi, ok):           <span class="cm"># smallest x in [lo, hi] with ok(x) True</span>
+    <span class="kw">while</span> lo &lt; hi:                    <span class="cm"># requires ok = False...False True...True</span>
+        mid = (lo + hi) // <span class="num">2</span>
+        <span class="kw">if</span> <span class="fn">ok</span>(mid):
+            hi = mid
+        <span class="kw">else</span>:
+            lo = mid + <span class="num">1</span>
+    <span class="kw">return</span> lo
+
+<span class="fn">print</span>(<span class="fn">binary_search</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>], <span class="num">7</span>))            <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">binary_search</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>], <span class="num">4</span>))            <span class="cm"># -1</span>
+<span class="fn">print</span>(<span class="fn">first_true</span>(<span class="num">0</span>, <span class="num">100</span>, <span class="kw">lambda</span> x: x * x &gt;= <span class="num">50</span>))     <span class="cm"># 8</span>
+
+piles, h = [<span class="num">3</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">11</span>], <span class="num">8</span>                          <span class="cm"># "binary search on the answer"</span>
+hours = <span class="kw">lambda</span> k: <span class="fn">sum</span>((p + k - <span class="num">1</span>) // k <span class="kw">for</span> p <span class="kw">in</span> piles)   <span class="cm"># ceil(p / k) per pile</span>
+<span class="fn">print</span>(<span class="fn">first_true</span>(<span class="num">1</span>, <span class="fn">max</span>(piles), <span class="kw">lambda</span> k: <span class="fn">hours</span>(k) &lt;= h))   <span class="cm"># 4   Koko eating bananas</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="window">
+    <div class="section-label">TEMPLATE 04</div>
+    <h2 class="section-title">Sliding Window</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Fixed and Variable Windows</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+
+<span class="kw">def</span> <span class="fn">max_sum_k</span>(nums, k):               <span class="cm"># FIXED window of size k</span>
+    window = best = <span class="fn">sum</span>(nums[:k])
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(nums)):
+        window += nums[i] - nums[i - k]   <span class="cm"># add the new, drop the old</span>
+        best = <span class="fn">max</span>(best, window)
+    <span class="kw">return</span> best
+
+<span class="kw">def</span> <span class="fn">longest_unique_substring</span>(s):      <span class="cm"># VARIABLE window: grow right, jump left</span>
+    last = {}
+    left = best = <span class="num">0</span>
+    <span class="kw">for</span> right, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        <span class="kw">if</span> last.<span class="fn">get</span>(ch, -<span class="num">1</span>) &gt;= left:
+            left = last[ch] + <span class="num">1</span>       <span class="cm"># move past the previous copy of ch</span>
+        last[ch] = right
+        best = <span class="fn">max</span>(best, right - left + <span class="num">1</span>)
+    <span class="kw">return</span> best
+
+<span class="kw">def</span> <span class="fn">min_len_at_least</span>(nums, target):   <span class="cm"># shrink while the window is valid</span>
+    left, total, best = <span class="num">0</span>, <span class="num">0</span>, <span class="fn">float</span>(<span class="str">"inf"</span>)
+    <span class="kw">for</span> right, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        total += x
+        <span class="kw">while</span> total &gt;= target:
+            best = <span class="fn">min</span>(best, right - left + <span class="num">1</span>)
+            total -= nums[left]
+            left += <span class="num">1</span>
+    <span class="kw">return</span> <span class="num">0</span> <span class="kw">if</span> best == <span class="fn">float</span>(<span class="str">"inf"</span>) <span class="kw">else</span> best
+
+<span class="kw">def</span> <span class="fn">find_anagrams</span>(s, p):              <span class="cm"># fixed window + Counter comparison</span>
+    need, have, out = <span class="cls">Counter</span>(p), <span class="cls">Counter</span>(s[:<span class="fn">len</span>(p)]), []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(p), <span class="fn">len</span>(s) + <span class="num">1</span>):
+        <span class="kw">if</span> have == need:
+            out.<span class="fn">append</span>(i - <span class="fn">len</span>(p))
+        <span class="kw">if</span> i &lt; <span class="fn">len</span>(s):
+            have[s[i]] += <span class="num">1</span>
+            have[s[i - <span class="fn">len</span>(p)]] -= <span class="num">1</span>
+            <span class="kw">if</span> have[s[i - <span class="fn">len</span>(p)]] == <span class="num">0</span>:
+                <span class="kw">del</span> have[s[i - <span class="fn">len</span>(p)]]   <span class="cm"># keep zero counts out so == works</span>
+    <span class="kw">return</span> out
+
+<span class="fn">print</span>(<span class="fn">max_sum_k</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>], <span class="num">3</span>))          <span class="cm"># 9</span>
+<span class="fn">print</span>(<span class="fn">longest_unique_substring</span>(<span class="str">"abcabcbb"</span>))      <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">min_len_at_least</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>, <span class="num">3</span>], <span class="num">7</span>))   <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">find_anagrams</span>(<span class="str">"cbaebabacd"</span>, <span class="str">"abc"</span>))        <span class="cm"># [0, 6]</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="twoptr">
+    <div class="section-label">TEMPLATE 05</div>
+    <h2 class="section-title">Two Pointers</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Opposite Ends and Read/Write Pointers</div>
+      <pre><span class="kw">def</span> <span class="fn">two_sum_sorted</span>(nums, target):     <span class="cm"># opposite ends, sorted input</span>
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+    <span class="kw">while</span> lo &lt; hi:
+        s = nums[lo] + nums[hi]
+        <span class="kw">if</span> s == target:
+            <span class="kw">return</span> [lo, hi]
+        <span class="kw">if</span> s &lt; target:
+            lo += <span class="num">1</span>
+        <span class="kw">else</span>:
+            hi -= <span class="num">1</span>
+    <span class="kw">return</span> []
+
+<span class="kw">def</span> <span class="fn">remove_duplicates</span>(nums):          <span class="cm"># slow (write) / fast (read) pointers, in place</span>
+    write = <span class="num">0</span>
+    <span class="kw">for</span> read <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):
+        <span class="kw">if</span> read == <span class="num">0</span> <span class="kw">or</span> nums[read] != nums[read - <span class="num">1</span>]:
+            nums[write] = nums[read]
+            write += <span class="num">1</span>
+    <span class="kw">return</span> write
+
+<span class="kw">def</span> <span class="fn">is_palindrome</span>(s):                 <span class="cm"># skip non-alphanumerics, compare case-insensitively</span>
+    i, j = <span class="num">0</span>, <span class="fn">len</span>(s) - <span class="num">1</span>
+    <span class="kw">while</span> i &lt; j:
+        <span class="kw">if</span> <span class="kw">not</span> s[i].<span class="fn">isalnum</span>():
+            i += <span class="num">1</span>
+        <span class="kw">elif</span> <span class="kw">not</span> s[j].<span class="fn">isalnum</span>():
+            j -= <span class="num">1</span>
+        <span class="kw">elif</span> s[i].<span class="fn">lower</span>() != s[j].<span class="fn">lower</span>():
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">else</span>:
+            i, j = i + <span class="num">1</span>, j - <span class="num">1</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="fn">print</span>(<span class="fn">two_sum_sorted</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>, <span class="num">7</span>, <span class="num">11</span>], <span class="num">9</span>))   <span class="cm"># [1, 3]</span>
+arr = [<span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">3</span>]
+k = <span class="fn">remove_duplicates</span>(arr)
+<span class="fn">print</span>(arr[:k])                               <span class="cm"># [1, 2, 3]</span>
+<span class="fn">print</span>(<span class="fn">is_palindrome</span>(<span class="str">"A man, a plan, a canal: Panama"</span>))   <span class="cm"># True</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="dsu">
+    <div class="section-label">TEMPLATE 06</div>
+    <h2 class="section-title">Union-Find (Disjoint Set Union)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — DSU With Path Compression and Union by Size</div>
+      <pre><span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size = [<span class="num">1</span>] * n
+        <span class="kw">self</span>.components = n
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>              <span class="cm"># already connected: this edge closes a cycle</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra          <span class="cm"># attach the smaller tree under the larger</span>
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">self</span>.components -= <span class="num">1</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+
+dsu = <span class="cls">DSU</span>(<span class="num">5</span>)
+<span class="kw">for</span> a, b <span class="kw">in</span> [(<span class="num">0</span>, <span class="num">1</span>), (<span class="num">1</span>, <span class="num">2</span>), (<span class="num">3</span>, <span class="num">4</span>)]:
+    dsu.<span class="fn">union</span>(a, b)
+<span class="fn">print</span>(dsu.<span class="fn">find</span>(<span class="num">2</span>) == dsu.<span class="fn">find</span>(<span class="num">0</span>), dsu.<span class="fn">find</span>(<span class="num">3</span>) == dsu.<span class="fn">find</span>(<span class="num">0</span>))   <span class="cm"># True False</span>
+<span class="fn">print</span>(dsu.components)                 <span class="cm"># 2</span>
+<span class="fn">print</span>(dsu.<span class="fn">union</span>(<span class="num">0</span>, <span class="num">2</span>))                <span class="cm"># False   redundant edge</span></pre>
+    </div>
+    <div class="callout">Near-O(1) per operation (inverse Ackermann). Use it for connected components, cycle detection in undirected graphs, Kruskal's MST and “accounts merge” style grouping.</div>
+  </section>
+
+  <section class="section" id="backtrack">
+    <div class="section-label">TEMPLATE 07</div>
+    <h2 class="section-title">Backtracking (Choose → Explore → Un-choose)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Subsets, Permutations, Combination Sum</div>
+      <pre><span class="kw">def</span> <span class="fn">subsets</span>(nums):
+    res, path = [], []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start):
+        res.<span class="fn">append</span>(path[:])               <span class="cm"># COPY: path keeps changing</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(nums)):
+            path.<span class="fn">append</span>(nums[i])          <span class="cm"># choose</span>
+            <span class="fn">backtrack</span>(i + <span class="num">1</span>)              <span class="cm"># explore</span>
+            path.<span class="fn">pop</span>()                    <span class="cm"># un-choose</span>
+    <span class="fn">backtrack</span>(<span class="num">0</span>)
+    <span class="kw">return</span> res
+
+<span class="kw">def</span> <span class="fn">permutations</span>(nums):
+    res, path, used = [], [], [<span class="kw">False</span>] * <span class="fn">len</span>(nums)
+    <span class="kw">def</span> <span class="fn">backtrack</span>():
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(nums):
+            res.<span class="fn">append</span>(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+            <span class="kw">if</span> used[i]:
+                <span class="kw">continue</span>
+            used[i] = <span class="kw">True</span>
+            path.<span class="fn">append</span>(x)
+            <span class="fn">backtrack</span>()
+            path.<span class="fn">pop</span>()
+            used[i] = <span class="kw">False</span>
+    <span class="fn">backtrack</span>()
+    <span class="kw">return</span> res
+
+<span class="kw">def</span> <span class="fn">combination_sum</span>(candidates, target):
+    candidates = <span class="fn">sorted</span>(candidates)
+    res = []
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start, remaining, path):
+        <span class="kw">if</span> remaining == <span class="num">0</span>:
+            res.<span class="fn">append</span>(path[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(candidates)):
+            <span class="kw">if</span> candidates[i] &gt; remaining:
+                <span class="kw">break</span>                     <span class="cm"># prune: sorted, so the rest are bigger too</span>
+            path.<span class="fn">append</span>(candidates[i])
+            <span class="fn">backtrack</span>(i, remaining - candidates[i], path)   <span class="cm"># i, not i+1: reuse allowed</span>
+            path.<span class="fn">pop</span>()
+    <span class="fn">backtrack</span>(<span class="num">0</span>, target, [])
+    <span class="kw">return</span> res
+
+<span class="fn">print</span>(<span class="fn">subsets</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))         <span class="cm"># [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]</span>
+<span class="fn">print</span>(<span class="fn">permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))    <span class="cm"># [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]</span>
+<span class="fn">print</span>(<span class="fn">combination_sum</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">6</span>, <span class="num">7</span>], <span class="num">7</span>))   <span class="cm"># [[2, 2, 3], [7]]</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="dijkstra">
+    <div class="section-label">TEMPLATE 08</div>
+    <h2 class="section-title">Dijkstra (Weighted Shortest Paths)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Dijkstra With heapq</div>
+      <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>, <span class="cls">Tuple</span>
+
+<span class="kw">def</span> <span class="fn">dijkstra</span>(graph: <span class="cls">Dict</span>[str, <span class="cls">List</span>[<span class="cls">Tuple</span>[str, int]]], src: str) -&gt; <span class="cls">Dict</span>[str, int]:
+    <span class="str">"""graph: {u: [(v, weight), ...]}, weights &gt;= 0. O((V + E) log V)."""</span>
+    dist = {src: <span class="num">0</span>}
+    heap = [(<span class="num">0</span>, src)]
+    <span class="kw">while</span> heap:
+        d, u = heapq.<span class="fn">heappop</span>(heap)
+        <span class="kw">if</span> d &gt; dist.<span class="fn">get</span>(u, <span class="fn">float</span>(<span class="str">"inf"</span>)):
+            <span class="kw">continue</span>                  <span class="cm"># stale entry: a shorter path was already found</span>
+        <span class="kw">for</span> v, w <span class="kw">in</span> graph.<span class="fn">get</span>(u, []):
+            nd = d + w
+            <span class="kw">if</span> nd &lt; dist.<span class="fn">get</span>(v, <span class="fn">float</span>(<span class="str">"inf"</span>)):
+                dist[v] = nd
+                heapq.<span class="fn">heappush</span>(heap, (nd, v))
+    <span class="kw">return</span> dist
+
+g = {<span class="str">"A"</span>: [(<span class="str">"B"</span>, <span class="num">4</span>), (<span class="str">"C"</span>, <span class="num">1</span>)], <span class="str">"C"</span>: [(<span class="str">"B"</span>, <span class="num">2</span>), (<span class="str">"D"</span>, <span class="num">5</span>)], <span class="str">"B"</span>: [(<span class="str">"D"</span>, <span class="num">1</span>)]}
+<span class="fn">print</span>(<span class="fn">dijkstra</span>(g, <span class="str">"A"</span>))   <span class="cm"># {'A': 0, 'B': 3, 'C': 1, 'D': 4}</span></pre>
+    </div>
+    <div class="callout warn">No decrease-key in <code>heapq</code>: push a new entry and skip stale ones when popped (“lazy deletion”). Negative weights break Dijkstra — use Bellman-Ford. All weights equal? Plain BFS is enough; weights only 0 or 1? Use a deque (0-1 BFS).</div>
+  </section>
+
+  <section class="section" id="topo">
+    <div class="section-label">TEMPLATE 09</div>
+    <h2 class="section-title">Topological Sort (Kahn's Algorithm)</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Topological Sort</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque, defaultdict
+
+<span class="kw">def</span> <span class="fn">topo_sort</span>(n, edges):
+    <span class="str">"""edges: (u, v) means u must come before v. Returns [] if there is a cycle."""</span>
+    graph = <span class="fn">defaultdict</span>(list)
+    indegree = [<span class="num">0</span>] * n
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        graph[u].<span class="fn">append</span>(v)
+        indegree[v] += <span class="num">1</span>
+    queue = <span class="fn">deque</span>(i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n) <span class="kw">if</span> indegree[i] == <span class="num">0</span>)
+    order = []
+    <span class="kw">while</span> queue:
+        u = queue.<span class="fn">popleft</span>()
+        order.<span class="fn">append</span>(u)
+        <span class="kw">for</span> v <span class="kw">in</span> graph[u]:
+            indegree[v] -= <span class="num">1</span>
+            <span class="kw">if</span> indegree[v] == <span class="num">0</span>:      <span class="cm"># all prerequisites done</span>
+                queue.<span class="fn">append</span>(v)
+    <span class="kw">return</span> order <span class="kw">if</span> <span class="fn">len</span>(order) == n <span class="kw">else</span> []
+
+<span class="fn">print</span>(<span class="fn">topo_sort</span>(<span class="num">4</span>, [(<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, <span class="num">2</span>), (<span class="num">1</span>, <span class="num">3</span>), (<span class="num">2</span>, <span class="num">3</span>)]))   <span class="cm"># [0, 1, 2, 3]</span>
+<span class="fn">print</span>(<span class="fn">topo_sort</span>(<span class="num">2</span>, [(<span class="num">0</span>, <span class="num">1</span>), (<span class="num">1</span>, <span class="num">0</span>)]))                   <span class="cm"># []   cycle: course schedule impossible</span></pre>
+    </div>
+  </section>
+
+  <section class="section" id="recursion">
+    <div class="section-label">REFERENCE 13</div>
+    <h2 class="section-title">Recursion Limit &amp; sys.setrecursionlimit</h2>
+    <p class="explanation">CPython raises <code>RecursionError</code> after about 1000 nested calls. A DFS on a path-shaped graph or a deep linked list easily exceeds that. Raise the limit — and for very deep recursion also give the code a bigger stack by running it in a thread, otherwise the interpreter itself can crash.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Raising the Limit</div>
+      <pre><span class="kw">import</span> sys
+
+<span class="fn">print</span>(sys.<span class="fn">getrecursionlimit</span>())     <span class="cm"># 1000   CPython default</span>
+sys.<span class="fn">setrecursionlimit</span>(<span class="num">10</span>**<span class="num">6</span>)
+
+<span class="kw">def</span> <span class="fn">depth</span>(n):
+    <span class="kw">return</span> <span class="num">0</span> <span class="kw">if</span> n == <span class="num">0</span> <span class="kw">else</span> <span class="num">1</span> + <span class="fn">depth</span>(n - <span class="num">1</span>)
+
+<span class="fn">print</span>(<span class="fn">depth</span>(<span class="num">2000</span>))                 <span class="cm"># 2000   RecursionError at the default limit</span>
+<span class="cm"># Raising the limit does NOT enlarge the C stack: depth(100000) here can</span>
+<span class="cm"># crash the interpreter silently (especially on Windows). Use the thread trick below.</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Very Deep Recursion (Contest Trick): Bigger Thread Stack</div>
+      <pre><span class="kw">import</span> sys
+<span class="kw">import</span> threading
+
+<span class="kw">def</span> <span class="fn">main</span>():
+    <span class="kw">def</span> <span class="fn">depth</span>(n):
+        <span class="kw">return</span> <span class="num">0</span> <span class="kw">if</span> n == <span class="num">0</span> <span class="kw">else</span> <span class="num">1</span> + <span class="fn">depth</span>(n - <span class="num">1</span>)
+    <span class="fn">print</span>(<span class="fn">depth</span>(<span class="num">100000</span>))           <span class="cm"># 100000</span>
+
+sys.<span class="fn">setrecursionlimit</span>(<span class="num">1</span> &lt;&lt; <span class="num">25</span>)
+threading.<span class="fn">stack_size</span>(<span class="num">1</span> &lt;&lt; <span class="num">27</span>)      <span class="cm"># 128 MB stack for the new thread</span>
+t = threading.<span class="cls">Thread</span>(target=main)
+t.<span class="fn">start</span>()
+t.<span class="fn">join</span>()</pre>
+    </div>
+    <div class="callout warn"><strong>Best fix in interviews:</strong> convert deep recursion to an explicit stack (see the iterative DFS template). Python has no tail-call optimisation, so rewriting as tail recursion does not help.</div>
+  </section>
+
+  <section class="section" id="pitfalls">
+    <div class="section-label">REFERENCE 14</div>
+    <h2 class="section-title">Common Pitfalls</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Mistakes That Cost Interviews</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="cm"># 1. [[0] * n] * m shares ONE row between all rows</span>
+bad = [[<span class="num">0</span>] * <span class="num">2</span>] * <span class="num">2</span>; bad[<span class="num">0</span>][<span class="num">0</span>] = <span class="num">1</span>
+<span class="fn">print</span>(bad)                         <span class="cm"># [[1, 0], [1, 0]]   use [[0] * n for _ in range(m)]</span>
+
+<span class="cm"># 2. Saving a reference instead of a copy (backtracking)</span>
+path, res = [<span class="num">1</span>, <span class="num">2</span>], []
+res.<span class="fn">append</span>(path); path.<span class="fn">pop</span>()
+<span class="fn">print</span>(res)                         <span class="cm"># [[1]]   wanted [[1, 2]]: append path[:]</span>
+
+<span class="cm"># 3. Removing from a list while iterating over it</span>
+nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>]
+<span class="kw">for</span> x <span class="kw">in</span> nums[:]:                  <span class="cm"># iterate over a COPY</span>
+    <span class="kw">if</span> x == <span class="num">2</span>:
+        nums.<span class="fn">remove</span>(x)
+<span class="fn">print</span>(nums)                        <span class="cm"># [1, 3]</span>
+<span class="fn">print</span>([x <span class="kw">for</span> x <span class="kw">in</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>] <span class="kw">if</span> x != <span class="num">2</span>])   <span class="cm"># [1, 3]   cleaner: build a new list</span>
+
+<span class="cm"># 4. list.sort() returns None</span>
+nums = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>]
+result = nums.<span class="fn">sort</span>()
+<span class="fn">print</span>(result, nums)                <span class="cm"># None [1, 2, 3]</span>
+
+<span class="cm"># 5. / gives a float - indices need //</span>
+arr = [<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>]
+<span class="fn">print</span>(arr[<span class="fn">len</span>(arr) // <span class="num">2</span>], <span class="num">7</span> / <span class="num">7</span>)   <span class="cm"># 20 1.0</span>
+
+<span class="cm"># 6. Reading a defaultdict key CREATES it</span>
+d = <span class="fn">defaultdict</span>(int)
+<span class="kw">if</span> d[<span class="str">"missing"</span>] == <span class="num">0</span>:
+    <span class="kw">pass</span>
+<span class="fn">print</span>(<span class="fn">len</span>(d), <span class="str">"other"</span> <span class="kw">in</span> d)        <span class="cm"># 1 False   test membership with `in`</span>
+
+<span class="cm"># 7. Floats are approximate</span>
+<span class="fn">print</span>(<span class="num">0.1</span> + <span class="num">0.2</span> == <span class="num">0.3</span>, <span class="fn">abs</span>(<span class="num">0.1</span> + <span class="num">0.2</span> - <span class="num">0.3</span>) &lt; <span class="num">1e-9</span>)   <span class="cm"># False True</span>
+
+<span class="cm"># 8. Repeated string concatenation in a loop</span>
+parts = [<span class="fn">str</span>(i) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>)]
+<span class="fn">print</span>(<span class="str">""</span>.<span class="fn">join</span>(parts))              <span class="cm"># 01234   O(n), not O(n²)</span>
+
+<span class="cm"># 9. Mutable default argument</span>
+<span class="kw">def</span> <span class="fn">f</span>(x, acc=<span class="kw">None</span>):                <span class="cm"># never acc=[]</span>
+    acc = [] <span class="kw">if</span> acc <span class="kw">is</span> <span class="kw">None</span> <span class="kw">else</span> acc
+    acc.<span class="fn">append</span>(x)
+    <span class="kw">return</span> acc
+<span class="fn">print</span>(<span class="fn">f</span>(<span class="num">1</span>), <span class="fn">f</span>(<span class="num">2</span>))                  <span class="cm"># [1] [2]</span>
+
+<span class="cm"># 10. Shadowing built-ins: list, dict, sum, max, min, input, id, len, str ...</span>
+total = <span class="fn">sum</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])             <span class="cm"># name variables total/nums, not sum/list</span>
+<span class="fn">print</span>(total)                       <span class="cm"># 6</span></pre>
+    </div>
+    <div class="table-wrap"><table class="ops-table">
+      <tr><th>PITFALL</th><th>WHY</th><th>FIX</th></tr>
+      <tr><td><code>q.pop(0)</code> on a list</td><td>O(n) shift each time → BFS becomes O(n²)</td><td><code>collections.deque.popleft()</code></td></tr>
+      <tr><td><code>x in big_list</code> in a loop</td><td>O(n) scan per check</td><td>build a <code>set</code> once</td></tr>
+      <tr><td>max-heap with <code>heapq</code></td><td>heapq is min-heap only</td><td>push <code>-x</code>, read <code>-h[0]</code></td></tr>
+      <tr><td><code>max([])</code> / <code>min([])</code></td><td>ValueError on empty input</td><td><code>max(xs, default=0)</code> or check first</td></tr>
+      <tr><td>list as dict key / set item</td><td>TypeError: unhashable type</td><td><code>tuple(lst)</code> / <code>frozenset(s)</code></td></tr>
+      <tr><td><code>range(n, 0, -1)</code></td><td>stop is exclusive: 0 is never produced</td><td><code>range(n - 1, -1, -1)</code> or <code>reversed(range(n))</code></td></tr>
+      <tr><td><code>s.split(" ")</code></td><td>keeps empty strings for repeated spaces</td><td><code>s.split()</code> with no argument</td></tr>
+      <tr><td><code>a is b</code> for numbers/strings</td><td>identity, not equality; result depends on caching</td><td><code>==</code>; keep <code>is</code> for <code>None</code></td></tr>
+      <tr><td>deep recursion</td><td>RecursionError around depth 1000</td><td><code>sys.setrecursionlimit</code> or an explicit stack</td></tr>
+      <tr><td><code>-7 // 2 == -4</code></td><td>floor division rounds toward −∞</td><td><code>int(a / b)</code> to truncate toward 0</td></tr>
+    </table></div>
+    <div class="callout warn"><strong>Python version notes (this course targets 3.7+):</strong> walrus <code>:=</code>, <code>math.isqrt</code>, <code>math.comb</code>, <code>math.prod</code>, <code>pow(x, -1, m)</code> and <code>accumulate(initial=)</code> need 3.8; <code>functools.cache</code>, <code>math.lcm</code>, <code>list[int]</code> hints and <code>str.removeprefix</code> need 3.9; <code>match</code>, <code>bisect(key=)</code> and <code>int.bit_count()</code> need 3.10. Most online judges run 3.8+, but the 3.7-safe spellings shown on this page work everywhere.</div>
+  </section>
+
+  <div class="page-footer">
+    <a href="index.html" class="footer-back">← Roadmap</a>
+    <a href="00-python-basics.html" class="footer-next">Python Basics →</a>
+  </div>
+</div>
+</body>
+</html>

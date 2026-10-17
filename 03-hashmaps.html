@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hash Maps — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Hash Maps & Sets</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">03 / 19</div>
+    <h1 class="page-title">Hash Maps <span class="highlight">&</span><br>Hash Sets</h1>
+    <p class="page-subtitle">O(1) lookup is a superpower. In Python that means <code>dict</code> and <code>set</code> — the most frequently used data structures in interview solutions. Learn them deeply.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">LOOKUP</div><div class="complexity-value">O(1)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">INSERT</div><div class="complexity-value">O(1)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">DELETE</div><div class="complexity-value">O(1)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">WORST CASE</div><div class="complexity-value">O(n)</div></div>
+  </div>
+
+  <div class="callout">*Average case. Worst case is O(n) due to hash collisions, but extremely rare with good hash functions.</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">How a Hash Map Works</h2>
+    <p class="explanation">
+      A hash map stores <strong>key → value</strong> pairs. Under the hood, it takes your key, runs it through a <strong>hash function</strong> (Python's built-in <code>hash()</code>), reduces that number to a slot index in an internal array (roughly <code>hash(key) % table_size</code>), and stores the entry in that slot. This is why lookup is O(1) — it's just array access. Python's <code>dict</code> is a hash map.
+    </p>
+    <div class="diagram">
+      <div class="diagram-title">HASH MAP INTERNALS</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  (table of 8 slots — index = hash(key) % 8; numbers are illustrative)
+
+  key: "name"  →  hash("name") % 8 = 3  →  bucket[3] = "Alice"
+  key: "age"   →  hash("age")  % 8 = 7  →  bucket[7] = 25
+  key: "city"  →  hash("city") % 8 = 1  →  bucket[1] = "NYC"
+
+  d["name"] → hash("name") % 8 = 3 → bucket[3] → "Alice"  ✓  O(1)</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">PYTHON — dict API</div>
+      <pre><span class="cm"># dict — keys must be HASHABLE (str, int, float, tuple, frozenset, ...)</span>
+person = {}                         <span class="cm"># or dict()</span>
+
+person[<span class="str">"name"</span>] = <span class="str">"Alice"</span>
+person[<span class="str">"age"</span>] = <span class="num">30</span>
+person[(<span class="num">1</span>, <span class="num">2</span>)] = <span class="str">"tuple key!"</span>       <span class="cm"># tuples are hashable → valid keys</span>
+<span class="cm"># person[[1, 2]] = "x"              # TypeError: unhashable type: 'list'</span>
+
+print(person[<span class="str">"name"</span>])               <span class="cm"># Alice</span>
+print(person.get(<span class="str">"zip"</span>))            <span class="cm"># None   (missing key, no KeyError)</span>
+print(person.get(<span class="str">"zip"</span>, <span class="str">"n/a"</span>))     <span class="cm"># n/a    (default value)</span>
+print(<span class="str">"age"</span> <span class="kw">in</span> person)              <span class="cm"># True</span>
+<span class="kw">del</span> person[<span class="str">"age"</span>]                   <span class="cm"># removes entry (KeyError if missing)</span>
+print(person.pop(<span class="str">"missing"</span>, <span class="kw">None</span>))  <span class="cm"># None   — safe delete with a default</span>
+print(len(person))                  <span class="cm"># 2</span>
+
+<span class="cm"># Iteration — dicts remember insertion order (guaranteed since Python 3.7)</span>
+<span class="kw">for</span> key, val <span class="kw">in</span> person.items():
+    print(key, val)                 <span class="cm"># name Alice  /  (1, 2) tuple key!</span>
+
+print(list(person.keys()))          <span class="cm"># ['name', (1, 2)]</span>
+
+<span class="cm"># Build a dict in one line with a dict comprehension</span>
+squares = {x: x * x <span class="kw">for</span> x <span class="kw">in</span> range(<span class="num">4</span>)}
+print(squares)                      <span class="cm"># {0: 0, 1: 1, 2: 4, 3: 9}</span></pre>
+    </div>
+
+    <div class="callout">
+      <strong>Hashability:</strong> a key's hash must never change, so only <strong>immutable</strong> values can be keys. <code>list</code>, <code>dict</code> and <code>set</code> are mutable → unhashable. Need a list as a key? Convert it: <code>tuple(lst)</code>. This is exactly the trick behind <em>Group Anagrams</em>: <code>sorted(word)</code> returns an unhashable list, so use <code>tuple(sorted(word))</code> (or <code>"".join(sorted(word))</code>) as the key.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">Hash Set</h2>
+    <p class="explanation">
+      A <code>set</code> stores <strong>unique values</strong> with O(1) lookup. Use it when you only care about existence, not about storing a value alongside the key. Set elements follow the same hashability rule as dict keys.
+    </p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — set API</div>
+      <pre>seen = <span class="cls">set</span>()                        <span class="cm"># NOT {} — that's an empty dict!</span>
+
+seen.add(<span class="num">1</span>)
+seen.add(<span class="num">2</span>)
+seen.add(<span class="num">2</span>)                         <span class="cm"># duplicate — ignored!</span>
+seen.add(<span class="num">3</span>)
+
+print(<span class="num">2</span> <span class="kw">in</span> seen)                    <span class="cm"># True</span>
+print(len(seen))                    <span class="cm"># 3  (not 4)</span>
+seen.discard(<span class="num">2</span>)                     <span class="cm"># remove; no error if missing (.remove() raises KeyError)</span>
+
+<span class="cm"># Create from a list (instant deduplication)</span>
+unique = <span class="cls">set</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">3</span>])       <span class="cm"># {1, 2, 3}</span>
+arr = sorted(unique)                <span class="cm"># back to a list: [1, 2, 3]</span>
+print(unique, arr)                  <span class="cm"># {1, 2, 3} [1, 2, 3]</span>
+
+<span class="cm"># Set algebra — handy for "common elements" style problems</span>
+a, b = {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>}, {<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>}
+print(a &amp; b)                       <span class="cm"># {2, 3}         intersection</span>
+print(a | b)                       <span class="cm"># {1, 2, 3, 4}   union</span>
+print(a - b)                       <span class="cm"># {1}            difference</span>
+
+<span class="cm"># A set of sets needs frozenset (immutable → hashable)</span>
+groups = {<span class="cls">frozenset</span>({<span class="num">1</span>, <span class="num">2</span>}), <span class="cls">frozenset</span>({<span class="num">2</span>, <span class="num">1</span>})}
+print(len(groups))                  <span class="cm"># 1</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 03</div>
+    <h2 class="section-title">defaultdict &amp; Counter</h2>
+    <p class="explanation">
+      The <code>collections</code> module gives you two dict subclasses that remove almost all boilerplate from hash map problems. <strong>defaultdict</strong> creates a default value the first time a missing key is accessed; <strong>Counter</strong> is a dict specialised for counting, with <code>most_common()</code> built in.
+    </p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — collections power tools</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">defaultdict</span>, <span class="cls">Counter</span>
+
+<span class="cm"># defaultdict — missing keys get a default automatically</span>
+graph = <span class="cls">defaultdict</span>(<span class="cls">list</span>)
+graph[<span class="str">"a"</span>].append(<span class="str">"b"</span>)              <span class="cm"># no KeyError: "a" → [] is created first</span>
+graph[<span class="str">"a"</span>].append(<span class="str">"c"</span>)
+print(dict(graph))                  <span class="cm"># {'a': ['b', 'c']}</span>
+
+counts = <span class="cls">defaultdict</span>(<span class="cls">int</span>)            <span class="cm"># int() == 0</span>
+<span class="kw">for</span> ch <span class="kw">in</span> <span class="str">"banana"</span>:
+    counts[ch] += <span class="num">1</span>
+print(dict(counts))                 <span class="cm"># {'b': 1, 'a': 3, 'n': 2}</span>
+
+<span class="cm"># Counter — a dict built for counting</span>
+c = <span class="cls">Counter</span>(<span class="str">"banana"</span>)
+print(c)                            <span class="cm"># Counter({'a': 3, 'n': 2, 'b': 1})</span>
+print(c[<span class="str">"a"</span>], c[<span class="str">"z"</span>])                <span class="cm"># 3 0   (missing → 0, no KeyError)</span>
+print(c.most_common(<span class="num">2</span>))             <span class="cm"># [('a', 3), ('n', 2)]</span>
+print(<span class="cls">Counter</span>(<span class="str">"listen"</span>) == <span class="cls">Counter</span>(<span class="str">"silent"</span>))  <span class="cm"># True — one-line anagram check!</span></pre>
+    </div>
+    <div class="callout warn">
+      <strong>defaultdict gotcha:</strong> merely <em>reading</em> <code>d[missing]</code> inserts the key. If you only want to peek, use <code>d.get(key, 0)</code> or <code>key in d</code>.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Frequency Count</h2>
+    <p class="explanation">
+      Counting how often each element appears is one of the most common hash map patterns. Build a frequency map in O(n), then query any count in O(1).
+    </p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Top K Frequent Elements</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">top_k_frequent</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>], k: <span class="cls">int</span>) -&gt; <span class="cls">List</span>[<span class="cls">int</span>]:
+    <span class="cm"># Step 1: Count frequencies — O(n)</span>
+    freq = {}
+    <span class="kw">for</span> n <span class="kw">in</span> nums:
+        freq[n] = freq.get(n, <span class="num">0</span>) + <span class="num">1</span>
+
+    <span class="cm"># Step 2: Sort keys by their frequency (descending), take top k</span>
+    ordered = sorted(freq, key=freq.get, reverse=<span class="kw">True</span>)
+    <span class="kw">return</span> ordered[:k]
+
+print(<span class="fn">top_k_frequent</span>([<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>))   <span class="cm"># [1, 2]</span>
+
+<span class="cm"># Pythonic version — Counter does steps 1 + 2 for you</span>
+print([n <span class="kw">for</span> n, _ <span class="kw">in</span> <span class="cls">Counter</span>([<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>]).most_common(<span class="num">2</span>)])  <span class="cm"># [1, 2]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Two Sum Pattern</h2>
+    <p class="explanation">
+      Instead of checking every pair O(n²), use a hash map: store what you've seen, and for each new element check if its <strong>complement</strong> already exists. Classic O(n) trick.
+    </p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Two Sum O(n)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">two_sum</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>], target: <span class="cls">int</span>) -&gt; <span class="cls">List</span>[<span class="cls">int</span>]:
+    seen = {}                            <span class="cm"># value → index</span>
+
+    <span class="kw">for</span> i, num <span class="kw">in</span> enumerate(nums):
+        complement = target - num
+
+        <span class="kw">if</span> complement <span class="kw">in</span> seen:
+            <span class="kw">return</span> [seen[complement], i]  <span class="cm"># found!</span>
+
+        seen[num] = i                    <span class="cm"># store current number</span>
+
+    <span class="kw">return</span> []                            <span class="cm"># no pair found</span>
+
+print(<span class="fn">two_sum</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">11</span>, <span class="num">15</span>], <span class="num">9</span>))      <span class="cm"># [0, 1]  (2+7=9)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Two Sum <a href="sol-01-arrays.html" style="color:var(--accent)">(solved in Array Solutions)</a> <span class="problem-tag easy">EASY</span></li>
+      <li>Contains Duplicate <a href="sol-01-arrays.html" style="color:var(--accent)">(solved in Array Solutions)</a> <span class="problem-tag easy">EASY</span></li>
+      <li>Valid Anagram <a href="sol-02-strings.html" style="color:var(--accent)">(solved in String Solutions)</a> <span class="problem-tag easy">EASY</span></li>
+      <li>Group Anagrams <a href="sol-02-strings.html" style="color:var(--accent)">(solved in String Solutions)</a> <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Top K Frequent Elements <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Longest Consecutive Sequence <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Subarray Sum Equals K <span class="problem-tag medium">MEDIUM</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="02-strings.html" class="footer-back">← Strings</a>
+    <a href="04-sorting.html" class="footer-next">Sorting →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stacks — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Stacks</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">06 / 19</div>
+    <h1 class="page-title">Stacks <span class="highlight">LIFO</span></h1>
+    <p class="page-subtitle">Last In, First Out — like a stack of plates. Essential for undo operations, parsing expressions, depth-first search, and the call stack itself.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">PUSH</div><div class="complexity-value">O(1)</div></div>
+    <div class="complexity-item"><div class="complexity-label">POP</div><div class="complexity-value">O(1)</div></div>
+    <div class="complexity-item"><div class="complexity-label">PEEK</div><div class="complexity-value">O(1)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SEARCH</div><div class="complexity-value">O(n)</div></div>
+  </div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">Stack in Python</h2>
+    <p class="explanation">A Python <code style="color:var(--accent)">list</code> is a perfect stack out of the box. <code style="color:var(--accent)">append()</code> adds to the top (the end), <code style="color:var(--accent)">pop()</code> removes from the top — both amortized O(1). Peek with <code>stack[-1]</code>. Never use <code>insert(0, x)</code> / <code>pop(0)</code> on a stack — those shift every element and are O(n).</p>
+    <div class="diagram">
+      <div class="diagram-title">STACK VISUALIZATION</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  append(3)   append(7)   append(1)   pop()       stack[-1]
+                          ┌───┐
+              ┌───┐       │ 1 │       ┌───┐       ┌───┐
+  ┌───┐       │ 7 │       │ 7 │       │ 7 │       │ 7 │
+  │ 3 │       │ 3 │       │ 3 │       │ 3 │       │ 3 │
+  └───┘       └───┘       └───┘       └───┘       └───┘
+                          top = 1     returns 1   returns 7
+                                                  (no removal)</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Stack Implementation</div>
+      <pre><span class="cm"># Using a list as a stack</span>
+stack = []
+
+stack.append(<span class="num">3</span>)   <span class="cm"># [3]</span>
+stack.append(<span class="num">7</span>)   <span class="cm"># [3, 7]</span>
+stack.append(<span class="num">1</span>)   <span class="cm"># [3, 7, 1]</span>
+
+stack.pop()       <span class="cm"># removes 1 → [3, 7]</span>
+<span class="fn">print</span>(stack[-<span class="num">1</span>])  <span class="cm"># peek → 7 (no removal)</span>
+<span class="fn">print</span>(<span class="fn">len</span>(stack)) <span class="cm"># 2</span>
+<span class="kw">if</span> stack:         <span class="cm"># empty list is falsy — idiomatic "is not empty" check</span>
+    <span class="fn">print</span>(<span class="str">"not empty"</span>)
+
+<span class="cm"># ─────────────────────────────────────────</span>
+<span class="cm"># Clean Stack class (for clarity)</span>
+<span class="kw">from</span> typing <span class="kw">import</span> Any, List
+
+<span class="kw">class</span> <span class="cls">Stack</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.items: List[Any] = []
+
+    <span class="kw">def</span> <span class="fn">push</span>(<span class="kw">self</span>, val: Any) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.items.append(val)
+
+    <span class="kw">def</span> <span class="fn">pop</span>(<span class="kw">self</span>) -&gt; Any:
+        <span class="kw">return</span> <span class="kw">self</span>.items.pop()      <span class="cm"># raises IndexError if empty</span>
+
+    <span class="kw">def</span> <span class="fn">peek</span>(<span class="kw">self</span>) -&gt; Any:
+        <span class="kw">return</span> <span class="kw">self</span>.items[-<span class="num">1</span>]
+
+    <span class="kw">def</span> <span class="fn">is_empty</span>(<span class="kw">self</span>) -&gt; bool:
+        <span class="kw">return</span> <span class="kw">not</span> <span class="kw">self</span>.items
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(<span class="kw">self</span>) -&gt; int:          <span class="cm"># enables len(s)</span>
+        <span class="kw">return</span> <span class="fn">len</span>(<span class="kw">self</span>.items)
+
+s = <span class="cls">Stack</span>()
+s.push(<span class="num">1</span>); s.push(<span class="num">2</span>)
+<span class="fn">print</span>(s.pop(), s.peek(), <span class="fn">len</span>(s))  <span class="cm"># 2 1 1</span></pre>
+    </div>
+    <div class="callout"><strong>Python note:</strong> <code>list.pop()</code> on an empty list raises <code>IndexError</code> — guard with <code>if stack:</code>. <code>collections.deque</code> also works as a stack (<code>append</code>/<code>pop</code>), but a plain list is the idiomatic, fastest choice for LIFO. Python's own recursion uses a call stack limited to ~1000 frames (<code>sys.getrecursionlimit()</code>), which is why deep DFS is often rewritten with an explicit list-stack.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Balanced Parentheses</h2>
+    <p class="explanation">Classic stack problem. Push every opening bracket. When you see a closing bracket, <strong>pop</strong> and check if it matches. If anything's left over at the end, it's invalid.</p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Valid Parentheses</div>
+      <pre><span class="kw">def</span> <span class="fn">is_valid</span>(s: str) -&gt; bool:
+    stack = []
+    pairs = {<span class="str">')'</span>: <span class="str">'('</span>, <span class="str">'}'</span>: <span class="str">'{'</span>, <span class="str">']'</span>: <span class="str">'['</span>}
+
+    <span class="kw">for</span> ch <span class="kw">in</span> s:
+        <span class="kw">if</span> ch <span class="kw">in</span> <span class="str">'([{'</span>:
+            stack.append(ch)          <span class="cm"># opening → push</span>
+        <span class="kw">else</span>:
+            <span class="cm"># closing → check top matches (empty stack → mismatch)</span>
+            <span class="kw">if</span> <span class="kw">not</span> stack <span class="kw">or</span> stack.pop() != pairs[ch]:
+                <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="kw">return</span> <span class="kw">not</span> stack  <span class="cm"># must be empty</span>
+
+<span class="fn">print</span>(<span class="fn">is_valid</span>(<span class="str">"()[]{}"</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">is_valid</span>(<span class="str">"(]"</span>))      <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">is_valid</span>(<span class="str">"{[]}"</span>))    <span class="cm"># True</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Monotonic Stack</h2>
+    <p class="explanation">A stack that maintains elements in <strong>increasing or decreasing order</strong>. Pop elements that violate the order before pushing. Used to solve "next greater element"-type problems in O(n) — each index is pushed and popped at most once.</p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Next Greater Element</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">next_greater_element</span>(nums: List[int]) -&gt; List[int]:
+    result = [-<span class="num">1</span>] * <span class="fn">len</span>(nums)
+    stack = []  <span class="cm"># stores indices</span>
+
+    <span class="kw">for</span> i, num <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        <span class="cm"># While current num is greater than stack top's value</span>
+        <span class="kw">while</span> stack <span class="kw">and</span> num &gt; nums[stack[-<span class="num">1</span>]]:
+            idx = stack.pop()
+            result[idx] = num  <span class="cm"># found next greater for idx</span>
+        stack.append(i)
+
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">next_greater_element</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>, <span class="num">3</span>]))
+<span class="cm"># [4, 2, 4, -1, -1]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Valid Parentheses <span class="problem-tag easy">EASY</span></li>
+      <li>Min Stack <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Daily Temperatures <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Next Greater Element I <span class="problem-tag easy">EASY</span></li>
+      <li>Largest Rectangle in Histogram <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="05-linkedlist.html" class="footer-back">← Linked Lists</a>
+    <a href="07-queues.html" class="footer-next">Queues →</a>
+  </div>
+</div>
+</body>
+</html>

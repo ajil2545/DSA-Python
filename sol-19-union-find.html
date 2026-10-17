@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Union-Find Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="19-union-find.html" class="back-link">← Union-Find</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 19</div>
+    <h1 class="page-title">Union-Find <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Components, cycles, merged groups and spanning trees — all with the same twenty-line DSU.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Number of Connected Components in an Undirected Graph</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Begin with n separate components. Every edge that joins two <em>different</em> components reduces the count by one; an edge inside a component changes nothing. DSU's union tells you which case you're in.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Create a DSU with n nodes and <strong>components = n</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each edge, if <strong>union(u, v)</strong> returns True, decrement components.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Return components.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n + E · α(n))</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size = [<span class="num">1</span>] * n
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="kw">def</span> <span class="fn">count_components</span>(n: int, edges: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    dsu = <span class="cls">DSU</span>(n)
+    components = n
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        <span class="kw">if</span> dsu.<span class="fn">union</span>(u, v):       <span class="cm"># merged two different groups</span>
+            components -= <span class="num">1</span>
+    <span class="kw">return</span> components
+
+
+<span class="fn">print</span>(<span class="fn">count_components</span>(<span class="num">5</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">4</span>]]))           <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">count_components</span>(<span class="num">5</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>], [<span class="num">3</span>, <span class="num">4</span>]]))   <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">count_components</span>(<span class="num">3</span>, []))                                 <span class="cm"># 3</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Redundant Connection</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> The graph is a tree plus one extra edge, and you must return the extra edge that appears <strong>last</strong> in the input. Add edges in order; the first edge whose endpoints are already connected closes the cycle — and because we scan in input order, it's the last cycle edge listed.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Nodes are labelled 1..n, so size the DSU <strong>n + 1</strong> (index 0 unused).</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each edge, try <strong>union(u, v)</strong>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Return the first edge where union fails.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n) worst case (path compression only)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Compact Recursive DSU</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">find_redundant_connection</span>(edges: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">List</span>[int]:
+    parent = <span class="fn">list</span>(<span class="fn">range</span>(<span class="fn">len</span>(edges) + <span class="num">1</span>))   <span class="cm"># nodes are 1..n, n == len(edges)</span>
+
+    <span class="kw">def</span> <span class="fn">find</span>(x: int) -&gt; int:
+        <span class="kw">if</span> parent[x] != x:
+            parent[x] = <span class="fn">find</span>(parent[x])
+        <span class="kw">return</span> parent[x]
+
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        ru, rv = <span class="fn">find</span>(u), <span class="fn">find</span>(v)
+        <span class="kw">if</span> ru == rv:                        <span class="cm"># already connected: this edge makes the cycle</span>
+            <span class="kw">return</span> [u, v]
+        parent[ru] = rv
+    <span class="kw">return</span> []
+
+
+<span class="fn">print</span>(<span class="fn">find_redundant_connection</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">3</span>]]))                  <span class="cm"># [2, 3]</span>
+<span class="fn">print</span>(<span class="fn">find_redundant_connection</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>], [<span class="num">3</span>, <span class="num">4</span>], [<span class="num">1</span>, <span class="num">4</span>], [<span class="num">1</span>, <span class="num">5</span>]]))  <span class="cm"># [1, 4]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Graph Valid Tree</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> A graph on n nodes is a tree iff it is <strong>connected</strong> and <strong>acyclic</strong>. Shortcut: a tree has exactly <strong>n - 1</strong> edges. If the count is right and no edge closes a cycle, the n - 1 successful unions have merged n groups into 1, so it's connected too.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>If <strong>len(edges) != n - 1</strong>, return False immediately.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Union every edge; if any union fails, there's a cycle → False.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Otherwise return True (n - 1 merges ⇒ one component).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n · α(n))</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size = [<span class="num">1</span>] * n
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="kw">def</span> <span class="fn">valid_tree</span>(n: int, edges: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; bool:
+    <span class="kw">if</span> <span class="fn">len</span>(edges) != n - <span class="num">1</span>:          <span class="cm"># too few → disconnected, too many → cycle</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    dsu = <span class="cls">DSU</span>(n)
+    <span class="kw">return</span> <span class="fn">all</span>(dsu.<span class="fn">union</span>(u, v) <span class="kw">for</span> u, v <span class="kw">in</span> edges)
+
+
+<span class="fn">print</span>(<span class="fn">valid_tree</span>(<span class="num">5</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>], [<span class="num">0</span>, <span class="num">3</span>], [<span class="num">1</span>, <span class="num">4</span>]]))            <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">valid_tree</span>(<span class="num">5</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>], [<span class="num">1</span>, <span class="num">3</span>], [<span class="num">1</span>, <span class="num">4</span>]]))    <span class="cm"># False (cycle 1-2-3)</span>
+<span class="fn">print</span>(<span class="fn">valid_tree</span>(<span class="num">4</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">2</span>, <span class="num">3</span>], [<span class="num">1</span>, <span class="num">0</span>]]))                    <span class="cm"># False (cycle, 2 parts)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Accounts Merge</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Two accounts belong to the same person if they share <strong>any</strong> email — and that's transitive. So union account indices: remember the first account that owned each email, and when a later account lists the same email, union the two. Afterwards, group every email under its account's root.
+      </div>
+      <div class="step"><div class="step-num">1</div><div><strong>owner</strong> dict: email → index of the first account containing it.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For account i, for each email: if already owned, <strong>union(i, owner[email])</strong>; else record it.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Bucket emails by <strong>find(owner[email])</strong> using a <strong>defaultdict(list)</strong>.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Each bucket becomes <strong>[name] + sorted(emails)</strong>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(N · α(n) + N log N), N = total emails</span></div>
+        <div class="ci-item">Space: <span>O(N)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>
+
+
+<span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size = [<span class="num">1</span>] * n
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="kw">def</span> <span class="fn">accounts_merge</span>(accounts: <span class="cls">List</span>[<span class="cls">List</span>[str]]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[str]]:
+    dsu = <span class="cls">DSU</span>(<span class="fn">len</span>(accounts))
+    owner: <span class="cls">Dict</span>[str, int] = {}                    <span class="cm"># email -&gt; first account index</span>
+    <span class="kw">for</span> i, (_, *emails) <span class="kw">in</span> <span class="fn">enumerate</span>(accounts):   <span class="cm"># skip the name, keep the emails</span>
+        <span class="kw">for</span> email <span class="kw">in</span> emails:
+            <span class="kw">if</span> email <span class="kw">in</span> owner:
+                dsu.<span class="fn">union</span>(i, owner[email])
+            <span class="kw">else</span>:
+                owner[email] = i
+
+    groups: <span class="cls">Dict</span>[int, <span class="cls">List</span>[str]] = <span class="fn">defaultdict</span>(list)
+    <span class="kw">for</span> email, i <span class="kw">in</span> owner.<span class="fn">items</span>():
+        groups[dsu.<span class="fn">find</span>(i)].<span class="fn">append</span>(email)
+
+    <span class="kw">return</span> [[accounts[root][<span class="num">0</span>]] + <span class="fn">sorted</span>(emails) <span class="kw">for</span> root, emails <span class="kw">in</span> groups.<span class="fn">items</span>()]
+
+
+accounts = [
+    [<span class="str">"John"</span>, <span class="str">"johnsmith@mail.com"</span>, <span class="str">"john_newyork@mail.com"</span>],
+    [<span class="str">"John"</span>, <span class="str">"johnsmith@mail.com"</span>, <span class="str">"john00@mail.com"</span>],
+    [<span class="str">"Mary"</span>, <span class="str">"mary@mail.com"</span>],
+    [<span class="str">"John"</span>, <span class="str">"johnnybravo@mail.com"</span>],
+]
+<span class="kw">for</span> merged <span class="kw">in</span> <span class="fn">accounts_merge</span>(accounts):
+    <span class="fn">print</span>(merged)
+<span class="cm"># ['John', 'john00@mail.com', 'john_newyork@mail.com', 'johnsmith@mail.com']</span>
+<span class="cm"># ['Mary', 'mary@mail.com']</span>
+<span class="cm"># ['John', 'johnnybravo@mail.com']</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Number of Provinces</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> The input is an adjacency matrix: <strong>is_connected[i][j] == 1</strong> means cities i and j are directly linked. A province is a connected component. The matrix is symmetric, so only look at the upper triangle (j &gt; i) and union each linked pair, counting successful merges.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Start with <strong>provinces = n</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each pair i &lt; j with a 1 in the matrix, union them; decrement on a successful merge.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Return provinces. (DFS over the matrix also works in O(n²).)</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n² · α(n))</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size = [<span class="num">1</span>] * n
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="kw">def</span> <span class="fn">find_circle_num</span>(is_connected: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    n = <span class="fn">len</span>(is_connected)
+    dsu = <span class="cls">DSU</span>(n)
+    provinces = n
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i + <span class="num">1</span>, n):             <span class="cm"># symmetric matrix: upper triangle only</span>
+            <span class="kw">if</span> is_connected[i][j] <span class="kw">and</span> dsu.<span class="fn">union</span>(i, j):
+                provinces -= <span class="num">1</span>
+    <span class="kw">return</span> provinces
+
+
+<span class="fn">print</span>(<span class="fn">find_circle_num</span>([[<span class="num">1</span>, <span class="num">1</span>, <span class="num">0</span>], [<span class="num">1</span>, <span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>]]))  <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">find_circle_num</span>([[<span class="num">1</span>, <span class="num">0</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>]]))  <span class="cm"># 3</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Min Cost to Connect All Points (Kruskal)</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Points are vertices of a complete graph; the edge weight between two points is their <strong>Manhattan distance</strong> |x1 - x2| + |y1 - y2|. The cheapest way to connect everything is the MST. Kruskal: build all n(n-1)/2 edges, sort by weight, and add each edge that joins two different components until you've added n - 1 edges.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Generate every pair (i, j) with weight <strong>abs(xi - xj) + abs(yi - yj)</strong>; <strong>itertools.combinations</strong> makes this one line.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Sort the edges by weight.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Union along each edge; on success add its weight and count it.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Stop at n - 1 edges and return the total.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n² log n)</span></div>
+        <div class="ci-item">Space: <span>O(n²) for the edge list</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Kruskal</div>
+        <pre><span class="kw">from</span> itertools <span class="kw">import</span> combinations
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size = [<span class="num">1</span>] * n
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="kw">def</span> <span class="fn">min_cost_connect_points</span>(points: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    n = <span class="fn">len</span>(points)
+    edges = <span class="fn">sorted</span>(
+        (<span class="fn">abs</span>(x1 - x2) + <span class="fn">abs</span>(y1 - y2), i, j)
+        <span class="kw">for</span> (i, (x1, y1)), (j, (x2, y2)) <span class="kw">in</span> <span class="fn">combinations</span>(<span class="fn">enumerate</span>(points), <span class="num">2</span>)
+    )
+    dsu = <span class="cls">DSU</span>(n)
+    total = used = <span class="num">0</span>
+    <span class="kw">for</span> w, i, j <span class="kw">in</span> edges:
+        <span class="kw">if</span> dsu.<span class="fn">union</span>(i, j):
+            total += w
+            used += <span class="num">1</span>
+            <span class="kw">if</span> used == n - <span class="num">1</span>:             <span class="cm"># MST complete</span>
+                <span class="kw">break</span>
+    <span class="kw">return</span> total
+
+
+<span class="fn">print</span>(<span class="fn">min_cost_connect_points</span>([[<span class="num">0</span>, <span class="num">0</span>], [<span class="num">2</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">10</span>], [<span class="num">5</span>, <span class="num">2</span>], [<span class="num">7</span>, <span class="num">0</span>]]))  <span class="cm"># 20</span>
+<span class="fn">print</span>(<span class="fn">min_cost_connect_points</span>([[<span class="num">3</span>, <span class="num">12</span>], [-<span class="num">2</span>, <span class="num">5</span>], [-<span class="num">4</span>, <span class="num">1</span>]]))               <span class="cm"># 18</span>
+<span class="fn">print</span>(<span class="fn">min_cost_connect_points</span>([[<span class="num">0</span>, <span class="num">0</span>]]))                                  <span class="cm"># 0</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">ALTERNATIVE — Prim with heapq (no up-front edge list or sort)</div>
+        <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">min_cost_prim</span>(points: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    n = <span class="fn">len</span>(points)
+    in_tree = [<span class="kw">False</span>] * n
+    heap = [(<span class="num">0</span>, <span class="num">0</span>)]                       <span class="cm"># (cost to attach, point index)</span>
+    total = added = <span class="num">0</span>
+    <span class="kw">while</span> added &lt; n:
+        cost, i = heapq.<span class="fn">heappop</span>(heap)
+        <span class="kw">if</span> in_tree[i]:
+            <span class="kw">continue</span>                      <span class="cm"># stale entry</span>
+        in_tree[i] = <span class="kw">True</span>
+        total += cost
+        added += <span class="num">1</span>
+        xi, yi = points[i]
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> <span class="kw">not</span> in_tree[j]:
+                xj, yj = points[j]
+                heapq.<span class="fn">heappush</span>(heap, (<span class="fn">abs</span>(xi - xj) + <span class="fn">abs</span>(yi - yj), j))
+    <span class="kw">return</span> total
+
+
+<span class="fn">print</span>(<span class="fn">min_cost_prim</span>([[<span class="num">0</span>, <span class="num">0</span>], [<span class="num">2</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">10</span>], [<span class="num">5</span>, <span class="num">2</span>], [<span class="num">7</span>, <span class="num">0</span>]]))  <span class="cm"># 20</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-18-intervals.html" class="footer-back">← Interval Solutions</a>
+    <a href="index.html" class="footer-next">Roadmap →</a>
+  </div>
+</div>
+</body>
+</html>

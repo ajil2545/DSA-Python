@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bit Manipulation — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Bit Manipulation</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">16 / 19</div>
+    <h1 class="page-title">Bit <span class="highlight">Manipulation</span></h1>
+    <p class="page-subtitle">Work directly on the 0s and 1s — O(1) tricks, XOR magic, and subsets packed into a single Python int.</p>
+  </div>
+
+<div class="complexity-box">
+  <div class="complexity-item"><div class="complexity-label">SINGLE BIT OP</div><div class="complexity-value">O(1)</div></div>
+  <div class="complexity-item"><div class="complexity-label">COUNT SET BITS</div><div class="complexity-value">O(set bits)</div></div>
+  <div class="complexity-item"><div class="complexity-label">ALL SUBSETS</div><div class="complexity-value">O(2ⁿ · n)</div></div>
+</div>
+
+<div class="callout"><strong>Why learn this:</strong> bit tricks turn some problems into one-liners (find the unique number, power of two), give O(1)-space solutions where a <code>set</code> would cost O(n), and let you store a whole subset of ≤ 20-ish items in a single <code>int</code> — the foundation of bitmask DP.</div>
+
+<section class="section">
+  <div class="section-label">CONCEPT 01</div>
+  <h2 class="section-title">Binary Representation in Python</h2>
+<p class="explanation">Every integer is a sum of powers of two. Bit <strong>i</strong> (counting from 0 on the right) is worth <code>2 ** i</code>. Python gives you built-ins to go both ways between <code>int</code> and binary text.</p>
+<div class="diagram">
+  <div class="diagram-title">13 IN BINARY</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> bit index:     3    2    1    0
+ place value:   8    4    2    1
+ bits:          1    1    0    1      → 8 + 4 + 0 + 1 = 13</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Converting To and From Binary</div>
+  <pre>x = <span class="num">13</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(x))               <span class="cm"># 0b1101      (str with 0b prefix)</span>
+<span class="fn">print</span>(<span class="fn">format</span>(x, <span class="str">'b'</span>))       <span class="cm"># 1101        (no prefix)</span>
+<span class="fn">print</span>(<span class="fn">format</span>(x, <span class="str">'08b'</span>))     <span class="cm"># 00001101    (zero-padded to 8 bits)</span>
+<span class="fn">print</span>(<span class="str">f"{x:#010b}"</span>)         <span class="cm"># 0b00001101  (f-string, prefix + padding)</span>
+<span class="fn">print</span>(<span class="fn">int</span>(<span class="str">'1101'</span>, <span class="num">2</span>))       <span class="cm"># 13          (parse binary text)</span>
+<span class="fn">print</span>(<span class="fn">int</span>(<span class="str">'0b1101'</span>, <span class="num">2</span>))     <span class="cm"># 13          (prefix allowed when base=2)</span>
+<span class="fn">print</span>(<span class="num">0b1101</span>, <span class="num">0xFF</span>, <span class="num">0o17</span>)   <span class="cm"># 13 255 15   (binary / hex / octal literals)</span>
+<span class="fn">print</span>(x.<span class="fn">bit_length</span>())       <span class="cm"># 4           (bits needed, ignoring sign)</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(-<span class="num">13</span>))             <span class="cm"># -0b1101     (sign + magnitude, see Concept 03)</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">CONCEPT 02</div>
+  <h2 class="section-title">The Six Bitwise Operators</h2>
+<p class="explanation">All operators work bit-by-bit on the binary forms. <code>&lt;&lt;</code> and <code>&gt;&gt;</code> shift the bits left/right: <code>x &lt;&lt; k</code> is <code>x * 2**k</code> and <code>x &gt;&gt; k</code> is <code>x // 2**k</code> (floor division, also for negatives).</p>
+<div class="diagram">
+  <div class="diagram-title">a = 12, b = 10</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> a        = 1100   (12)
+ b        = 1010   (10)
+ a &amp; b    = 1000   (8)    AND  → 1 only where BOTH are 1
+ a | b    = 1110   (14)   OR   → 1 where EITHER is 1
+ a ^ b    = 0110   (6)    XOR  → 1 where they DIFFER
+ ~a       = -13           NOT  → flips every bit; in Python ~x == -x - 1
+ a &lt;&lt; 2   = 110000 (48)   shift left  = multiply by 4
+ a &gt;&gt; 2   = 11     (3)    shift right = floor-divide by 4</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Operators in Action</div>
+  <pre>a, b = <span class="num">12</span>, <span class="num">10</span>
+<span class="fn">print</span>(a &amp; b, a | b, a ^ b)   <span class="cm"># 8 14 6</span>
+<span class="fn">print</span>(~a)                    <span class="cm"># -13</span>
+<span class="fn">print</span>(a &lt;&lt; <span class="num">2</span>, a &gt;&gt; <span class="num">2</span>)        <span class="cm"># 48 3</span>
+<span class="fn">print</span>(<span class="num">1</span> &lt;&lt; <span class="num">10</span>)               <span class="cm"># 1024   (fast 2 ** 10)</span>
+<span class="fn">print</span>(<span class="num">7</span> &gt;&gt; <span class="num">1</span>, -<span class="num">7</span> &gt;&gt; <span class="num">1</span>)       <span class="cm"># 3 -4   (&gt;&gt; floors, like //)</span>
+
+<span class="cm"># Python-friendly forms</span>
+flags = <span class="num">0</span>
+flags |= <span class="num">1</span> &lt;&lt; <span class="num">3</span>              <span class="cm"># augmented assignment works: &amp;= |= ^= &lt;&lt;= &gt;&gt;=</span>
+<span class="fn">print</span>(flags)                 <span class="cm"># 8</span>
+<span class="fn">print</span>(<span class="num">6</span> &amp; <span class="num">1</span> == <span class="num">0</span>)            <span class="cm"># True   (parsed as (6 &amp; 1) == 0)</span></pre>
+</div>
+<div class="callout warn"><strong>Precedence (different from C and Java!):</strong> in Python, <code>&amp; ^ |</code> bind <em>tighter</em> than comparisons, so <code>x &amp; 1 == 0</code> means <code>(x &amp; 1) == 0</code>. But <code>+ -</code> bind tighter than shifts: <code>1 &lt;&lt; n - 1</code> is <code>1 &lt;&lt; (n - 1)</code>. When in doubt, add parentheses — readers will thank you.</div>
+</section>
+
+<section class="section">
+  <div class="section-label">CONCEPT 03</div>
+  <h2 class="section-title">Python Ints: Arbitrary Precision &amp; Negative Numbers</h2>
+<p class="explanation">Python <code>int</code>s never overflow — they grow as big as memory allows. Negative numbers behave as if they were written in <strong>two’s complement with infinitely many leading 1s</strong>. That is why <code>~x == -x - 1</code>, why <code>-1 &amp; x == x</code>, and why there is no unsigned shift (<code>&gt;&gt;&gt;</code>) in Python. <code>bin()</code> however prints sign + magnitude, not the bit pattern.</p>
+<div class="diagram">
+  <div class="diagram-title">-5 AS PYTHON SEES IT</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;">  5  = ...0000 0101
+ ~5  = ...1111 1010   = -6     (flip every bit, forever to the left)
+ -5  = ...1111 1011   = ~5 + 1 (two's complement)
+ -5 &amp; 0xFFFFFFFF  →  1111 1111 1111 1111 1111 1111 1111 1011 = 4294967291
+                     (keep only the low 32 bits → "unsigned 32-bit view")</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Big Ints, Negatives and 32-bit Masking</div>
+  <pre><span class="fn">print</span>(<span class="num">2</span> ** <span class="num">100</span>)            <span class="cm"># 1267650600228229401496703205376  (no overflow)</span>
+<span class="fn">print</span>(~<span class="num">5</span>, -<span class="num">5</span> - <span class="num">1</span>)          <span class="cm"># -6 -6</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(-<span class="num">5</span>))             <span class="cm"># -0b101   (NOT the two's-complement bits)</span>
+
+MASK = <span class="num">0xFFFFFFFF</span>          <span class="cm"># 32 ones</span>
+<span class="fn">print</span>(-<span class="num">5</span> &amp; MASK)           <span class="cm"># 4294967291</span>
+<span class="fn">print</span>(<span class="fn">format</span>(-<span class="num">5</span> &amp; MASK, <span class="str">'032b'</span>))  <span class="cm"># 11111111111111111111111111111011</span>
+
+<span class="kw">def</span> <span class="fn">to_signed32</span>(x: int) -&gt; int:
+    <span class="str">"""Interpret the low 32 bits of x as a signed 32-bit int."""</span>
+    x &amp;= MASK
+    <span class="kw">return</span> x - (<span class="num">1</span> &lt;&lt; <span class="num">32</span>) <span class="kw">if</span> x &amp; (<span class="num">1</span> &lt;&lt; <span class="num">31</span>) <span class="kw">else</span> x
+
+<span class="fn">print</span>(<span class="fn">to_signed32</span>(<span class="num">4294967291</span>))   <span class="cm"># -5</span>
+<span class="fn">print</span>(<span class="fn">to_signed32</span>(<span class="num">2</span> ** <span class="num">31</span>))      <span class="cm"># -2147483648  (wraps like C int32)</span>
+<span class="fn">print</span>(<span class="fn">to_signed32</span>(<span class="num">7</span>))            <span class="cm"># 7</span></pre>
+</div>
+<p class="explanation">Problems written for 32-bit languages (Reverse Bits, Sum of Two Integers, Number of 1 Bits with negative input) need this masking in Python, otherwise loops on negative numbers never terminate because the leading 1s go on forever.</p>
+<div class="code-block">
+  <div class="code-label">PYTHON — Add Without + (emulated 32-bit)</div>
+  <pre><span class="kw">def</span> <span class="fn">get_sum</span>(a: int, b: int) -&gt; int:
+    MASK = <span class="num">0xFFFFFFFF</span>
+    <span class="kw">while</span> b &amp; MASK:                      <span class="cm"># carry left within 32 bits?</span>
+        a, b = a ^ b, (a &amp; b) &lt;&lt; <span class="num">1</span>       <span class="cm"># sum without carry, carry</span>
+    a &amp;= MASK
+    <span class="kw">return</span> a <span class="kw">if</span> a &lt;= <span class="num">0x7FFFFFFF</span> <span class="kw">else</span> ~(a ^ MASK)   <span class="cm"># back to signed</span>
+
+<span class="fn">print</span>(<span class="fn">get_sum</span>(<span class="num">5</span>, <span class="num">7</span>))     <span class="cm"># 12</span>
+<span class="fn">print</span>(<span class="fn">get_sum</span>(-<span class="num">2</span>, <span class="num">3</span>))    <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">get_sum</span>(-<span class="num">5</span>, -<span class="num">7</span>))   <span class="cm"># -12</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">TECHNIQUE 01</div>
+  <h2 class="section-title">Check / Set / Clear / Toggle a Bit</h2>
+<p class="explanation">Build a <strong>mask</strong> with a single 1 at position i: <code>1 &lt;&lt; i</code>. Then combine it with the number using the right operator.</p>
+<div class="diagram">
+  <div class="diagram-title">x = 1010 (10), i = 2  → mask = 0100</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> check   (x &gt;&gt; i) &amp; 1     → 0          is bit i on?
+ set     x |  mask        → 1110 (14)  force bit i to 1
+ clear   x &amp; ~mask        → 1010 (10)  force bit i to 0
+ toggle  x ^  mask        → 1110 (14)  flip bit i</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Single-Bit Helpers</div>
+  <pre><span class="kw">def</span> <span class="fn">get_bit</span>(x: int, i: int) -&gt; int:
+    <span class="kw">return</span> (x &gt;&gt; i) &amp; <span class="num">1</span>
+
+<span class="kw">def</span> <span class="fn">set_bit</span>(x: int, i: int) -&gt; int:
+    <span class="kw">return</span> x | (<span class="num">1</span> &lt;&lt; i)
+
+<span class="kw">def</span> <span class="fn">clear_bit</span>(x: int, i: int) -&gt; int:
+    <span class="kw">return</span> x &amp; ~(<span class="num">1</span> &lt;&lt; i)
+
+<span class="kw">def</span> <span class="fn">toggle_bit</span>(x: int, i: int) -&gt; int:
+    <span class="kw">return</span> x ^ (<span class="num">1</span> &lt;&lt; i)
+
+x = <span class="num">0b1010</span>
+<span class="fn">print</span>(<span class="fn">get_bit</span>(x, <span class="num">1</span>), <span class="fn">get_bit</span>(x, <span class="num">2</span>))   <span class="cm"># 1 0</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(<span class="fn">set_bit</span>(x, <span class="num">0</span>)))             <span class="cm"># 0b1011</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(<span class="fn">clear_bit</span>(x, <span class="num">3</span>)))           <span class="cm"># 0b10</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(<span class="fn">toggle_bit</span>(x, <span class="num">2</span>)))          <span class="cm"># 0b1110</span>
+<span class="fn">print</span>(x &amp; <span class="num">1</span> == <span class="num">1</span>)                     <span class="cm"># False  (even number: lowest bit is 0)</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">TECHNIQUE 02</div>
+  <h2 class="section-title">Lowest Set Bit: x &amp; (x - 1) and x &amp; -x</h2>
+<p class="explanation">Subtracting 1 flips the lowest 1-bit to 0 and every 0 below it to 1. So <code>x &amp; (x - 1)</code> <strong>removes</strong> the lowest set bit, and <code>x &amp; -x</code> <strong>isolates</strong> it. A power of two has exactly one set bit, so removing it leaves 0.</p>
+<div class="diagram">
+  <div class="diagram-title">x = 88</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> x            = 0101 1000
+ x - 1        = 0101 0111
+ x &amp; (x - 1)  = 0101 0000   (80)  lowest 1 removed
+ -x           = 1010 1000   (two's complement: ~x + 1)
+ x &amp; -x       = 0000 1000   (8)   lowest 1 isolated</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Power of Two and Lowest Bit</div>
+  <pre><span class="kw">def</span> <span class="fn">is_power_of_two</span>(n: int) -&gt; bool:
+    <span class="kw">return</span> n &gt; <span class="num">0</span> <span class="kw">and</span> (n &amp; (n - <span class="num">1</span>)) == <span class="num">0</span>
+
+<span class="fn">print</span>([n <span class="kw">for</span> n <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">70</span>) <span class="kw">if</span> <span class="fn">is_power_of_two</span>(n)])  <span class="cm"># [1, 2, 4, 8, 16, 32, 64]</span>
+<span class="fn">print</span>(<span class="num">88</span> &amp; (<span class="num">88</span> - <span class="num">1</span>))      <span class="cm"># 80</span>
+<span class="fn">print</span>(<span class="num">88</span> &amp; -<span class="num">88</span>)           <span class="cm"># 8</span>
+<span class="fn">print</span>((<span class="num">88</span> &amp; -<span class="num">88</span>).<span class="fn">bit_length</span>() - <span class="num">1</span>)   <span class="cm"># 3   (index of the lowest set bit)</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">TECHNIQUE 03</div>
+  <h2 class="section-title">Counting Set Bits</h2>
+<p class="explanation">Three ways, from most Pythonic to most “interview”: the string trick, the bit-by-bit loop, and <strong>Brian Kernighan’s</strong> algorithm which loops once per <em>set</em> bit using <code>x &amp;= x - 1</code>. (Python 3.10+ also has <code>x.bit_count()</code> — not available on 3.7.)</p>
+<div class="code-block">
+  <div class="code-label">PYTHON — Three Ways to Count 1 Bits</div>
+  <pre><span class="kw">def</span> <span class="fn">popcount_str</span>(x: int) -&gt; int:
+    <span class="kw">return</span> <span class="fn">bin</span>(x).<span class="fn">count</span>(<span class="str">'1'</span>)          <span class="cm"># simple and fast in CPython</span>
+
+<span class="kw">def</span> <span class="fn">popcount_loop</span>(x: int) -&gt; int:
+    count = <span class="num">0</span>
+    <span class="kw">while</span> x:
+        count += x &amp; <span class="num">1</span>                <span class="cm"># look at the lowest bit</span>
+        x &gt;&gt;= <span class="num">1</span>                       <span class="cm"># O(number of bits)</span>
+    <span class="kw">return</span> count
+
+<span class="kw">def</span> <span class="fn">popcount_kernighan</span>(x: int) -&gt; int:
+    count = <span class="num">0</span>
+    <span class="kw">while</span> x:
+        x &amp;= x - <span class="num">1</span>                    <span class="cm"># drop the lowest set bit</span>
+        count += <span class="num">1</span>                    <span class="cm"># O(number of SET bits)</span>
+    <span class="kw">return</span> count
+
+<span class="kw">for</span> f <span class="kw">in</span> (popcount_str, popcount_loop, popcount_kernighan):
+    <span class="fn">print</span>(f.__name__, <span class="fn">f</span>(<span class="num">0b1011000</span>))   <span class="cm"># each prints 3</span>
+<span class="fn">print</span>(<span class="fn">popcount_kernighan</span>(<span class="num">255</span>))   <span class="cm"># 8</span></pre>
+</div>
+<div class="callout warn"><strong>Negative input:</strong> <code>popcount_loop(-1)</code> never ends — <code>-1 &gt;&gt; 1</code> is still <code>-1</code>. Mask first: <code>popcount_kernighan(-1 &amp; 0xFFFFFFFF)</code> → 32.</div>
+</section>
+
+<section class="section">
+  <div class="section-label">TECHNIQUE 04</div>
+  <h2 class="section-title">XOR Tricks</h2>
+<p class="explanation">XOR has three magic properties: <code>a ^ a == 0</code>, <code>a ^ 0 == a</code>, and it is commutative and associative. So XOR-ing a whole list cancels every value that appears an even number of times.</p>
+<div class="diagram">
+  <div class="diagram-title">XOR CANCELS PAIRS</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> 4 ^ 1 ^ 2 ^ 1 ^ 2
+ = 4 ^ (1 ^ 1) ^ (2 ^ 2)     reorder freely
+ = 4 ^   0     ^   0
+ = 4                          the unpaired value survives</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — XOR Patterns</div>
+  <pre><span class="kw">from</span> functools <span class="kw">import</span> reduce
+<span class="kw">from</span> operator <span class="kw">import</span> xor
+
+nums = [<span class="num">4</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">2</span>]
+<span class="fn">print</span>(<span class="fn">reduce</span>(xor, nums))              <span class="cm"># 4   (the value without a twin)</span>
+
+<span class="cm"># missing number in 0..n: XOR indices and values together</span>
+arr = [<span class="num">3</span>, <span class="num">0</span>, <span class="num">1</span>]
+<span class="fn">print</span>(<span class="fn">reduce</span>(xor, arr, <span class="num">0</span>) ^ <span class="fn">reduce</span>(xor, <span class="fn">range</span>(<span class="fn">len</span>(arr) + <span class="num">1</span>), <span class="num">0</span>))   <span class="cm"># 2</span>
+
+<span class="cm"># opposite signs?  the sign "bit" differs exactly when a ^ b &lt; 0</span>
+<span class="fn">print</span>((<span class="num">5</span> ^ -<span class="num">3</span>) &lt; <span class="num">0</span>, (<span class="num">5</span> ^ <span class="num">3</span>) &lt; <span class="num">0</span>)      <span class="cm"># True False</span>
+
+<span class="cm"># swap: in Python just use tuple unpacking (the XOR swap is a C trick)</span>
+a, b = <span class="num">3</span>, <span class="num">9</span>
+a, b = b, a
+<span class="fn">print</span>(a, b)                           <span class="cm"># 9 3</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">TECHNIQUE 05</div>
+  <h2 class="section-title">Enumerating Subsets with a Bitmask</h2>
+<p class="explanation">A list of n items has 2ⁿ subsets — exactly the numbers <code>0</code> to <code>2ⁿ - 1</code>. Read each number as a <strong>bitmask</strong>: bit i = 1 means “item i is in the subset”.</p>
+<div class="diagram">
+  <div class="diagram-title">nums = ['a', 'b', 'c']</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> mask  bits (c b a)   subset
+  0      0 0 0        []
+  1      0 0 1        ['a']
+  2      0 1 0        ['b']
+  3      0 1 1        ['a', 'b']
+  4      1 0 0        ['c']
+  5      1 0 1        ['a', 'c']
+  6      1 1 0        ['b', 'c']
+  7      1 1 1        ['a', 'b', 'c']</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — All Subsets and Submasks</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">all_subsets</span>(items: <span class="cls">List</span>[str]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[str]]:
+    n = <span class="fn">len</span>(items)
+    <span class="kw">return</span> [[items[i] <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n) <span class="kw">if</span> mask &gt;&gt; i &amp; <span class="num">1</span>]
+            <span class="kw">for</span> mask <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span> &lt;&lt; n)]
+
+<span class="fn">print</span>(<span class="fn">all_subsets</span>([<span class="str">'a'</span>, <span class="str">'b'</span>, <span class="str">'c'</span>]))
+<span class="cm"># [[], ['a'], ['b'], ['a', 'b'], ['c'], ['a', 'c'], ['b', 'c'], ['a', 'b', 'c']]</span>
+
+<span class="cm"># iterate every submask of a mask (classic in bitmask DP)</span>
+mask = <span class="num">0b1011</span>
+sub = mask
+subs = []
+<span class="kw">while</span> sub:
+    subs.<span class="fn">append</span>(<span class="fn">format</span>(sub, <span class="str">'04b'</span>))
+    sub = (sub - <span class="num">1</span>) &amp; mask
+<span class="fn">print</span>(subs)   <span class="cm"># ['1011', '1010', '1001', '1000', '0011', '0010', '0001']</span>
+
+<span class="cm"># a bitmask as a tiny set: visited cities 0 and 2</span>
+visited = (<span class="num">1</span> &lt;&lt; <span class="num">0</span>) | (<span class="num">1</span> &lt;&lt; <span class="num">2</span>)
+<span class="fn">print</span>(<span class="fn">bool</span>(visited &amp; (<span class="num">1</span> &lt;&lt; <span class="num">2</span>)), <span class="fn">bool</span>(visited &amp; (<span class="num">1</span> &lt;&lt; <span class="num">1</span>)))   <span class="cm"># True False</span></pre>
+</div>
+<div class="callout"><strong>Size limit:</strong> 2ⁿ grows fast — bitmask enumeration is practical up to about n = 20 (~1 million masks). For “all subsets” in Python, <code>itertools.combinations</code> for each size is an equally valid alternative.</div>
+<div class="use-cases">
+  <div class="use-case">Find the unique element: XOR everything</div>
+  <div class="use-case">Is n a power of two: n &gt; 0 and n &amp; (n - 1) == 0</div>
+  <div class="use-case">Count set bits: bin(n).count('1') or Kernighan</div>
+  <div class="use-case">Subsets / bitmask DP: for mask in range(1 &lt;&lt; n)</div>
+  <div class="use-case">32-bit behaviour: mask with &amp; 0xFFFFFFFF</div>
+  <div class="use-case">Multiply / divide by 2ᵏ: &lt;&lt; k and &gt;&gt; k</div>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">PRACTICE</div>
+  <h2 class="section-title">Problems to Solve</h2>
+<ul class="problem-list">
+  <li>Single Number <span class="problem-tag easy">EASY</span></li>
+  <li>Number of 1 Bits <span class="problem-tag easy">EASY</span></li>
+  <li>Counting Bits <span class="problem-tag easy">EASY</span></li>
+  <li>Power of Two <span class="problem-tag easy">EASY</span></li>
+  <li>Missing Number <span class="problem-tag easy">EASY</span></li>
+  <li>Reverse Bits <span class="problem-tag easy">EASY</span></li>
+  <li>Subsets (via bitmask) <span class="problem-tag medium">MEDIUM</span></li>
+</ul>
+</section>
+
+  <div class="page-footer">
+    <a href="15-two-pointers.html" class="footer-back">← Two Pointers</a>
+    <a href="17-greedy.html" class="footer-next">Greedy Algorithms →</a>
+  </div>
+</div>
+</body>
+</html>

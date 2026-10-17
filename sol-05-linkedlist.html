@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linked List Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="05-linkedlist.html" class="back-link">← Linked Lists</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 05</div>
+    <h1 class="page-title">Linked List <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Pointer manipulation problems — draw diagrams, think in nodes.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Reverse a Linked List</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Walk through once, flipping each "next" pointer to point backward instead of forward. Use 3 variables: prev (where the current node should point to), curr (node we're processing), nxt (temp save before we overwrite curr.next).
+      </div>
+      <div class="code-block">
+        <div class="code-label">SETUP — ListNode &amp; helpers used by every solution on this page</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="kw">class</span> <span class="cls">ListNode</span>:
+    __slots__ = (<span class="str">"val"</span>, <span class="str">"next"</span>)
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val: int = <span class="num">0</span>, next: Optional[<span class="str">"ListNode"</span>] = <span class="kw">None</span>):
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.next = next
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(<span class="kw">self</span>) -&gt; str:
+        <span class="kw">return</span> <span class="str">f"ListNode({self.val})"</span>
+
+
+<span class="kw">def</span> <span class="fn">build</span>(values: List[int]) -&gt; Optional[ListNode]:
+    <span class="str">"""[1, 2, 3] → 1 → 2 → 3 (uses the dummy-node trick)."""</span>
+    dummy = tail = <span class="cls">ListNode</span>()
+    <span class="kw">for</span> v <span class="kw">in</span> values:
+        tail.next = <span class="cls">ListNode</span>(v)
+        tail = tail.next
+    <span class="kw">return</span> dummy.next
+
+
+<span class="kw">def</span> <span class="fn">to_list</span>(head: Optional[ListNode]) -&gt; List[int]:
+    <span class="str">"""1 → 2 → 3 → [1, 2, 3] so we can print results."""</span>
+    out = []
+    <span class="kw">while</span> head:
+        out.append(head.val)
+        head = head.next
+    <span class="kw">return</span> out</pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">reverse_list</span>(head: Optional[ListNode]) -&gt; Optional[ListNode]:
+    prev = <span class="kw">None</span>   <span class="cm"># previous node (new "next" for current)</span>
+    curr = head   <span class="cm"># node we're currently reversing</span>
+
+    <span class="kw">while</span> curr <span class="kw">is not</span> <span class="kw">None</span>:
+        nxt = curr.next    <span class="cm"># 1. Save next (we're about to overwrite it)</span>
+        curr.next = prev   <span class="cm"># 2. Flip pointer backward</span>
+        prev = curr        <span class="cm"># 3. Move prev forward</span>
+        curr = nxt         <span class="cm"># 4. Move curr forward</span>
+
+    <span class="kw">return</span> prev   <span class="cm"># prev is now the new head (last node we processed)</span>
+
+print(<span class="fn">to_list</span>(<span class="fn">reverse_list</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))))   <span class="cm"># [3, 2, 1]</span>
+
+<span class="cm"># Step-by-step on 1→2→3→None:</span>
+<span class="cm"># Step 1: nxt=2,    1.next=None, prev=1, curr=2</span>
+<span class="cm"># Step 2: nxt=3,    2.next=1,    prev=2, curr=3</span>
+<span class="cm"># Step 3: nxt=None, 3.next=2,    prev=3, curr=None</span>
+<span class="cm"># Return prev=3 (new head): 3→2→1→None ✓</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Merge Two Sorted Lists</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Use a "dummy" head node so we don't need special cases for the first node. Walk both lists, always pick the smaller node. Attach whatever's left at the end.
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">merge_two_lists</span>(l1: Optional[ListNode], l2: Optional[ListNode]) -&gt; Optional[ListNode]:
+    dummy = <span class="cls">ListNode</span>()   <span class="cm"># placeholder — avoids edge cases</span>
+    tail = dummy
+
+    <span class="kw">while</span> l1 <span class="kw">and</span> l2:
+        <span class="kw">if</span> l1.val &lt;= l2.val:
+            tail.next = l1   <span class="cm"># pick from l1</span>
+            l1 = l1.next
+        <span class="kw">else</span>:
+            tail.next = l2   <span class="cm"># pick from l2</span>
+            l2 = l2.next
+        tail = tail.next
+
+    <span class="cm"># One list is exhausted — attach the rest of the other</span>
+    tail.next = l1 <span class="kw">or</span> l2     <span class="cm"># `or` returns the first truthy operand (or the last one)</span>
+
+    <span class="kw">return</span> dummy.next        <span class="cm"># skip the dummy node</span>
+
+print(<span class="fn">to_list</span>(<span class="fn">merge_two_lists</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>]), <span class="fn">build</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>]))))
+<span class="cm"># [1, 1, 2, 3, 4, 4]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Remove Nth Node From End of List</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> To remove the nth from end, we need to find it in one pass. Use two pointers: advance the fast pointer n steps ahead. Then move both until fast hits the end. Now slow is right before the node to remove.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Dummy node → makes removing the head easy.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Move fast pointer n+1 steps ahead.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Move both slow and fast until fast is None.</div></div>
+      <div class="step"><div class="step-num">4</div><div>slow.next = slow.next.next (skip the target node).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">remove_nth_from_end</span>(head: Optional[ListNode], n: int) -&gt; Optional[ListNode]:
+    dummy = <span class="cls">ListNode</span>(<span class="num">0</span>, head)
+    fast = slow = dummy
+
+    <span class="cm"># Move fast n+1 steps ahead</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> range(n + <span class="num">1</span>):
+        fast = fast.next
+
+    <span class="cm"># Move both until fast is None</span>
+    <span class="kw">while</span> fast <span class="kw">is not</span> <span class="kw">None</span>:
+        slow = slow.next
+        fast = fast.next
+
+    <span class="cm"># slow is the node BEFORE the one to delete</span>
+    slow.next = slow.next.next
+
+    <span class="kw">return</span> dummy.next
+
+print(<span class="fn">to_list</span>(<span class="fn">remove_nth_from_end</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]), <span class="num">2</span>)))   <span class="cm"># [1, 2, 3, 5]</span>
+print(<span class="fn">to_list</span>(<span class="fn">remove_nth_from_end</span>(<span class="fn">build</span>([<span class="num">1</span>]), <span class="num">1</span>)))               <span class="cm"># []  (head removed — dummy handles it)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Reorder List</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> 3 steps — (1) Find the middle using slow/fast pointers. (2) Reverse the second half. (3) Merge the two halves by alternating nodes.
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">reorder_list</span>(head: Optional[ListNode]) -&gt; <span class="kw">None</span>:
+    <span class="str">"""Reorders in place: L0 → Ln → L1 → Ln-1 → ..."""</span>
+    <span class="kw">if</span> <span class="kw">not</span> head:
+        <span class="kw">return</span>
+
+    <span class="cm"># Step 1: Find middle</span>
+    slow = fast = head
+    <span class="kw">while</span> fast.next <span class="kw">and</span> fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
+
+    <span class="cm"># Step 2: Reverse second half</span>
+    second = slow.next
+    slow.next = <span class="kw">None</span>   <span class="cm"># cut the list</span>
+    prev = <span class="kw">None</span>
+    <span class="kw">while</span> second:
+        nxt = second.next
+        second.next = prev
+        prev = second
+        second = nxt
+    second = prev   <span class="cm"># head of the reversed second half</span>
+
+    <span class="cm"># Step 3: Merge by alternating nodes</span>
+    first = head
+    <span class="kw">while</span> second:
+        tmp1, tmp2 = first.next, second.next
+        first.next = second
+        second.next = tmp1
+        first, second = tmp1, tmp2
+
+head = <span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>])
+<span class="fn">reorder_list</span>(head)
+print(<span class="fn">to_list</span>(head))   <span class="cm"># [1, 5, 2, 4, 3]   i.e. 1→2→3→4→5 becomes 1→5→2→4→3</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Linked List Cycle</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Return True if following <code>next</code> pointers ever brings you back to a node you've already visited.<br><br>
+        <strong>Think:</strong> Floyd's tortoise and hare. slow moves 1 step, fast moves 2. With no cycle, fast falls off the end. With a cycle, fast laps slow and they land on the <strong>same node object</strong> — compare with <code>is</code> (identity), not <code>==</code> (two different nodes can hold equal values).
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Start slow and fast at head.</div></div>
+      <div class="step"><div class="step-num">2</div><div>While fast and fast.next exist: slow = slow.next, fast = fast.next.next.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If <code>slow is fast</code> → cycle. If the loop ends → no cycle.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Floyd's Tortoise &amp; Hare</div>
+        <pre><span class="kw">def</span> <span class="fn">has_cycle</span>(head: Optional[ListNode]) -&gt; bool:
+    slow = fast = head
+    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+        slow = slow.next          <span class="cm"># 1 step</span>
+        fast = fast.next.next     <span class="cm"># 2 steps</span>
+        <span class="kw">if</span> slow <span class="kw">is</span> fast:          <span class="cm"># same node OBJECT, not just equal values</span>
+            <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">return</span> <span class="kw">False</span>               <span class="cm"># fast reached the end → no loop</span>
+
+head = <span class="fn">build</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">0</span>, -<span class="num">4</span>])
+print(<span class="fn">has_cycle</span>(head))   <span class="cm"># False</span>
+
+tail = head
+<span class="kw">while</span> tail.next:
+    tail = tail.next
+tail.next = head.next    <span class="cm"># -4 → 2 creates a loop (don't call to_list now — it would never end!)</span>
+print(<span class="fn">has_cycle</span>(head))   <span class="cm"># True</span>
+print(<span class="fn">has_cycle</span>(<span class="kw">None</span>))   <span class="cm"># False</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Middle of the Linked List</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Same slow/fast trick. fast moves twice as fast, so when fast reaches the end, slow is halfway. For an even length there are two middles — this loop stops on the <strong>second</strong> one (the LeetCode convention).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">middle_node</span>(head: Optional[ListNode]) -&gt; Optional[ListNode]:
+    slow = fast = head
+    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+        slow = slow.next
+        fast = fast.next.next
+    <span class="kw">return</span> slow   <span class="cm"># even length → second middle</span>
+
+print(<span class="fn">to_list</span>(<span class="fn">middle_node</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]))))      <span class="cm"># [3, 4, 5]</span>
+print(<span class="fn">to_list</span>(<span class="fn">middle_node</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>]))))   <span class="cm"># [4, 5, 6]</span>
+print(<span class="fn">middle_node</span>(<span class="fn">build</span>([<span class="num">1</span>])))                         <span class="cm"># ListNode(1)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">07</span><span class="solution-title">LRU Cache</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Design a cache with a fixed capacity. <code>get(key)</code> returns the value or -1; <code>put(key, value)</code> inserts/updates, and when over capacity evicts the <strong>least recently used</strong> key. Both must be O(1).<br><br>
+        <strong>Think:</strong> A dict gives O(1) lookup but no notion of "oldest". A doubly linked list gives O(1) move/remove but no lookup. Combine them: dict maps key → node, list keeps nodes in usage order. Python's <code>OrderedDict</code> is exactly this combination built in.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>On get: if present, move the key to the "most recent" end and return its value.</div></div>
+      <div class="step"><div class="step-num">2</div><div>On put: insert/update the key and move it to the "most recent" end.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If size &gt; capacity: remove the item at the "least recent" end.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(1) per get/put</span></div>
+        <div class="ci-item">Space: <span>O(capacity)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — OrderedDict (idiomatic Python)</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> OrderedDict
+
+<span class="kw">class</span> <span class="cls">LRUCache</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, capacity: int):
+        <span class="kw">self</span>.capacity = capacity
+        <span class="kw">self</span>.cache = <span class="cls">OrderedDict</span>()   <span class="cm"># key → value, least recent first</span>
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="kw">self</span>, key: int) -&gt; int:
+        <span class="kw">if</span> key <span class="kw">not in</span> <span class="kw">self</span>.cache:
+            <span class="kw">return</span> -<span class="num">1</span>
+        <span class="kw">self</span>.cache.move_to_end(key)       <span class="cm"># mark as most recently used</span>
+        <span class="kw">return</span> <span class="kw">self</span>.cache[key]
+
+    <span class="kw">def</span> <span class="fn">put</span>(<span class="kw">self</span>, key: int, value: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> key <span class="kw">in</span> <span class="kw">self</span>.cache:
+            <span class="kw">self</span>.cache.move_to_end(key)
+        <span class="kw">self</span>.cache[key] = value
+        <span class="kw">if</span> len(<span class="kw">self</span>.cache) &gt; <span class="kw">self</span>.capacity:
+            <span class="kw">self</span>.cache.popitem(last=<span class="kw">False</span>)  <span class="cm"># evict from the FRONT = least recent</span>
+
+cache = <span class="cls">LRUCache</span>(<span class="num">2</span>)
+cache.put(<span class="num">1</span>, <span class="num">1</span>)
+cache.put(<span class="num">2</span>, <span class="num">2</span>)
+print(cache.get(<span class="num">1</span>))   <span class="cm"># 1</span>
+cache.put(<span class="num">3</span>, <span class="num">3</span>)       <span class="cm"># evicts key 2 (key 1 was just used)</span>
+print(cache.get(<span class="num">2</span>))   <span class="cm"># -1</span>
+cache.put(<span class="num">4</span>, <span class="num">4</span>)       <span class="cm"># evicts key 1</span>
+print(cache.get(<span class="num">1</span>))   <span class="cm"># -1</span>
+print(cache.get(<span class="num">3</span>))   <span class="cm"># 3</span>
+print(cache.get(<span class="num">4</span>))   <span class="cm"># 4</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — dict + Doubly Linked List with Sentinels (what interviewers want)</div>
+        <pre><span class="kw">class</span> <span class="cls">DNode</span>:
+    __slots__ = (<span class="str">"key"</span>, <span class="str">"val"</span>, <span class="str">"prev"</span>, <span class="str">"next"</span>)
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, key: int = <span class="num">0</span>, val: int = <span class="num">0</span>):
+        <span class="kw">self</span>.key = key       <span class="cm"># stored so eviction can delete it from the dict</span>
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.prev = <span class="kw">None</span>
+        <span class="kw">self</span>.next = <span class="kw">None</span>
+
+
+<span class="kw">class</span> <span class="cls">LRUCacheDLL</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, capacity: int):
+        <span class="kw">self</span>.capacity = capacity
+        <span class="kw">self</span>.map = {}                <span class="cm"># key → DNode</span>
+        <span class="kw">self</span>.head = <span class="cls">DNode</span>()          <span class="cm"># sentinel: head.next is MOST recent</span>
+        <span class="kw">self</span>.tail = <span class="cls">DNode</span>()          <span class="cm"># sentinel: tail.prev is LEAST recent</span>
+        <span class="kw">self</span>.head.next = <span class="kw">self</span>.tail   <span class="cm"># sentinels mean no None checks anywhere</span>
+        <span class="kw">self</span>.tail.prev = <span class="kw">self</span>.head
+
+    <span class="kw">def</span> <span class="fn">_remove</span>(<span class="kw">self</span>, node: <span class="cls">DNode</span>) -&gt; <span class="kw">None</span>:
+        node.prev.next = node.next
+        node.next.prev = node.prev
+
+    <span class="kw">def</span> <span class="fn">_add_front</span>(<span class="kw">self</span>, node: <span class="cls">DNode</span>) -&gt; <span class="kw">None</span>:
+        node.prev = <span class="kw">self</span>.head
+        node.next = <span class="kw">self</span>.head.next
+        <span class="kw">self</span>.head.next.prev = node
+        <span class="kw">self</span>.head.next = node
+
+    <span class="kw">def</span> <span class="fn">get</span>(<span class="kw">self</span>, key: int) -&gt; int:
+        <span class="kw">if</span> key <span class="kw">not in</span> <span class="kw">self</span>.map:
+            <span class="kw">return</span> -<span class="num">1</span>
+        node = <span class="kw">self</span>.map[key]
+        <span class="kw">self</span>.<span class="fn">_remove</span>(node)          <span class="cm"># unlink…</span>
+        <span class="kw">self</span>.<span class="fn">_add_front</span>(node)       <span class="cm"># …and relink as most recent</span>
+        <span class="kw">return</span> node.val
+
+    <span class="kw">def</span> <span class="fn">put</span>(<span class="kw">self</span>, key: int, value: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> key <span class="kw">in</span> <span class="kw">self</span>.map:
+            <span class="kw">self</span>.<span class="fn">_remove</span>(<span class="kw">self</span>.map[key])
+        node = <span class="cls">DNode</span>(key, value)
+        <span class="kw">self</span>.map[key] = node
+        <span class="kw">self</span>.<span class="fn">_add_front</span>(node)
+        <span class="kw">if</span> len(<span class="kw">self</span>.map) &gt; <span class="kw">self</span>.capacity:
+            lru = <span class="kw">self</span>.tail.prev        <span class="cm"># least recently used real node</span>
+            <span class="kw">self</span>.<span class="fn">_remove</span>(lru)
+            <span class="kw">del</span> <span class="kw">self</span>.map[lru.key]
+
+cache = <span class="cls">LRUCacheDLL</span>(<span class="num">2</span>)
+cache.put(<span class="num">1</span>, <span class="num">1</span>)
+cache.put(<span class="num">2</span>, <span class="num">2</span>)
+print(cache.get(<span class="num">1</span>))   <span class="cm"># 1</span>
+cache.put(<span class="num">3</span>, <span class="num">3</span>)       <span class="cm"># evicts key 2</span>
+print(cache.get(<span class="num">2</span>))   <span class="cm"># -1</span>
+cache.put(<span class="num">4</span>, <span class="num">4</span>)       <span class="cm"># evicts key 1</span>
+print(cache.get(<span class="num">1</span>))   <span class="cm"># -1</span>
+print(cache.get(<span class="num">3</span>))   <span class="cm"># 3</span>
+print(cache.get(<span class="num">4</span>))   <span class="cm"># 4</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-04-sorting.html" class="footer-back">← Sorting Solutions</a>
+    <a href="sol-06-stacks.html" class="footer-next">Stack Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

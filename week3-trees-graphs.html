@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 3 — Trees &amp; Graphs | DSA Mastery in Python</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=DM+Serif+Display&display=swap');
+  :root{--bg:#0b0c10;--surface:#12141a;--surface2:#1a1d26;--border:#222531;--accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--warn:#ffc947;--text:#e8eaf0;--muted:#7a7f99;--dim:#3a3f52}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:1.7}
+  .container{max-width:880px;margin:0 auto;padding:0 24px}
+  .topnav{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .topnav a{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;color:var(--muted);text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:100px;transition:0.18s}
+  .topnav a:hover,.topnav a.active{border-color:var(--accent);color:var(--accent)}
+  .topnav .brand{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);border:none;padding:0;margin-right:auto}
+  .week-hero{padding:80px 0 60px;position:relative}
+  .week-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 50% 10%,rgba(255,107,107,0.08) 0%,transparent 70%);pointer-events:none}
+  .week-num{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+  .week-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,5vw,3.5rem);line-height:1.1;margin-bottom:20px}
+  .week-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+  .day-section{padding:60px 0;border-top:1px solid var(--border)}
+  .day-label{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .day-section h2{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);line-height:1.15;margin-bottom:16px}
+  .day-section>p,.topic-block p{color:var(--muted);font-size:0.92rem;line-height:1.75;margin-bottom:16px}
+  .day-section>p strong,.topic-block p strong{color:var(--text)}
+  .topic-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin:24px 0;position:relative;overflow:hidden}
+  .topic-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+  .topic-block h3{font-size:1.05rem;font-weight:600;margin-bottom:12px}
+  .topic-block.teal::before{background:var(--accent2)}.topic-block.red::before{background:var(--accent3)}.topic-block.yellow::before{background:var(--warn)}
+  .code-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:20px 0}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
+  .code-title{font-family:'Space Mono',monospace;font-size:0.73rem;color:var(--muted)}
+  .code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%}
+  .d1{background:#ff5f57}.d2{background:#ffbd2e}.d3{background:#28c940}
+  pre{padding:24px;overflow-x:auto;font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.85;color:var(--text)}
+  .cmt{color:var(--dim);font-style:italic}.kw{color:#c792ea}.fn{color:#82aaff}.str{color:#c3e88d}.num{color:#f78c6c}.cls{color:#ffcb6b}
+  .insight{border-left:3px solid var(--accent2);padding:16px 22px;background:rgba(0,212,170,0.04);border-radius:0 10px 10px 0;margin:20px 0;font-size:0.88rem;color:var(--muted)}
+  .insight strong{color:var(--accent2);display:block;margin-bottom:4px;font-size:0.82rem;font-family:'Space Mono',monospace;letter-spacing:0.05em}
+  .insight.warn{border-left-color:var(--warn);background:rgba(255,201,71,0.04)}.insight.warn strong{color:var(--warn)}
+  footer{text-align:center;padding:60px 24px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--dim);font-family:'Space Mono',monospace}
+  @media(max-width:600px){pre{font-size:0.7rem;padding:16px}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="dsa-mastery-python.html" class="brand">DSA Mastery in Python</a>
+  <a href="week1-foundation.html">Week 1</a>
+  <a href="week2-core-patterns.html">Week 2</a>
+  <a href="week3-trees-graphs.html" class="active">Week 3</a>
+  <a href="week4-dp-synthesis.html">Week 4</a>
+</nav>
+
+<div class="container">
+
+<div class="week-hero">
+  <div class="week-num">Week 3 of 4</div>
+  <h1>Trees &amp; Graphs</h1>
+  <p>Trees are recursive problems with a fancy name. Graphs are trees with cycles. Once you see that, everything clicks. This week turns abstract data structures into pattern-recognition reflexes — written in clean, idiomatic Python.</p>
+</div>
+
+<!-- ============ DAY 15 ============ -->
+<div class="day-section" id="day15">
+  <div class="day-label">Day 15 · 90 min</div>
+  <h2>Binary Tree DFS — Recursive</h2>
+  <p>The key question for every tree DFS problem: <strong>"What do I need from my children to answer my parent?"</strong> That's it. Every recursive tree solution answers this one question.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">tree_node.py</span>
+    </div>
+    <pre><span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+
+<span class="kw">class</span> <span class="cls">TreeNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val: int = <span class="num">0</span>, left: <span class="str">"Optional[TreeNode]"</span> = <span class="kw">None</span>,
+                 right: <span class="str">"Optional[TreeNode]"</span> = <span class="kw">None</span>):
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.left = left
+        <span class="kw">self</span>.right = right
+
+
+<span class="cmt"># Example tree used on this page:      3
+#                                     / \
+#                                    9   20
+#                                       /  \
+#                                      15   7</span>
+root = <span class="cls">TreeNode</span>(<span class="num">3</span>, <span class="cls">TreeNode</span>(<span class="num">9</span>), <span class="cls">TreeNode</span>(<span class="num">20</span>, <span class="cls">TreeNode</span>(<span class="num">15</span>), <span class="cls">TreeNode</span>(<span class="num">7</span>)))</pre>
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Maximum Depth of Binary Tree</h3>
+    <p>The simplest recursive tree problem. Master this template — everything else builds on it.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">max_depth.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(h) space where h = height</span>
+<span class="kw">def</span> <span class="fn">max_depth</span>(root: Optional[TreeNode]) -&gt; int:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="num">0</span>  <span class="cmt"># base case: None node has depth 0</span>
+    <span class="kw">return</span> <span class="num">1</span> + <span class="fn">max</span>(<span class="fn">max_depth</span>(root.left), <span class="fn">max_depth</span>(root.right))
+
+
+<span class="fn">print</span>(<span class="fn">max_depth</span>(root))  <span class="cmt"># 3</span>
+
+<span class="cmt"># Read it aloud: "My depth = 1 + the deeper of my children."
+# That's the recursive template. base case → ask children → combine.</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Invert Binary Tree</h3>
+    <p>Swap every left and right child in the tree.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">invert_tree.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(h) space</span>
+<span class="kw">def</span> <span class="fn">invert_tree</span>(root: Optional[TreeNode]) -&gt; Optional[TreeNode]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="kw">None</span>
+    <span class="cmt"># Swap children — tuple unpacking, no temp variable needed</span>
+    root.left, root.right = root.right, root.left
+    <span class="cmt"># Recurse on both sides</span>
+    <span class="fn">invert_tree</span>(root.left)
+    <span class="fn">invert_tree</span>(root.right)
+    <span class="kw">return</span> root
+
+
+small = <span class="fn">invert_tree</span>(<span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">1</span>), <span class="cls">TreeNode</span>(<span class="num">3</span>)))
+<span class="fn">print</span>(small.left.val, small.right.val)  <span class="cmt"># 3 1</span>
+
+<span class="cmt"># Same template: base case → do work at node → recurse children</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Path Sum</h3>
+    <p>Given a root and a target sum, determine if there's a root-to-leaf path that sums to the target.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">path_sum.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(h) space</span>
+<span class="kw">def</span> <span class="fn">has_path_sum</span>(root: Optional[TreeNode], target_sum: int) -&gt; bool:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="cmt"># Leaf node — does remaining sum equal this node?</span>
+    <span class="kw">if</span> <span class="kw">not</span> root.left <span class="kw">and</span> <span class="kw">not</span> root.right:
+        <span class="kw">return</span> target_sum == root.val
+
+    <span class="cmt"># Subtract current value, recurse on children</span>
+    remaining = target_sum - root.val
+    <span class="kw">return</span> <span class="fn">has_path_sum</span>(root.left, remaining) <span class="kw">or</span> <span class="fn">has_path_sum</span>(root.right, remaining)
+
+
+<span class="fn">print</span>(<span class="fn">has_path_sum</span>(root, <span class="num">30</span>))  <span class="cmt"># True  (3 → 20 → 7)</span>
+<span class="fn">print</span>(<span class="fn">has_path_sum</span>(root, <span class="num">13</span>))  <span class="cmt"># False</span>
+
+<span class="cmt"># Pattern: DFS with remaining target
+# Trick: subtract as you go down, check at leaf nodes
+# This extends to "all paths" via backtracking (path.append / path.pop)</span></pre>
+  </div>
+
+  <div class="insight">
+    <strong>THE 3 DFS TRAVERSALS</strong>
+    Preorder: node → left → right (used for copying/serializing trees). Inorder: left → node → right (gives sorted order in BST). Postorder: left → right → node (used when you need children's results first). Know which one you need before writing code.
+  </div>
+
+  <div class="insight warn">
+    <strong>PYTHON GOTCHA: RECURSION DEPTH</strong>
+    CPython's default recursion limit is about 1000 frames. A balanced tree of a million nodes is only ~20 deep, but a skewed tree (a "linked list" shaped tree) can blow the limit with a <code>RecursionError</code>. In interviews, mention it and either use an explicit stack (iterative DFS) or <code>sys.setrecursionlimit(10**6)</code>.
+  </div>
+</div>
+
+<!-- ============ DAY 16 ============ -->
+<div class="day-section" id="day16">
+  <div class="day-label">Day 16 · 90 min</div>
+  <h2>Binary Tree BFS — Level Order</h2>
+  <p>BFS uses a queue, processes level by level. The template is almost identical for every BFS tree problem — memorize it once. In Python the queue is always <strong><code>collections.deque</code></strong>: <code>popleft()</code> is O(1), while <code>list.pop(0)</code> is O(n) because every element shifts.</p>
+
+  <div class="topic-block">
+    <h3>The BFS Level-Order Template</h3>
+    <p>This single template solves 80% of tree BFS problems with minimal modifications.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">level_order_traversal.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+
+<span class="cmt"># O(n) time, O(w) space where w = max width</span>
+<span class="kw">def</span> <span class="fn">level_order</span>(root: Optional[TreeNode]) -&gt; List[List[int]]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> []
+    result = []
+    queue = <span class="fn">deque</span>([root])
+
+    <span class="kw">while</span> queue:
+        level_size = <span class="fn">len</span>(queue)  <span class="cmt"># snapshot current level size</span>
+        level = []
+
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(level_size):
+            node = queue.<span class="fn">popleft</span>()  <span class="cmt"># O(1) — never list.pop(0), that's O(n)</span>
+            level.<span class="fn">append</span>(node.val)
+            <span class="kw">if</span> node.left:
+                queue.<span class="fn">append</span>(node.left)
+            <span class="kw">if</span> node.right:
+                queue.<span class="fn">append</span>(node.right)
+        result.<span class="fn">append</span>(level)
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">level_order</span>(root))  <span class="cmt"># [[3], [9, 20], [15, 7]]</span>
+
+<span class="cmt"># THE KEY: `level_size = len(queue)` before the inner loop.
+# This snapshots how many nodes are in the current level,
+# so the inner loop processes exactly one level at a time.</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Binary Tree Right Side View</h3>
+    <p>Return the values visible from the right side — the last node of each level.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">right_side_view.py</span>
+    </div>
+    <pre><span class="cmt"># Same BFS template — just take the last node of each level</span>
+<span class="kw">def</span> <span class="fn">right_side_view</span>(root: Optional[TreeNode]) -&gt; List[int]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> []
+    result = []
+    queue = <span class="fn">deque</span>([root])
+
+    <span class="kw">while</span> queue:
+        level_size = <span class="fn">len</span>(queue)
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(level_size):
+            node = queue.<span class="fn">popleft</span>()
+            <span class="kw">if</span> i == level_size - <span class="num">1</span>:
+                result.<span class="fn">append</span>(node.val)  <span class="cmt"># rightmost</span>
+            <span class="kw">if</span> node.left:
+                queue.<span class="fn">append</span>(node.left)
+            <span class="kw">if</span> node.right:
+                queue.<span class="fn">append</span>(node.right)
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">right_side_view</span>(root))  <span class="cmt"># [3, 20, 7]</span>
+
+<span class="cmt"># Same template, one line changed. That's the power of templates.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 17 ============ -->
+<div class="day-section" id="day17">
+  <div class="day-label">Day 17 · 90 min</div>
+  <h2>Binary Search Tree Properties</h2>
+  <p>A BST's superpower: <strong>inorder traversal gives sorted order</strong>. Once you see that, BST problems become sorted-array problems.</p>
+
+  <div class="topic-block">
+    <h3>Problem 1: Validate BST</h3>
+    <p>Determine if a binary tree is a valid binary search tree.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">validate_bst.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(h) space — pass valid range down</span>
+<span class="kw">def</span> <span class="fn">is_valid_bst</span>(root: Optional[TreeNode],
+                 low: float = <span class="fn">float</span>(<span class="str">'-inf'</span>), high: float = <span class="fn">float</span>(<span class="str">'inf'</span>)) -&gt; bool:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">if</span> <span class="kw">not</span> (low &lt; root.val &lt; high):  <span class="cmt"># Python chained comparison</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">return</span> (<span class="fn">is_valid_bst</span>(root.left, low, root.val) <span class="kw">and</span>
+            <span class="fn">is_valid_bst</span>(root.right, root.val, high))
+
+
+<span class="cmt">#        5
+#      /   \
+#     3     7
+#    / \   / \
+#   2   4 6   8</span>
+bst = <span class="cls">TreeNode</span>(<span class="num">5</span>, <span class="cls">TreeNode</span>(<span class="num">3</span>, <span class="cls">TreeNode</span>(<span class="num">2</span>), <span class="cls">TreeNode</span>(<span class="num">4</span>)),
+               <span class="cls">TreeNode</span>(<span class="num">7</span>, <span class="cls">TreeNode</span>(<span class="num">6</span>), <span class="cls">TreeNode</span>(<span class="num">8</span>)))
+<span class="fn">print</span>(<span class="fn">is_valid_bst</span>(bst))   <span class="cmt"># True</span>
+<span class="fn">print</span>(<span class="fn">is_valid_bst</span>(root))  <span class="cmt"># False  (9 is the left child of 3, but 9 &gt; 3)</span>
+
+<span class="cmt"># COMMON MISTAKE: only checking node &gt; left and node &lt; right.
+# That misses cases where a deep node violates an ancestor's constraint.
+# FIX: pass low/high bounds down the recursion.
+# (Named low/high, not min/max — don't shadow Python's built-ins.)</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Kth Smallest Element in BST</h3>
+    <p>Find the kth smallest element. This is where "inorder = sorted" pays off.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">kth_smallest_bst.py</span>
+    </div>
+    <pre><span class="cmt"># O(H + k) time — inorder traversal, stop at kth</span>
+<span class="kw">def</span> <span class="fn">kth_smallest</span>(root: Optional[TreeNode], k: int) -&gt; Optional[int]:
+    stack = []  <span class="cmt"># a plain list is a perfect stack: append/pop are O(1)</span>
+    curr = root
+    count = <span class="num">0</span>
+
+    <span class="kw">while</span> curr <span class="kw">or</span> stack:
+        <span class="cmt"># Go as far left as possible</span>
+        <span class="kw">while</span> curr:
+            stack.<span class="fn">append</span>(curr)
+            curr = curr.left
+        curr = stack.<span class="fn">pop</span>()
+        count += <span class="num">1</span>
+        <span class="kw">if</span> count == k:
+            <span class="kw">return</span> curr.val
+        curr = curr.right
+    <span class="kw">return</span> <span class="kw">None</span>
+
+
+<span class="fn">print</span>(<span class="fn">kth_smallest</span>(bst, <span class="num">3</span>))  <span class="cmt"># 4   (sorted: 2, 3, 4, 5, 6, 7, 8)</span>
+
+<span class="cmt"># ITERATIVE inorder: push all lefts → pop → process → go right.
+# This is the iterative DFS inorder template. Memorize it.
+# Why iterative? You can stop early at k without processing all n nodes.
+
+# PYTHONIC BONUS: a generator is lazy too — it also stops early.</span>
+<span class="kw">from</span> itertools <span class="kw">import</span> islice
+
+
+<span class="kw">def</span> <span class="fn">inorder</span>(node: Optional[TreeNode]):
+    <span class="kw">if</span> node:
+        <span class="kw">yield from</span> <span class="fn">inorder</span>(node.left)
+        <span class="kw">yield</span> node.val
+        <span class="kw">yield from</span> <span class="fn">inorder</span>(node.right)
+
+
+<span class="fn">print</span>(<span class="fn">next</span>(<span class="fn">islice</span>(<span class="fn">inorder</span>(bst), <span class="num">3</span> - <span class="num">1</span>, <span class="kw">None</span>)))  <span class="cmt"># 4</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">inorder</span>(bst)))                       <span class="cmt"># [2, 3, 4, 5, 6, 7, 8]</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 18 ============ -->
+<div class="day-section" id="day18">
+  <div class="day-label">Day 18 · 90 min</div>
+  <h2>Graphs — DFS &amp; BFS on Adjacency List</h2>
+  <p>A graph is just a tree that might have cycles and multiple parents. Two things change: you <strong>build the graph from edges</strong>, and you track a <strong>visited set</strong> to avoid infinite loops.</p>
+
+  <div class="topic-block">
+    <h3>Building a Graph in Python</h3>
+    <p>Always convert edge lists to adjacency lists first. This is step 0 for every graph problem. <strong><code>collections.defaultdict(list)</code></strong> is the idiomatic adjacency list: a missing key silently becomes an empty list, so you never write "if key not in graph" boilerplate.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">build_graph.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque
+<span class="kw">from</span> typing <span class="kw">import</span> Dict, List
+
+
+<span class="cmt"># From edge list to adjacency list</span>
+<span class="kw">def</span> <span class="fn">build_graph</span>(n: int, edges: List[List[int]]) -&gt; Dict[int, List[int]]:
+    graph = <span class="fn">defaultdict</span>(list)  <span class="cmt"># missing key → [] automatically</span>
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        graph[u].<span class="fn">append</span>(v)
+        graph[v].<span class="fn">append</span>(u)  <span class="cmt"># omit for directed graph</span>
+    <span class="kw">return</span> graph
+    <span class="cmt"># Need all nodes 0..n-1 present, even isolated ones? Use:
+    #     graph = {i: [] for i in range(n)}</span>
+
+
+g = <span class="fn">build_graph</span>(<span class="num">4</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>]])
+<span class="fn">print</span>(<span class="fn">dict</span>(g))  <span class="cmt"># {0: [1], 1: [0, 2], 2: [1, 3], 3: [2]}</span>
+
+
+<span class="cmt"># Graph BFS — deque for the queue, set for visited (O(1) membership)</span>
+<span class="kw">def</span> <span class="fn">bfs</span>(graph: Dict[int, List[int]], start: int) -&gt; List[int]:
+    visited = {start}
+    queue = <span class="fn">deque</span>([start])
+    order = []
+    <span class="kw">while</span> queue:
+        node = queue.<span class="fn">popleft</span>()
+        order.<span class="fn">append</span>(node)
+        <span class="kw">for</span> nei <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> nei <span class="kw">not in</span> visited:
+                visited.<span class="fn">add</span>(nei)  <span class="cmt"># mark when ENQUEUED, not when popped</span>
+                queue.<span class="fn">append</span>(nei)
+    <span class="kw">return</span> order
+
+
+<span class="fn">print</span>(<span class="fn">bfs</span>(g, <span class="num">0</span>))  <span class="cmt"># [0, 1, 2, 3]</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 1: Number of Islands (Grid DFS)</h3>
+    <p>Count the number of islands in a 2D grid of '1' (land) and '0' (water).</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">number_of_islands.py</span>
+    </div>
+    <pre><span class="cmt"># O(rows × cols) time and space</span>
+<span class="kw">def</span> <span class="fn">num_islands</span>(grid: List[List[str]]) -&gt; int:
+    <span class="kw">if</span> <span class="kw">not</span> grid:
+        <span class="kw">return</span> <span class="num">0</span>
+    rows, cols = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])
+    count = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(r: int, c: int) -&gt; <span class="kw">None</span>:
+        <span class="cmt"># Bounds check + already visited/water</span>
+        <span class="kw">if</span> <span class="kw">not</span> (<span class="num">0</span> &lt;= r &lt; rows <span class="kw">and</span> <span class="num">0</span> &lt;= c &lt; cols) <span class="kw">or</span> grid[r][c] == <span class="str">'0'</span>:
+            <span class="kw">return</span>
+        grid[r][c] = <span class="str">'0'</span>  <span class="cmt"># mark visited (sink the island)</span>
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):
+            <span class="fn">dfs</span>(r + dr, c + dc)
+
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+            <span class="kw">if</span> grid[r][c] == <span class="str">'1'</span>:
+                count += <span class="num">1</span>
+                <span class="fn">dfs</span>(r, c)  <span class="cmt"># sink entire island</span>
+    <span class="kw">return</span> count
+
+
+grid = [<span class="fn">list</span>(<span class="str">"11000"</span>),
+        <span class="fn">list</span>(<span class="str">"11000"</span>),
+        <span class="fn">list</span>(<span class="str">"00100"</span>),
+        <span class="fn">list</span>(<span class="str">"00011"</span>)]
+<span class="fn">print</span>(<span class="fn">num_islands</span>(grid))  <span class="cmt"># 3</span>
+
+<span class="cmt"># Pattern: Grid DFS — treat grid as implicit graph
+# "visited" = mutate grid in-place (or use a set of (r, c) tuples)
+# 4 directions: down, up, right, left
+# Nested dfs can READ rows/cols from the enclosing scope. If it had to
+# REASSIGN count, you'd need `nonlocal count` inside dfs.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 19 ============ -->
+<div class="day-section" id="day19">
+  <div class="day-label">Day 19 · 90 min</div>
+  <h2>Topological Sort &amp; Cycle Detection</h2>
+  <p>Topological sort orders nodes so every edge goes from earlier to later. It only works on <strong>directed acyclic graphs (DAGs)</strong>. If there's a cycle, no valid ordering exists — so topological sort doubles as cycle detection.</p>
+
+  <div class="topic-block">
+    <h3>Problem: Course Schedule (Can you finish all courses?)</h3>
+    <p>Given n courses and prerequisites [a, b] meaning "take b before a", determine if all courses can be completed.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">course_schedule_bfs.py — Kahn's Algorithm</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque
+
+
+<span class="cmt"># BFS Topological Sort (Kahn's) — O(V + E)</span>
+<span class="kw">def</span> <span class="fn">can_finish</span>(num_courses: int, prerequisites: List[List[int]]) -&gt; bool:
+    graph = <span class="fn">defaultdict</span>(list)
+    in_degree = [<span class="num">0</span>] * num_courses
+
+    <span class="kw">for</span> a, b <span class="kw">in</span> prerequisites:
+        graph[b].<span class="fn">append</span>(a)  <span class="cmt"># b → a</span>
+        in_degree[a] += <span class="num">1</span>
+
+    <span class="cmt"># Start with nodes that have no prerequisites</span>
+    queue = <span class="fn">deque</span>(i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(num_courses) <span class="kw">if</span> in_degree[i] == <span class="num">0</span>)
+
+    completed = <span class="num">0</span>
+    <span class="kw">while</span> queue:
+        course = queue.<span class="fn">popleft</span>()
+        completed += <span class="num">1</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> graph[course]:  <span class="cmt"># `nxt`, not `next` — don't shadow built-ins</span>
+            in_degree[nxt] -= <span class="num">1</span>
+            <span class="kw">if</span> in_degree[nxt] == <span class="num">0</span>:
+                queue.<span class="fn">append</span>(nxt)
+    <span class="kw">return</span> completed == num_courses  <span class="cmt"># False if cycle exists</span>
+
+
+<span class="fn">print</span>(<span class="fn">can_finish</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>]]))          <span class="cmt"># True</span>
+<span class="fn">print</span>(<span class="fn">can_finish</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">1</span>]]))  <span class="cmt"># False (cycle)</span>
+
+<span class="cmt"># Kahn's Algorithm:
+# 1. Count in-degrees for all nodes
+# 2. Start BFS from nodes with in-degree 0
+# 3. For each processed node, reduce neighbors' in-degree
+# 4. If processed count &lt; total nodes → cycle exists</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Course Schedule II — Return the ordering</h3>
+    <p>Same as above, but return the actual order of courses.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">course_schedule_ii.py</span>
+    </div>
+    <pre><span class="cmt"># Just collect the order — same Kahn's with a result list</span>
+<span class="kw">def</span> <span class="fn">find_order</span>(num_courses: int, prerequisites: List[List[int]]) -&gt; List[int]:
+    graph = <span class="fn">defaultdict</span>(list)
+    in_degree = [<span class="num">0</span>] * num_courses
+
+    <span class="kw">for</span> a, b <span class="kw">in</span> prerequisites:
+        graph[b].<span class="fn">append</span>(a)
+        in_degree[a] += <span class="num">1</span>
+
+    queue = <span class="fn">deque</span>(i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(num_courses) <span class="kw">if</span> in_degree[i] == <span class="num">0</span>)
+
+    order = []
+    <span class="kw">while</span> queue:
+        course = queue.<span class="fn">popleft</span>()
+        order.<span class="fn">append</span>(course)  <span class="cmt"># ← only difference: collect the order</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> graph[course]:
+            in_degree[nxt] -= <span class="num">1</span>  <span class="cmt"># Python has no -- operator (--x is just x!)</span>
+            <span class="kw">if</span> in_degree[nxt] == <span class="num">0</span>:
+                queue.<span class="fn">append</span>(nxt)
+    <span class="kw">return</span> order <span class="kw">if</span> <span class="fn">len</span>(order) == num_courses <span class="kw">else</span> []
+
+
+<span class="fn">print</span>(<span class="fn">find_order</span>(<span class="num">4</span>, [[<span class="num">1</span>, <span class="num">0</span>], [<span class="num">2</span>, <span class="num">0</span>], [<span class="num">3</span>, <span class="num">1</span>], [<span class="num">3</span>, <span class="num">2</span>]]))  <span class="cmt"># [0, 1, 2, 3]</span>
+<span class="fn">print</span>(<span class="fn">find_order</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">1</span>]]))                  <span class="cmt"># []</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 20 ============ -->
+<div class="day-section" id="day20">
+  <div class="day-label">Day 20 · 90 min</div>
+  <h2>Backtracking Deep Dive</h2>
+  <p>Backtracking = DFS + undo. The template: <strong>choose → explore → unchoose</strong>. It generates all possible solutions by trying every path and undoing when a path fails or completes.</p>
+
+  <div class="insight">
+    <strong>PATTERN TRIGGER</strong>
+    "All permutations", "all combinations", "all subsets", "generate all X" → Backtracking.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Subsets</h3>
+    <p>Given a set of distinct integers, return all possible subsets.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">subsets.py</span>
+    </div>
+    <pre><span class="cmt"># O(n × 2^n) time and space</span>
+<span class="kw">def</span> <span class="fn">subsets</span>(nums: List[int]) -&gt; List[List[int]]:
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start: int, current: List[int]) -&gt; <span class="kw">None</span>:
+        result.<span class="fn">append</span>(current[:])  <span class="cmt"># COPY! appending `current` stores a reference</span>
+
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(nums)):
+            current.<span class="fn">append</span>(nums[i])   <span class="cmt"># CHOOSE</span>
+            <span class="fn">backtrack</span>(i + <span class="num">1</span>, current)  <span class="cmt"># EXPLORE</span>
+            current.<span class="fn">pop</span>()            <span class="cmt"># UNCHOOSE (backtrack!)</span>
+
+    <span class="fn">backtrack</span>(<span class="num">0</span>, [])
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">subsets</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))
+<span class="cmt"># [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]</span></pre>
+  </div>
+
+  <div class="insight warn">
+    <strong>PYTHON GOTCHA: REFERENCES, NOT COPIES</strong>
+    <code>result.append(current)</code> stores a reference to the same list object you keep mutating — at the end every entry would be the same (empty) list. Always snapshot with <code>current[:]</code> or <code>list(current)</code>. The same trap bites <code>[[0] * n] * m</code> for 2D grids (m references to one row) — use <code>[[0] * n for _ in range(m)]</code>.
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Permutations</h3>
+    <p>Given distinct integers, return all possible permutations.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">permutations.py</span>
+    </div>
+    <pre><span class="cmt"># O(n! × n) time and space</span>
+<span class="kw">def</span> <span class="fn">permute</span>(nums: List[int]) -&gt; List[List[int]]:
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(current: List[int], remaining: List[int]) -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> <span class="kw">not</span> remaining:
+            result.<span class="fn">append</span>(current[:])
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(remaining)):
+            current.<span class="fn">append</span>(remaining[i])                         <span class="cmt"># CHOOSE</span>
+            <span class="fn">backtrack</span>(current, remaining[:i] + remaining[i + <span class="num">1</span>:])  <span class="cmt"># EXPLORE</span>
+            current.<span class="fn">pop</span>()                                       <span class="cmt"># UNCHOOSE</span>
+
+    <span class="fn">backtrack</span>([], nums)
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">permute</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))
+<span class="cmt"># [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+
+# Check your answer with the standard library (same order!):</span>
+<span class="kw">from</span> itertools <span class="kw">import</span> permutations
+<span class="fn">print</span>([<span class="fn">list</span>(p) <span class="kw">for</span> p <span class="kw">in</span> <span class="fn">permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])] == <span class="fn">permute</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))  <span class="cmt"># True</span>
+
+<span class="cmt"># KEY DIFFERENCE from subsets:
+# Subsets: start index moves forward (can't reuse elements)
+# Permutations: can pick any remaining element (order matters)
+# Combination Sum: start index stays same (can reuse elements)</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Combination Sum</h3>
+    <p>Find all unique combinations where candidate numbers sum to a target. Numbers can be reused.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">combination_sum.py</span>
+    </div>
+    <pre><span class="kw">def</span> <span class="fn">combination_sum</span>(candidates: List[int], target: int) -&gt; List[List[int]]:
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start: int, current: List[int], remaining: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> remaining == <span class="num">0</span>:
+            result.<span class="fn">append</span>(current[:])
+            <span class="kw">return</span>
+        <span class="kw">if</span> remaining &lt; <span class="num">0</span>:
+            <span class="kw">return</span>  <span class="cmt"># pruning: overshot</span>
+
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(candidates)):
+            current.<span class="fn">append</span>(candidates[i])
+            <span class="fn">backtrack</span>(i, current, remaining - candidates[i])  <span class="cmt"># i, not i + 1 (reuse!)</span>
+            current.<span class="fn">pop</span>()
+
+    <span class="fn">backtrack</span>(<span class="num">0</span>, [], target)
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">combination_sum</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">6</span>, <span class="num">7</span>], <span class="num">7</span>))  <span class="cmt"># [[2, 2, 3], [7]]</span>
+
+<span class="cmt"># The three backtracking variants at a glance:
+# Subsets:          backtrack(i + 1)      → no reuse, order doesn't matter
+# Permutations:     backtrack(remaining)  → no reuse, order matters
+# Combination Sum:  backtrack(i)          → reuse allowed, order doesn't matter</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 21 ============ -->
+<div class="day-section" id="day21">
+  <div class="day-label">Day 21 · 90 min</div>
+  <h2>Blind Rewrite + Teach-Back</h2>
+
+  <div class="topic-block yellow">
+    <h3>Today's Challenge</h3>
+    <p><strong>Rewrite from memory (in Python):</strong> Number of Islands, Course Schedule (Kahn's with <code>deque</code> + <code>defaultdict</code>), Combination Sum.</p>
+    <p><strong>Then teach-back:</strong> Open a blank doc and write a full explanation of each — how the algorithm works, why it's correct, what its complexity is. If you can explain Kahn's algorithm to a junior developer without hand-waving, you own it.</p>
+    <p><strong>Updated decision tree additions:</strong></p>
+    <p><strong>"Tree depth/height/sum"</strong> → DFS recursive (base case → children → combine)<br><br>
+    <strong>"Level-by-level processing"</strong> → BFS (<code>deque</code> + <code>level_size</code> snapshot)<br><br>
+    <strong>"BST search/validate/kth"</strong> → Inorder traversal (gives sorted order)<br><br>
+    <strong>"Connected components / flood fill"</strong> → Grid DFS with visited<br><br>
+    <strong>"Dependency ordering / cycle detection"</strong> → Topological Sort (Kahn's BFS)<br><br>
+    <strong>"Generate all X"</strong> → Backtracking (choose → explore → unchoose)</p>
+  </div>
+</div>
+
+</div>
+
+<footer>Week 3 of 4 · DSA Mastery in Python · Trees &amp; Graphs</footer>
+
+</body>
+</html>

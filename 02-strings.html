@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strings — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Strings</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">02 / 19</div>
+    <h1 class="page-title">Strings <span class="highlight">&</span><br>Text Techniques</h1>
+    <p class="page-subtitle">Strings are just character arrays. The tricks you learned with arrays all apply — plus a whole world of pattern matching and manipulation.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item">
+      <div class="complexity-label">ACCESS</div>
+      <div class="complexity-value">O(1)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">SEARCH</div>
+      <div class="complexity-value">O(n)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">CONCAT</div>
+      <div class="complexity-value">O(n)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">SUBSTRING</div>
+      <div class="complexity-value">O(k)</div>
+    </div>
+  </div>
+
+  <!-- BASICS -->
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">String Fundamentals in Python</h2>
+    <p class="explanation">
+      In Python, <code>str</code> is <strong>immutable</strong> — <code>s[0] = "h"</code> raises a <code>TypeError</code>. Every "change" (upper, replace, slicing, +) creates a new string. This matters for performance when you're building a string in a loop. Strings support everything lists do for reading: indexing, negative indices, slicing, <code>len()</code>, <code>in</code>, and iteration.
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">PYTHON — Key String Methods</div>
+      <pre>s = <span class="str">"Hello, World!"</span>
+
+<span class="cm"># Access characters</span>
+print(s[<span class="num">0</span>])     <span class="cm"># H</span>
+print(s[-<span class="num">1</span>])    <span class="cm"># !   (negative index = from the end)</span>
+print(len(s))   <span class="cm"># 13</span>
+<span class="cm"># s[0] = "h"    # TypeError: 'str' object does not support item assignment</span>
+
+<span class="cm"># Search</span>
+print(s.find(<span class="str">"World"</span>))    <span class="cm"># 7   (-1 if missing; s.index() raises ValueError instead)</span>
+print(<span class="str">"Hello"</span> <span class="kw">in</span> s)       <span class="cm"># True  (substring check, O(n·m) worst case)</span>
+print(s.count(<span class="str">"l"</span>))       <span class="cm"># 3</span>
+
+<span class="cm"># Transform (all return NEW strings)</span>
+print(s.upper())                      <span class="cm"># HELLO, WORLD!</span>
+print(s.lower())                      <span class="cm"># hello, world!</span>
+print(<span class="str">"  hi  "</span>.strip())               <span class="cm"># hi   (remove whitespace from ends)</span>
+print(s.replace(<span class="str">"World"</span>, <span class="str">"Python"</span>))  <span class="cm"># Hello, Python!</span>
+print(s.split(<span class="str">", "</span>))                 <span class="cm"># ['Hello', 'World!']</span>
+print(<span class="str">"a b  c"</span>.split())              <span class="cm"># ['a', 'b', 'c']  (no arg = split on any whitespace)</span>
+print(s[<span class="num">7</span>:<span class="num">12</span>])                      <span class="cm"># World</span>
+print(s[::-<span class="num">1</span>])                       <span class="cm"># !dlroW ,olleH</span>
+
+<span class="cm"># Character tests</span>
+print(<span class="str">"a1"</span>.isalnum(), <span class="str">"abc"</span>.isalpha(), <span class="str">"42"</span>.isdigit())  <span class="cm"># True True True</span>
+
+<span class="cm"># Characters ↔ code points</span>
+print(ord(<span class="str">"a"</span>))               <span class="cm"># 97</span>
+print(chr(<span class="num">98</span>))                <span class="cm"># b</span>
+print(ord(<span class="str">"c"</span>) - ord(<span class="str">"a"</span>))    <span class="cm"># 2  ← index into a 26-slot count array</span>
+
+<span class="cm"># Build strings efficiently</span>
+parts = [<span class="str">"a"</span>, <span class="str">"b"</span>, <span class="str">"c"</span>]
+print(<span class="str">""</span>.join(parts))       <span class="cm"># abc — use this instead of += in loops</span>
+print(<span class="str">"-"</span>.join(parts))      <span class="cm"># a-b-c</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>Performance tip:</strong> Avoid <code>result += ch</code> in a loop. Append pieces to a list and call <code>"".join(pieces)</code> once at the end — that's O(n) total vs up to O(n²), because each <code>+=</code> may copy the whole string. (CPython sometimes optimises <code>+=</code> in place, but don't rely on it in interviews.)
+    </div>
+  </section>
+
+  <!-- REVERSE -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Reversing a String</h2>
+    <p class="explanation">
+      Reversing is a classic first problem. The trick: <strong>convert to a list</strong> (since strings are immutable), use two-pointer swap, then <code>"".join()</code> it back.
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Reverse a String (slicing vs two pointers)</div>
+      <pre><span class="cm"># Method 1: Slicing (interview shorthand)</span>
+<span class="kw">def</span> <span class="fn">reverse1</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">str</span>:
+    <span class="kw">return</span> s[::-<span class="num">1</span>]            <span class="cm"># or "".join(reversed(s))</span>
+
+<span class="cm"># Method 2: Two pointers (shows understanding)</span>
+<span class="kw">def</span> <span class="fn">reverse2</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">str</span>:
+    chars = list(s)          <span class="cm"># "hello" → ['h', 'e', 'l', 'l', 'o'] (mutable)</span>
+    left, right = <span class="num">0</span>, len(chars) - <span class="num">1</span>
+
+    <span class="kw">while</span> left &lt; right:
+        <span class="cm"># Swap characters — tuple unpacking, no temp variable</span>
+        chars[left], chars[right] = chars[right], chars[left]
+        left += <span class="num">1</span>
+        right -= <span class="num">1</span>
+
+    <span class="kw">return</span> <span class="str">""</span>.join(chars)
+
+print(<span class="fn">reverse1</span>(<span class="str">"hello"</span>))  <span class="cm"># olleh</span>
+print(<span class="fn">reverse2</span>(<span class="str">"hello"</span>))  <span class="cm"># olleh</span></pre>
+    </div>
+  </section>
+
+  <!-- PALINDROME -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Palindrome Check</h2>
+    <p class="explanation">
+      A palindrome reads the same forwards and backwards. Use two pointers — compare characters from both ends moving inward. Skip non-alphanumeric chars for real-world versions.
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Valid Palindrome</div>
+      <pre><span class="kw">def</span> <span class="fn">is_palindrome</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">bool</span>:
+    <span class="cm"># Clean: keep only letters and digits, lowercase (list comprehension + str methods)</span>
+    clean = [c.lower() <span class="kw">for</span> c <span class="kw">in</span> s <span class="kw">if</span> c.isalnum()]
+
+    left, right = <span class="num">0</span>, len(clean) - <span class="num">1</span>
+
+    <span class="kw">while</span> left &lt; right:
+        <span class="kw">if</span> clean[left] != clean[right]:
+            <span class="kw">return</span> <span class="kw">False</span>
+        left += <span class="num">1</span>
+        right -= <span class="num">1</span>
+
+    <span class="kw">return</span> <span class="kw">True</span>
+
+print(<span class="fn">is_palindrome</span>(<span class="str">"A man, a plan, a canal: Panama"</span>))  <span class="cm"># True</span>
+print(<span class="fn">is_palindrome</span>(<span class="str">"race a car"</span>))                      <span class="cm"># False</span>
+
+<span class="cm"># Pythonic shortcut (same O(n)): compare the cleaned list with its reverse</span>
+clean = [c.lower() <span class="kw">for</span> c <span class="kw">in</span> <span class="str">"No 'x' in Nixon"</span> <span class="kw">if</span> c.isalnum()]
+print(clean == clean[::-<span class="num">1</span>])  <span class="cm"># True</span></pre>
+    </div>
+  </section>
+
+  <!-- ANAGRAM -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">Anagram Detection</h2>
+    <p class="explanation">
+      Two strings are anagrams if they contain the exact same characters with the same frequencies. <strong>Count characters</strong> using a dict (or sort both strings and compare). In Python, <code>collections.Counter</code> does the counting for you.
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Valid Anagram O(n)</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+
+<span class="kw">def</span> <span class="fn">is_anagram</span>(s: <span class="cls">str</span>, t: <span class="cls">str</span>) -&gt; <span class="cls">bool</span>:
+    <span class="kw">if</span> len(s) != len(t):
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    count = {}
+
+    <span class="cm"># Count chars in s (increment) — dict.get(key, default) avoids a KeyError</span>
+    <span class="kw">for</span> c <span class="kw">in</span> s:
+        count[c] = count.get(c, <span class="num">0</span>) + <span class="num">1</span>
+
+    <span class="cm"># Subtract chars in t (decrement)</span>
+    <span class="kw">for</span> c <span class="kw">in</span> t:
+        <span class="kw">if</span> count.get(c, <span class="num">0</span>) == <span class="num">0</span>:
+            <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># char missing or overused</span>
+        count[c] -= <span class="num">1</span>
+
+    <span class="kw">return</span> <span class="kw">True</span>
+
+print(<span class="fn">is_anagram</span>(<span class="str">"anagram"</span>, <span class="str">"nagaram"</span>))  <span class="cm"># True</span>
+print(<span class="fn">is_anagram</span>(<span class="str">"rat"</span>, <span class="str">"car"</span>))          <span class="cm"># False</span>
+
+<span class="cm"># Pythonic: Counter builds the frequency dict in one call</span>
+print(<span class="cls">Counter</span>(<span class="str">"anagram"</span>))                         <span class="cm"># Counter({'a': 3, 'n': 1, 'g': 1, 'r': 1, 'm': 1})</span>
+print(<span class="cls">Counter</span>(<span class="str">"anagram"</span>) == <span class="cls">Counter</span>(<span class="str">"nagaram"</span>))  <span class="cm"># True</span>
+print(sorted(<span class="str">"rat"</span>) == sorted(<span class="str">"car"</span>))          <span class="cm"># False  (sorting: O(n log n))</span></pre>
+    </div>
+  </section>
+
+  <!-- SLIDING WINDOW ON STRINGS -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 04</div>
+    <h2 class="section-title">Sliding Window on Strings</h2>
+    <p class="explanation">
+      The sliding window from arrays works perfectly on strings too. Use it for problems asking about <strong>substrings</strong> with certain properties (longest without repeat, contains all chars, etc.)
+    </p>
+
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Longest Substring Without Repeating Characters</div>
+      <pre><span class="kw">def</span> <span class="fn">length_of_longest_substring</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">int</span>:
+    seen = <span class="cls">set</span>()
+    left = max_len = <span class="num">0</span>
+
+    <span class="kw">for</span> right, ch <span class="kw">in</span> enumerate(s):
+        <span class="cm"># If duplicate found, shrink window from left</span>
+        <span class="kw">while</span> ch <span class="kw">in</span> seen:          <span class="cm"># set membership: O(1) average</span>
+            seen.remove(s[left])
+            left += <span class="num">1</span>
+
+        seen.add(ch)
+        max_len = max(max_len, right - left + <span class="num">1</span>)
+
+    <span class="kw">return</span> max_len
+
+print(<span class="fn">length_of_longest_substring</span>(<span class="str">"abcabcbb"</span>))  <span class="cm"># 3 ("abc")</span>
+print(<span class="fn">length_of_longest_substring</span>(<span class="str">"pwwkew"</span>))    <span class="cm"># 3 ("wke")</span></pre>
+    </div>
+  </section>
+
+  <!-- PRACTICE -->
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Reverse a String <span class="problem-tag easy">EASY</span></li>
+      <li>Valid Palindrome <span class="problem-tag easy">EASY</span></li>
+      <li>Valid Anagram <span class="problem-tag easy">EASY</span></li>
+      <li>Longest Substring Without Repeating Characters <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Group Anagrams <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Longest Palindromic Substring <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Minimum Window Substring <a href="sol-15-two-pointers.html" style="color:var(--accent)">(solved in Two Pointers solutions)</a> <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="01-arrays.html" class="footer-back">← Arrays</a>
+    <a href="03-hashmaps.html" class="footer-next">Hash Maps →</a>
+  </div>
+</div>
+
+</body>
+</html>

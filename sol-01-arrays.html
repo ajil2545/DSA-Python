@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Array Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="01-arrays.html" class="back-link">← Arrays</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 01</div>
+    <h1 class="page-title">Array <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Every practice problem solved with a clear explanation of the thinking process, not just the code.</p>
+  </div>
+
+  <!-- Q1 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">01</span>
+      <span class="solution-title">Two Sum (unsorted)</span>
+      <span class="problem-tag easy">EASY</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given array of numbers, return indices of two numbers that add up to target.<br><br>
+        <strong>Think:</strong> Brute force checks every pair — O(n²). Instead, for each number ask: "have I already seen the number I need?" Use a dict to answer that in O(1).<br><br>
+        <strong>Key insight:</strong> complement = target - current. If complement is in our dict, we found our pair!
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Walk through the list one number at a time with enumerate() (index + value).</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each number, calculate what number we'd NEED to reach target (complement = target - num).</div></div>
+      <div class="step"><div class="step-num">3</div><div>Check if that complement was seen before (complement in seen). If yes → return both indices.</div></div>
+      <div class="step"><div class="step-num">4</div><div>If not, store current number and its index in the dict for future lookups.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">two_sum</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>], target: <span class="cls">int</span>) -&gt; <span class="cls">List</span>[<span class="cls">int</span>]:
+    <span class="cm"># dict stores: number → its index</span>
+    seen: <span class="cls">Dict</span>[<span class="cls">int</span>, <span class="cls">int</span>] = {}
+
+    <span class="kw">for</span> i, num <span class="kw">in</span> enumerate(nums):
+        complement = target - num
+
+        <span class="kw">if</span> complement <span class="kw">in</span> seen:  <span class="cm"># O(1) average dict lookup</span>
+            <span class="cm"># Found it! Return the stored index and current index</span>
+            <span class="kw">return</span> [seen[complement], i]
+
+        <span class="cm"># Haven't found pair yet — store this number for later</span>
+        seen[num] = i
+
+    <span class="kw">return</span> []  <span class="cm"># no pair (problem guarantees one exists)</span>
+
+<span class="cm"># Walk-through with nums=[2,7,11,15], target=9:</span>
+<span class="cm"># i=0: num=2, complement=7. seen={}. Not found. Store {2: 0}</span>
+<span class="cm"># i=1: num=7, complement=2. seen={2: 0}. Found! Return [0, 1] ✓</span>
+
+print(<span class="fn">two_sum</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">11</span>, <span class="num">15</span>], <span class="num">9</span>))  <span class="cm"># [0, 1]</span>
+print(<span class="fn">two_sum</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">4</span>], <span class="num">6</span>))       <span class="cm"># [1, 2]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">02</span>
+      <span class="solution-title">Best Time to Buy and Sell Stock</span>
+      <span class="problem-tag easy">EASY</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given array of stock prices per day, find max profit from one buy + one sell.<br><br>
+        <strong>Think:</strong> You must buy BEFORE you sell. Track the minimum price seen so far — that's your best buy day. Then profit = today's price - min_so_far. Keep track of max profit seen.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Keep track of the lowest price seen so far (best day to buy), starting at float('inf').</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each day, calculate profit if we sold today: price - min_price.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Update max_profit if today's profit is better.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Update min_price if today's price is lower.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">max_profit</span>(prices: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    min_price = <span class="cls">float</span>(<span class="str">"inf"</span>)  <span class="cm"># best price to buy at (infinity: anything is cheaper)</span>
+    best = <span class="num">0</span>                    <span class="cm"># best profit found so far</span>
+
+    <span class="kw">for</span> price <span class="kw">in</span> prices:
+        <span class="kw">if</span> price &lt; min_price:
+            min_price = price  <span class="cm"># found a cheaper buy day!</span>
+        <span class="kw">else</span>:
+            <span class="cm"># What's our profit if we sell today?</span>
+            best = max(best, price - min_price)
+
+    <span class="kw">return</span> best
+
+<span class="cm"># Walk-through: [7,1,5,3,6,4]</span>
+<span class="cm"># price=7: min_price=7, profit=0</span>
+<span class="cm"># price=1: min_price=1 (cheaper buy!)</span>
+<span class="cm"># price=5: profit=5-1=4, best=4</span>
+<span class="cm"># price=3: profit=3-1=2, best still 4</span>
+<span class="cm"># price=6: profit=6-1=5, best=5 ✓</span>
+<span class="cm"># price=4: profit=3, best still 5</span>
+
+print(<span class="fn">max_profit</span>([<span class="num">7</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">6</span>, <span class="num">4</span>]))  <span class="cm"># 5</span>
+print(<span class="fn">max_profit</span>([<span class="num">7</span>, <span class="num">6</span>, <span class="num">4</span>, <span class="num">3</span>, <span class="num">1</span>]))     <span class="cm"># 0 (prices only drop)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">03</span>
+      <span class="solution-title">Contains Duplicate</span>
+      <span class="problem-tag easy">EASY</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Return True if any value appears at least twice.<br><br>
+        <strong>Think:</strong> A set only stores unique values. If the number is already in the set (an O(1) check), we found a duplicate — return True immediately. Checking <code>num in nums_so_far</code> on a list instead would be O(n) per check → O(n²) total.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">contains_duplicate</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">bool</span>:
+    seen = <span class="cls">set</span>()
+
+    <span class="kw">for</span> num <span class="kw">in</span> nums:
+        <span class="kw">if</span> num <span class="kw">in</span> seen:
+            <span class="kw">return</span> <span class="kw">True</span>  <span class="cm"># seen before → duplicate!</span>
+        seen.add(num)
+
+    <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># got through all without a duplicate</span>
+
+<span class="cm"># One-liner (idiomatic Python, but always builds the full set — no early exit):</span>
+<span class="kw">def</span> <span class="fn">contains_dup2</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">bool</span>:
+    <span class="kw">return</span> len(<span class="cls">set</span>(nums)) != len(nums)
+
+print(<span class="fn">contains_duplicate</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>]))  <span class="cm"># True</span>
+print(<span class="fn">contains_duplicate</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]))  <span class="cm"># False</span>
+print(<span class="fn">contains_dup2</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>]))       <span class="cm"># True</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">04</span>
+      <span class="solution-title">Maximum Subarray (Kadane's Algorithm)</span>
+      <span class="problem-tag medium">MEDIUM</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Find the contiguous subarray with the largest sum.<br><br>
+        <strong>Think:</strong> At each position, make a decision: "Is it better to extend the current subarray, or start fresh from this element?" If the running sum becomes negative, it's dragging us down — cut it off and start over.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Start with current sum = first element, max sum = first element.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each next element: should we ADD it to our current subarray, or START FRESH?</div></div>
+      <div class="step"><div class="step-num">3</div><div>current_sum = max(element, current_sum + element). If current_sum was negative, starting fresh is better.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Update max_sum whenever current_sum beats it.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Kadane's Algorithm</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">max_sub_array</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    current_sum = max_sum = nums[<span class="num">0</span>]  <span class="cm"># chained assignment</span>
+
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="num">1</span>, len(nums)):  <span class="cm"># (nums[1:] would copy the list → O(n) extra space)</span>
+        <span class="cm"># Decision: extend current subarray OR start fresh here</span>
+        current_sum = max(nums[i], current_sum + nums[i])
+        max_sum = max(max_sum, current_sum)
+
+    <span class="kw">return</span> max_sum
+
+<span class="cm"># Walk-through: [-2,1,-3,4,-1,2,1,-5,4]</span>
+<span class="cm"># i=1: cur=max(1, -2+1)=max(1,-1)=1,     max=1</span>
+<span class="cm"># i=2: cur=max(-3,1-3)=max(-3,-2)=-2,    max=1</span>
+<span class="cm"># i=3: cur=max(4,-2+4)=max(4,2)=4,       max=4</span>
+<span class="cm"># i=4: cur=max(-1,4-1)=max(-1,3)=3,      max=4</span>
+<span class="cm"># i=5: cur=max(2,3+2)=max(2,5)=5,        max=5</span>
+<span class="cm"># i=6: cur=max(1,5+1)=max(1,6)=6,        max=6 ✓</span>
+<span class="cm"># i=7: cur=max(-5,6-5)=max(-5,1)=1,     max=6</span>
+<span class="cm"># i=8: cur=max(4,1+4)=max(4,5)=5,        max=6</span>
+<span class="cm"># Answer: 6 (subarray [4,-1,2,1])</span>
+
+print(<span class="fn">max_sub_array</span>([-<span class="num">2</span>, <span class="num">1</span>, -<span class="num">3</span>, <span class="num">4</span>, -<span class="num">1</span>, <span class="num">2</span>, <span class="num">1</span>, -<span class="num">5</span>, <span class="num">4</span>]))  <span class="cm"># 6</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">05</span>
+      <span class="solution-title">3Sum</span>
+      <span class="problem-tag medium">MEDIUM</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Find all unique triplets [a,b,c] in array where a+b+c = 0.<br><br>
+        <strong>Think:</strong> Sort first! Fix one number (a), then use Two Pointers to find b+c = -a in the remaining sorted portion. Skip duplicates to avoid repeated triplets.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Sort the list (nums.sort() sorts in place; sorted(nums) returns a new list). Now we can use two pointers on the rest.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Fix index i (the first number). Use left=i+1 and right=end as two pointers.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If sum == 0 → save triplet, move both pointers inward (skip duplicates).</div></div>
+      <div class="step"><div class="step-num">4</div><div>If sum &lt; 0 → move left up (need bigger). If sum &gt; 0 → move right down (need smaller).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n²)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">three_sum</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[<span class="cls">int</span>]]:
+    nums.sort()  <span class="cm"># sort first! in place, ascending, O(n log n)</span>
+    result = []
+    n = len(nums)
+
+    <span class="kw">for</span> i <span class="kw">in</span> range(n - <span class="num">2</span>):
+        <span class="cm"># Skip duplicate values for i</span>
+        <span class="kw">if</span> i &gt; <span class="num">0</span> <span class="kw">and</span> nums[i] == nums[i - <span class="num">1</span>]:
+            <span class="kw">continue</span>
+
+        left, right = i + <span class="num">1</span>, n - <span class="num">1</span>
+
+        <span class="kw">while</span> left &lt; right:
+            total = nums[i] + nums[left] + nums[right]
+
+            <span class="kw">if</span> total == <span class="num">0</span>:
+                result.append([nums[i], nums[left], nums[right]])
+                <span class="cm"># Skip duplicates for left and right</span>
+                <span class="kw">while</span> left &lt; right <span class="kw">and</span> nums[left] == nums[left + <span class="num">1</span>]:
+                    left += <span class="num">1</span>
+                <span class="kw">while</span> left &lt; right <span class="kw">and</span> nums[right] == nums[right - <span class="num">1</span>]:
+                    right -= <span class="num">1</span>
+                left += <span class="num">1</span>
+                right -= <span class="num">1</span>
+            <span class="kw">elif</span> total &lt; <span class="num">0</span>:
+                left += <span class="num">1</span>   <span class="cm"># need bigger sum</span>
+            <span class="kw">else</span>:
+                right -= <span class="num">1</span>  <span class="cm"># need smaller sum</span>
+
+    <span class="kw">return</span> result
+
+print(<span class="fn">three_sum</span>([-<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>, -<span class="num">1</span>, -<span class="num">4</span>]))
+<span class="cm"># [[-1, -1, 2], [-1, 0, 1]]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">06</span>
+      <span class="solution-title">Container With Most Water</span>
+      <span class="problem-tag medium">MEDIUM</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given heights of walls, find two walls that form a container holding the most water.<br><br>
+        <strong>Think:</strong> Water volume = width × min(left height, right height). Start with widest container (left=0, right=end). Moving the TALLER wall inward can only make things worse (width shrinks, height can't improve). Always move the SHORTER wall.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">max_water</span>(heights: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    left, right = <span class="num">0</span>, len(heights) - <span class="num">1</span>
+    best = <span class="num">0</span>
+
+    <span class="kw">while</span> left &lt; right:
+        width = right - left
+        height = min(heights[left], heights[right])
+        best = max(best, width * height)
+
+        <span class="cm"># Move the shorter wall (taller wall moving can only hurt)</span>
+        <span class="kw">if</span> heights[left] &lt; heights[right]:
+            left += <span class="num">1</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>
+
+    <span class="kw">return</span> best
+
+print(<span class="fn">max_water</span>([<span class="num">1</span>, <span class="num">8</span>, <span class="num">6</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">8</span>, <span class="num">3</span>, <span class="num">7</span>]))  <span class="cm"># 49</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q7 HARD -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">07</span>
+      <span class="solution-title">Trapping Rain Water</span>
+      <span class="problem-tag hard">HARD</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given elevation heights, compute how much rainwater gets trapped.<br><br>
+        <strong>Think:</strong> Water at position i is trapped up to min(max_left, max_right) - height[i]. Use two pointers: compare the two current walls. The SHORTER side is the bottleneck — the other side already has a wall at least as tall, so the water level on the shorter side is just its own running max. Process that side.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Two pointers from both ends. Track max_left and max_right seen so far.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Process the side whose current height is smaller — update its running max, then water at that position = max - current height.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Move that pointer inward and repeat.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">trap</span>(height: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    left, right = <span class="num">0</span>, len(height) - <span class="num">1</span>
+    max_left = max_right = <span class="num">0</span>
+    water = <span class="num">0</span>
+
+    <span class="kw">while</span> left &lt; right:
+        <span class="kw">if</span> height[left] &lt;= height[right]:
+            <span class="cm"># Left side is the bottleneck</span>
+            max_left = max(max_left, height[left])
+            water += max_left - height[left]  <span class="cm"># water above this cell</span>
+            left += <span class="num">1</span>
+        <span class="kw">else</span>:
+            <span class="cm"># Right side is the bottleneck</span>
+            max_right = max(max_right, height[right])
+            water += max_right - height[right]
+            right -= <span class="num">1</span>
+
+    <span class="kw">return</span> water
+
+print(<span class="fn">trap</span>([<span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">1</span>]))  <span class="cm"># 6</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="01-arrays.html" class="footer-back">← Back to Arrays</a>
+    <a href="sol-02-strings.html" class="footer-next">String Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

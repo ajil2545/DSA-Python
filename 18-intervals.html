@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intervals — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Intervals</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">18 / 19</div>
+    <h1 class="page-title">Intervals <span class="highlight">[start, end]</span></h1>
+    <p class="page-subtitle">Calendars, bookings, CPU jobs, genome ranges. Sort first, then one scan — with the right overlap test and a heap or sweep line when you need to count concurrency.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">SORT</div><div class="complexity-value">O(n log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">MERGE SCAN</div><div class="complexity-value">O(n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">HEAP / SWEEP</div><div class="complexity-value">O(n log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SPACE</div><div class="complexity-value">O(n)</div></div>
+  </div>
+  <div class="callout"><strong>Pattern trigger:</strong> input is a list of pairs with start/end times, or the problem says overlap, merge, schedule, booking, rooms or free time.</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">Representing Intervals in Python</h2>
+    <p class="explanation">An interval is just a pair <strong>[start, end]</strong>. LeetCode passes a <strong>list of lists</strong>; in your own code a <strong>tuple</strong> is often nicer because it is immutable and hashable (usable as a dict key or set member). Unpack the pair directly in the loop header — <strong>for start, end in intervals</strong> — instead of indexing <strong>iv[0]</strong> and <strong>iv[1]</strong> everywhere.</p>
+    <p class="explanation">Always pin down the convention: <strong>closed</strong> [1, 4] includes 4, so [1, 4] and [4, 6] overlap; <strong>half-open</strong> [1, 4) excludes it, so a meeting ending at 4 and one starting at 4 do <em>not</em> clash. Meeting-room problems are half-open; Merge Intervals is closed. It only changes <strong>&lt;</strong> vs <strong>&lt;=</strong> — and that is exactly where bugs hide.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Intervals as Lists, Tuples and namedtuples</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> namedtuple
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Tuple</span>
+
+intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]] = [[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">15</span>, <span class="num">18</span>]]
+meetings: <span class="cls">List</span>[<span class="cls">Tuple</span>[int, int]] = [(<span class="num">9</span>, <span class="num">10</span>), (<span class="num">13</span>, <span class="num">15</span>)]
+
+<span class="kw">for</span> start, end <span class="kw">in</span> meetings:              <span class="cm"># unpack instead of m[0], m[1]</span>
+    <span class="fn">print</span>(start, end, <span class="str">"length"</span>, end - start)
+<span class="cm"># 9 10 length 1</span>
+<span class="cm"># 13 15 length 2</span>
+
+<span class="cls">Interval</span> = <span class="fn">namedtuple</span>(<span class="str">"Interval"</span>, [<span class="str">"start"</span>, <span class="str">"end"</span>])
+iv = <span class="cls">Interval</span>(<span class="num">2</span>, <span class="num">6</span>)
+<span class="fn">print</span>(iv.start, iv.end, iv)  <span class="cm"># 2 6 Interval(start=2, end=6)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">Sort by Start — The First Line of Almost Every Solution</h2>
+    <p class="explanation">Unsorted intervals can overlap in any order. Once sorted by start, any interval can only overlap the ones <strong>right before it</strong>, which turns most problems into a single left-to-right scan. <strong>list.sort(key=...)</strong> sorts in place and returns None; <strong>sorted(...)</strong> returns a new list and leaves the input untouched. Both are stable O(n log n) Timsort.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Sorting Intervals</div>
+      <pre>intervals = [[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">15</span>, <span class="num">18</span>]]
+
+intervals.<span class="fn">sort</span>(key=<span class="kw">lambda</span> x: x[<span class="num">0</span>])          <span class="cm"># in place, by start</span>
+<span class="fn">print</span>(intervals)  <span class="cm"># [[1, 3], [2, 6], [8, 10], [15, 18]]</span>
+
+by_end = <span class="fn">sorted</span>(intervals, key=<span class="kw">lambda</span> x: x[<span class="num">1</span>])   <span class="cm"># new list, by end (greedy problems)</span>
+<span class="fn">print</span>(by_end)     <span class="cm"># [[1, 3], [2, 6], [8, 10], [15, 18]]</span>
+
+<span class="cm"># Lists/tuples compare element by element, so a plain sort is "by start, then by end"</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>([(<span class="num">5</span>, <span class="num">9</span>), (<span class="num">1</span>, <span class="num">4</span>), (<span class="num">1</span>, <span class="num">2</span>)]))     <span class="cm"># [(1, 2), (1, 4), (5, 9)]</span>
+
+<span class="cm"># operator.itemgetter is a slightly faster alternative to the lambda</span>
+<span class="kw">from</span> operator <span class="kw">import</span> itemgetter
+<span class="fn">print</span>(<span class="fn">sorted</span>([[<span class="num">3</span>, <span class="num">4</span>], [<span class="num">0</span>, <span class="num">9</span>]], key=<span class="fn">itemgetter</span>(<span class="num">0</span>)))  <span class="cm"># [[0, 9], [3, 4]]</span></pre>
+    </div>
+    <div class="callout"><strong>Sort by start or by end?</strong> Start when you are <em>building</em> merged blocks (merge, insert, meeting rooms). End when you are <em>choosing</em> a maximum set of non-overlapping intervals (greedy: Non-overlapping Intervals, Min Arrows).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 03</div>
+    <h2 class="section-title">The Overlap Condition</h2>
+    <p class="explanation">Two closed intervals <strong>a</strong> and <strong>b</strong> overlap exactly when <strong>a.start &lt;= b.end and b.start &lt;= a.end</strong>. It's easier to remember the opposite: they are disjoint when one ends before the other starts. The overlapping part, if any, is <strong>[max(starts), min(ends)]</strong>.</p>
+    <div class="diagram">
+      <div class="diagram-title">OVERLAP CASES (a = top, b = bottom)</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">overlap        a: [-------]            disjoint     a: [---]
+               b:      [-------]                    b:         [---]
+               max(start) &lt;= min(end)               a.end &lt; b.start
+
+contained      a: [-------------]      touching     a: [----]
+               b:     [---]                         b:      [----]
+               still overlaps                       closed: overlap  half-open: no</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Overlap and Intersection</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Optional</span>
+
+
+<span class="kw">def</span> <span class="fn">overlaps</span>(a: <span class="cls">List</span>[int], b: <span class="cls">List</span>[int]) -&gt; bool:
+    <span class="kw">return</span> a[<span class="num">0</span>] &lt;= b[<span class="num">1</span>] <span class="kw">and</span> b[<span class="num">0</span>] &lt;= a[<span class="num">1</span>]
+
+
+<span class="kw">def</span> <span class="fn">intersection</span>(a: <span class="cls">List</span>[int], b: <span class="cls">List</span>[int]) -&gt; <span class="cls">Optional</span>[<span class="cls">List</span>[int]]:
+    lo, hi = <span class="fn">max</span>(a[<span class="num">0</span>], b[<span class="num">0</span>]), <span class="fn">min</span>(a[<span class="num">1</span>], b[<span class="num">1</span>])
+    <span class="kw">return</span> [lo, hi] <span class="kw">if</span> lo &lt;= hi <span class="kw">else</span> <span class="kw">None</span>
+
+
+<span class="fn">print</span>(<span class="fn">overlaps</span>([<span class="num">1</span>, <span class="num">5</span>], [<span class="num">4</span>, <span class="num">8</span>]))      <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">overlaps</span>([<span class="num">1</span>, <span class="num">3</span>], [<span class="num">4</span>, <span class="num">6</span>]))      <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">overlaps</span>([<span class="num">1</span>, <span class="num">4</span>], [<span class="num">4</span>, <span class="num">6</span>]))      <span class="cm"># True  (closed intervals: touching counts)</span>
+<span class="fn">print</span>(<span class="fn">intersection</span>([<span class="num">1</span>, <span class="num">5</span>], [<span class="num">4</span>, <span class="num">8</span>]))  <span class="cm"># [4, 5]</span>
+<span class="fn">print</span>(<span class="fn">intersection</span>([<span class="num">1</span>, <span class="num">3</span>], [<span class="num">4</span>, <span class="num">6</span>]))  <span class="cm"># None</span></pre>
+    </div>
+    <div class="callout warn"><strong>Once sorted by start</strong>, you only need half the test: the next interval overlaps the current block iff <strong>next.start &lt;= current.end</strong> (its start is already &gt;= the block's start).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Merge Overlapping Intervals</h2>
+    <p class="explanation">Sort by start, then keep a <strong>merged</strong> list whose last element is the block you are growing. For each interval: if it overlaps the last block, <strong>stretch</strong> the block's end; otherwise it starts a new block. Use <strong>max</strong> when stretching — a short interval inside a long one must not shrink it.</p>
+    <div class="diagram">
+      <div class="diagram-title">MERGE [[1,3], [2,6], [8,10], [15,18]]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">                                                    merged
+[---]                                               [1,3]
+  [-------]  2 &lt;= 3 → stretch to 6                  [1,6]
+              [---]  8 &gt; 6 → new                    [1,6] [8,10]
+                            [-----]  15 &gt; 10 → new  [1,6] [8,10] [15,18]
+1 2 3     6   8   10        15    18</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Merge</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">merge</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    merged: <span class="cls">List</span>[<span class="cls">List</span>[int]] = []
+    <span class="kw">for</span> start, end <span class="kw">in</span> <span class="fn">sorted</span>(intervals, key=<span class="kw">lambda</span> x: x[<span class="num">0</span>]):
+        <span class="kw">if</span> merged <span class="kw">and</span> start &lt;= merged[-<span class="num">1</span>][<span class="num">1</span>]:       <span class="cm"># overlaps the last block</span>
+            merged[-<span class="num">1</span>][<span class="num">1</span>] = <span class="fn">max</span>(merged[-<span class="num">1</span>][<span class="num">1</span>], end)
+        <span class="kw">else</span>:
+            merged.<span class="fn">append</span>([start, end])              <span class="cm"># new list: never alias the input</span>
+    <span class="kw">return</span> merged
+
+
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">18</span>]]))  <span class="cm"># [[1, 6], [8, 10], [15, 18]]</span>
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">4</span>], [<span class="num">2</span>, <span class="num">3</span>]]))                     <span class="cm"># [[1, 4]]  (max keeps the 4)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Insert into a Sorted, Non-Overlapping List</h2>
+    <p class="explanation">When the list is already sorted and disjoint you don't need to sort again — do it in <strong>O(n)</strong> with three phases: copy everything that ends <strong>before</strong> the new interval starts, absorb everything that overlaps it (growing the new interval), then copy the rest.</p>
+    <div class="diagram">
+      <div class="diagram-title">INSERT [4, 8] INTO [[1,2], [3,5], [6,7], [8,10], [12,16]]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">phase 1 (end &lt; 4)          : [1,2]
+phase 2 (start &lt;= 8)       : [3,5] [6,7] [8,10]  → absorbed → [3,10]
+phase 3 (rest)             : [12,16]
+result                     : [[1,2], [3,10], [12,16]]</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Insert (Three Phases)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">insert</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]], new: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    result, i, n = [], <span class="num">0</span>, <span class="fn">len</span>(intervals)
+    start, end = new
+    <span class="kw">while</span> i &lt; n <span class="kw">and</span> intervals[i][<span class="num">1</span>] &lt; start:     <span class="cm"># 1. entirely to the left</span>
+        result.<span class="fn">append</span>(intervals[i])
+        i += <span class="num">1</span>
+    <span class="kw">while</span> i &lt; n <span class="kw">and</span> intervals[i][<span class="num">0</span>] &lt;= end:      <span class="cm"># 2. overlapping: absorb</span>
+        start = <span class="fn">min</span>(start, intervals[i][<span class="num">0</span>])
+        end = <span class="fn">max</span>(end, intervals[i][<span class="num">1</span>])
+        i += <span class="num">1</span>
+    result.<span class="fn">append</span>([start, end])
+    result.<span class="fn">extend</span>(intervals[i:])                 <span class="cm"># 3. entirely to the right</span>
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">insert</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">5</span>], [<span class="num">6</span>, <span class="num">7</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">12</span>, <span class="num">16</span>]], [<span class="num">4</span>, <span class="num">8</span>]))  <span class="cm"># [[1, 2], [3, 10], [12, 16]]</span></pre>
+    </div>
+    <div class="callout"><strong>bisect shortcut:</strong> because the list is sorted and disjoint (so the ends are sorted too), <strong>bisect.bisect_left</strong> can find phase 1's boundary in O(log n) — but building the output list is still O(n), so the simple loop is the interview answer.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">Sweep Line with Events</h2>
+    <p class="explanation">Turn every interval into two <strong>events</strong>: <strong>(start, +1)</strong> and <strong>(end, -1)</strong>. Sort the events and sweep left to right keeping a running sum — the sum at any moment is the number of intervals active at that time. Its maximum answers "how many overlap at once?" (rooms, CPUs, peak load).</p>
+    <p class="explanation">Tie-breaking is free in Python: tuples compare element by element, so <strong>(10, -1)</strong> sorts before <strong>(10, 1)</strong>. An end at time t is processed before a start at t — the half-open convention, where a meeting ending at 10 frees its room for one starting at 10.</p>
+    <div class="diagram">
+      <div class="diagram-title">EVENTS FOR [[0,30], [5,10], [15,20]]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">time   0    5    10   15   20   30
+event  +1   +1   -1   +1   -1   -1
+active 1    2    1    2    1    0        peak = 2</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Max Concurrent Intervals (Sweep Line)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">max_overlap</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    events = []
+    <span class="kw">for</span> start, end <span class="kw">in</span> intervals:
+        events.<span class="fn">append</span>((start, <span class="num">1</span>))
+        events.<span class="fn">append</span>((end, -<span class="num">1</span>))
+    events.<span class="fn">sort</span>()                  <span class="cm"># ties: (t, -1) before (t, 1) → end frees before start</span>
+    active = peak = <span class="num">0</span>
+    <span class="kw">for</span> _, delta <span class="kw">in</span> events:
+        active += delta
+        peak = <span class="fn">max</span>(peak, active)
+    <span class="kw">return</span> peak
+
+
+<span class="fn">print</span>(<span class="fn">max_overlap</span>([[<span class="num">0</span>, <span class="num">30</span>], [<span class="num">5</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">20</span>]]))          <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">max_overlap</span>([[<span class="num">1</span>, <span class="num">5</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">4</span>, <span class="num">8</span>], [<span class="num">5</span>, <span class="num">9</span>]]))      <span class="cm"># 3</span></pre>
+    </div>
+    <div class="callout"><strong>Difference array variant:</strong> when times are small integers, skip sorting — do <strong>diff[start] += 1; diff[end] -= 1</strong> and take a running sum with <strong>itertools.accumulate(diff)</strong>. Same idea, O(n + range).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 04</div>
+    <h2 class="section-title">Min-Heap of End Times (Meeting Rooms)</h2>
+    <p class="explanation">Another way to count rooms that also tells you <em>which</em> room frees up first. Sort meetings by start and keep a <strong>min-heap of end times</strong> — one entry per room in use. For each meeting, if the earliest-ending room is free (<strong>heap[0] &lt;= start</strong>), reuse it; otherwise open a new room. The heap's final size is the number of rooms.</p>
+    <div class="diagram">
+      <div class="diagram-title">MEETINGS SORTED BY START: [0,30] [5,10] [15,20]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">[0,30]   heap empty          → open room     heap [30]
+[5,10]   heap[0]=30 &gt; 5      → open room     heap [10, 30]
+[15,20]  heap[0]=10 &lt;= 15    → reuse room    heap [20, 30]
+rooms = len(heap) = 2</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Rooms via heapq</div>
+      <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">min_rooms</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    ends: <span class="cls">List</span>[int] = []                      <span class="cm"># min-heap: end time of each busy room</span>
+    <span class="kw">for</span> start, end <span class="kw">in</span> <span class="fn">sorted</span>(intervals):
+        <span class="kw">if</span> ends <span class="kw">and</span> ends[<span class="num">0</span>] &lt;= start:         <span class="cm"># earliest-free room is available</span>
+            heapq.<span class="fn">heapreplace</span>(ends, end)      <span class="cm"># pop + push in one O(log n) step</span>
+        <span class="kw">else</span>:
+            heapq.<span class="fn">heappush</span>(ends, end)         <span class="cm"># need another room</span>
+    <span class="kw">return</span> <span class="fn">len</span>(ends)
+
+
+<span class="fn">print</span>(<span class="fn">min_rooms</span>([[<span class="num">0</span>, <span class="num">30</span>], [<span class="num">5</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">20</span>]]))  <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">min_rooms</span>([[<span class="num">7</span>, <span class="num">10</span>], [<span class="num">2</span>, <span class="num">4</span>]]))             <span class="cm"># 1</span></pre>
+    </div>
+    <div class="use-cases">
+      <div class="use-case">Merge Intervals — sort by start + stretch</div>
+      <div class="use-case">Insert Interval — 3-phase scan</div>
+      <div class="use-case">Non-overlapping — sort by end (greedy)</div>
+      <div class="use-case">Meeting Rooms II — heap or sweep line</div>
+      <div class="use-case">Interval Intersections — two pointers</div>
+      <div class="use-case">Employee Free Time — merge then gaps</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Merge Intervals <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Insert Interval <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Non-overlapping Intervals <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Meeting Rooms <span class="problem-tag easy">EASY</span></li>
+      <li>Meeting Rooms II <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Interval List Intersections <span class="problem-tag medium">MEDIUM</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="17-greedy.html" class="footer-back">← Greedy Algorithms</a>
+    <a href="19-union-find.html" class="footer-next">Union-Find →</a>
+  </div>
+</div>
+</body>
+</html>

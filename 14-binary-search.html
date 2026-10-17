@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Binary Search</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">14 / 19</div>
+    <h1 class="page-title">Binary <span class="highlight">Search</span></h1>
+    <p class="page-subtitle">Halve your search space every step. O(log n) on sorted data. Deceptively tricky to implement perfectly — master the boundaries.</p>
+  </div>
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">SEARCH</div><div class="complexity-value">O(log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SPACE</div><div class="complexity-value">O(1)</div></div>
+    <div class="complexity-item"><div class="complexity-label">REQUIREMENT</div><div class="complexity-value">SORTED</div></div>
+  </div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">The Classic Binary Search</h2>
+    <p class="explanation">Three variables: <code style="color:var(--accent)">lo</code>, <code style="color:var(--accent)">hi</code>, <code style="color:var(--accent)">mid</code>. Compare <code>arr[mid]</code> with target — if too small, move <code>lo</code> up; if too big, move <code>hi</code> down. Repeat until found or exhausted.</p>
+    <div class="diagram">
+      <div class="diagram-title">SEARCH FOR 9 IN [1,3,5,7,9,11,13]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  [1, 3, 5, 7, 9, 11, 13]
+   lo      mid        hi
+  lo=0, hi=6 → mid=3: arr[3]=7 &lt; 9 → lo = mid+1
+
+  [1, 3, 5, 7, 9, 11, 13]
+               lo mid hi
+  lo=4, hi=6 → mid=5: arr[5]=11 &gt; 9 → hi = mid-1
+
+  [1, 3, 5, 7, 9, 11, 13]
+               ↑ lo = hi = mid = 4
+  arr[4]=9 == 9  ✓  Found at index 4!</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Binary Search</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">binary_search</span>(arr: List[<span class="cls">int</span>], target: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span>
+
+    <span class="kw">while</span> lo &lt;= hi:            <span class="cm"># ← &lt;= not &lt;</span>
+        mid = (lo + hi) // <span class="num">2</span>    <span class="cm"># // is floor division → always an int</span>
+
+        <span class="kw">if</span> arr[mid] == target:
+            <span class="kw">return</span> mid           <span class="cm"># found!</span>
+        <span class="kw">elif</span> arr[mid] &lt; target:
+            lo = mid + <span class="num">1</span>         <span class="cm"># search right half</span>
+        <span class="kw">else</span>:
+            hi = mid - <span class="num">1</span>         <span class="cm"># search left half</span>
+
+    <span class="kw">return</span> -<span class="num">1</span>  <span class="cm"># not found</span>
+
+
+<span class="fn">print</span>(<span class="fn">binary_search</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>], <span class="num">7</span>))  <span class="cm"># 3 (index)</span></pre>
+    </div>
+    <div class="callout warn">
+      <strong>Common bugs:</strong> using <code>lo &lt; hi</code> instead of <code>lo &lt;= hi</code>, using <code>lo = mid</code> instead of <code>lo = mid + 1</code>, and writing <code>/</code> instead of <code>//</code> — in Python 3, <code>(lo + hi) / 2</code> returns a <code>float</code> and <code>arr[3.0]</code> raises <code>TypeError</code>.
+    </div>
+    <div class="callout">
+      <strong>No overflow in Python:</strong> Python ints are arbitrary-precision, so <code>mid = (lo + hi) // 2</code> can never overflow. The <code>lo + (hi - lo) // 2</code> form you see in Java/C++ solutions is only needed there because of fixed-width 32-bit ints — it's harmless in Python, but not required.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">The bisect Module — Binary Search Built In</h2>
+    <p class="explanation">Python's standard library ships a battle-tested binary search: <code>bisect</code>. <code>bisect_left(a, x)</code> returns the first index where <code>x</code> could be inserted keeping <code>a</code> sorted (i.e. the first element <strong>&gt;= x</strong>); <code>bisect_right(a, x)</code> returns the index just past the last <code>x</code> (first element <strong>&gt; x</strong>). <code>insort(a, x)</code> inserts in sorted position. Use it in real code, and as a cross-check for your hand-written version.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — bisect_left / bisect_right / insort</div>
+      <pre><span class="kw">from</span> bisect <span class="kw">import</span> bisect_left, bisect_right, insort
+
+a = [<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>]
+
+<span class="fn">print</span>(<span class="fn">bisect_left</span>(a, <span class="num">5</span>))    <span class="cm"># 2  ← first 5</span>
+<span class="fn">print</span>(<span class="fn">bisect_right</span>(a, <span class="num">5</span>))   <span class="cm"># 5  ← one past the last 5</span>
+<span class="fn">print</span>(<span class="fn">bisect_right</span>(a, <span class="num">5</span>) - <span class="fn">bisect_left</span>(a, <span class="num">5</span>))  <span class="cm"># 3  ← count of 5s in O(log n)</span>
+
+
+<span class="kw">def</span> <span class="fn">index_of</span>(a, x) -&gt; <span class="cls">int</span>:
+    <span class="str">"""Exact-match search built on bisect_left."""</span>
+    i = <span class="fn">bisect_left</span>(a, x)
+    <span class="kw">return</span> i <span class="kw">if</span> i &lt; <span class="fn">len</span>(a) <span class="kw">and</span> a[i] == x <span class="kw">else</span> -<span class="num">1</span>
+
+
+<span class="fn">print</span>(<span class="fn">index_of</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>], <span class="num">7</span>))  <span class="cm"># 3  — same answer as binary_search</span>
+<span class="fn">print</span>(<span class="fn">index_of</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>], <span class="num">4</span>))  <span class="cm"># -1</span>
+
+nums = [<span class="num">1</span>, <span class="num">4</span>, <span class="num">9</span>]
+<span class="fn">insort</span>(nums, <span class="num">5</span>)                 <span class="cm"># O(log n) search + O(n) shift</span>
+<span class="fn">print</span>(nums)                     <span class="cm"># [1, 4, 5, 9]</span></pre>
+    </div>
+    <div class="callout">
+      <strong>Interview tip:</strong> Interviewers usually want to see you write the loop yourself — but mentioning <code>bisect</code> shows you know the language, and it's the fastest way to test your own implementation: <code>assert binary_search(a, x) == index_of(a, x)</code> for many random inputs.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Search in Rotated Sorted Array</h2>
+    <p class="explanation">A sorted array that's been rotated (e.g., [4,5,6,7,0,1,2]). At least one half is always sorted — determine which half, then binary search the sorted half.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Search in Rotated Sorted Array</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">search_rotated</span>(nums: List[<span class="cls">int</span>], target: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+
+    <span class="kw">while</span> lo &lt;= hi:
+        mid = (lo + hi) // <span class="num">2</span>
+        <span class="kw">if</span> nums[mid] == target:
+            <span class="kw">return</span> mid
+
+        <span class="cm"># Is LEFT half sorted?</span>
+        <span class="kw">if</span> nums[lo] &lt;= nums[mid]:
+            <span class="cm"># Is target in the sorted left half? (chained comparison!)</span>
+            <span class="kw">if</span> nums[lo] &lt;= target &lt; nums[mid]:
+                hi = mid - <span class="num">1</span>  <span class="cm"># search left</span>
+            <span class="kw">else</span>:
+                lo = mid + <span class="num">1</span>  <span class="cm"># search right</span>
+        <span class="kw">else</span>:
+            <span class="cm"># RIGHT half is sorted</span>
+            <span class="kw">if</span> nums[mid] &lt; target &lt;= nums[hi]:
+                lo = mid + <span class="num">1</span>  <span class="cm"># search right</span>
+            <span class="kw">else</span>:
+                hi = mid - <span class="num">1</span>  <span class="cm"># search left</span>
+
+    <span class="kw">return</span> -<span class="num">1</span>
+
+
+<span class="fn">print</span>(<span class="fn">search_rotated</span>([<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>], <span class="num">0</span>))  <span class="cm"># 4</span></pre>
+    </div>
+    <div class="callout">
+      <strong>Python idiom:</strong> <code>a &lt;= x &lt; b</code> is a <em>chained comparison</em> — it means <code>a &lt;= x and x &lt; b</code>. Perfect for "is target inside this range?" checks.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Binary Search on Answer</h2>
+    <p class="explanation">Sometimes you don't search in an array — you binary search on the <strong>answer space</strong>. "Find the minimum speed such that X is possible" — if speed k works, k+1 also works, so binary search on k. In Python the condition is just a function (or <code>lambda</code>) you pass in.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Search on Answer Space</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> Callable
+
+
+<span class="cm"># Template: find minimum value where condition(value) is True</span>
+<span class="kw">def</span> <span class="fn">find_min</span>(lo: <span class="cls">int</span>, hi: <span class="cls">int</span>, condition: Callable[[<span class="cls">int</span>], <span class="cls">bool</span>]) -&gt; <span class="cls">int</span>:
+    result = hi
+
+    <span class="kw">while</span> lo &lt;= hi:
+        mid = (lo + hi) // <span class="num">2</span>
+
+        <span class="kw">if</span> <span class="fn">condition</span>(mid):
+            result = mid     <span class="cm"># this works, but try smaller</span>
+            hi = mid - <span class="num">1</span>
+        <span class="kw">else</span>:
+            lo = mid + <span class="num">1</span>     <span class="cm"># too small, try bigger</span>
+
+    <span class="kw">return</span> result
+
+
+<span class="cm"># Example use: smallest x in [0, 100] with x * x &gt;= 50</span>
+<span class="fn">print</span>(<span class="fn">find_min</span>(<span class="num">0</span>, <span class="num">100</span>, <span class="kw">lambda</span> x: x * x &gt;= <span class="num">50</span>))  <span class="cm"># 8</span>
+
+<span class="cm"># "Koko Eating Bananas" uses the same template:
+# find min speed k where Koko can eat all bananas in h hours</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Binary Search <span class="problem-tag easy">EASY</span></li>
+      <li>First Bad Version <span class="problem-tag easy">EASY</span></li>
+      <li>Search in Rotated Sorted Array <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Find Minimum in Rotated Sorted Array <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Koko Eating Bananas <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Median of Two Sorted Arrays <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="13-dynamic-programming.html" class="footer-back">← Dynamic Programming</a>
+    <a href="15-two-pointers.html" class="footer-next">Two Pointers →</a>
+  </div>
+</div>
+</body>
+</html>

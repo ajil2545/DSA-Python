@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arrays — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Arrays</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">01 / 19</div>
+    <h1 class="page-title">Arrays <span class="highlight">&</span><br>Array Techniques</h1>
+    <p class="page-subtitle">The most fundamental data structure. Everything else is built on this. Master arrays first — they appear in 80% of coding interviews.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item">
+      <div class="complexity-label">ACCESS</div>
+      <div class="complexity-value">O(1)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">SEARCH</div>
+      <div class="complexity-value">O(n)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">INSERT END</div>
+      <div class="complexity-value">O(1)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">INSERT MID</div>
+      <div class="complexity-value">O(n)</div>
+    </div>
+    <div class="complexity-item">
+      <div class="complexity-label">DELETE</div>
+      <div class="complexity-value">O(n)</div>
+    </div>
+  </div>
+
+  <!-- WHAT IS AN ARRAY -->
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">What is an Array?</h2>
+    <p class="explanation">
+      An array is a <strong>contiguous block of memory</strong> that stores elements of the same type, each accessible by an index. In Python, the built-in <strong>list</strong> is a dynamic array — it grows and shrinks automatically and can hold any type (under the hood it stores contiguous <em>references</em> to objects, so indexing is still O(1)).
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-title">MEMORY LAYOUT</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  Index:  [  0  ] [  1  ] [  2  ] [  3  ] [  4  ]
+  Value:  [ "a" ] [ "b" ] [ "c" ] [ "d" ] [ "e" ]
+           ↑
+     arr[0] = "a"    ←  O(1) access — instant!</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">PYTHON — List Basics</div>
+      <pre><span class="cm"># Creating a list (Python's dynamic array)</span>
+arr = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]
+
+<span class="cm"># Access by index — O(1)</span>
+print(arr[<span class="num">0</span>])    <span class="cm"># 1</span>
+print(arr[<span class="num">4</span>])    <span class="cm"># 5</span>
+print(arr[-<span class="num">1</span>])   <span class="cm"># 5  ← negative index counts from the end</span>
+print(len(arr))  <span class="cm"># 5</span>
+
+<span class="cm"># Adding / removing</span>
+arr.append(<span class="num">6</span>)      <span class="cm"># add to end    → O(1) amortized</span>
+arr.pop()          <span class="cm"># remove end    → O(1)</span>
+arr.insert(<span class="num">0</span>, <span class="num">0</span>)   <span class="cm"># add to front  → O(n) (shifts all!)</span>
+arr.pop(<span class="num">0</span>)         <span class="cm"># remove front  → O(n) — use collections.deque for queues</span>
+
+<span class="cm"># Slicing arr[start:stop:step] — returns a NEW list, O(k)</span>
+print(arr[<span class="num">1</span>:<span class="num">3</span>])    <span class="cm"># [2, 3]   (stop is exclusive)</span>
+print(arr[:<span class="num">2</span>])     <span class="cm"># [1, 2]</span>
+print(arr[-<span class="num">2</span>:])    <span class="cm"># [4, 5]   last two</span>
+print(arr[::-<span class="num">1</span>])   <span class="cm"># [5, 4, 3, 2, 1]  reversed copy</span>
+
+<span class="cm"># Modifying in place — del and slice assignment</span>
+<span class="kw">del</span> arr[<span class="num">1</span>:<span class="num">3</span>]       <span class="cm"># removes 2 items at index 1 → [1, 4, 5]</span>
+arr[<span class="num">1</span>:<span class="num">1</span>] = [<span class="num">99</span>]    <span class="cm"># inserts 99 at index 1 (same as arr.insert(1, 99))</span>
+print(arr)         <span class="cm"># [1, 99, 4, 5]</span></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">PYTHON — Comprehensions, in &amp; enumerate</div>
+      <pre>nums = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>]
+
+<span class="cm"># List comprehensions — build a new list in one readable line</span>
+squares = [x * x <span class="kw">for</span> x <span class="kw">in</span> nums]            <span class="cm"># [9, 1, 16, 1, 25, 81]</span>
+evens = [x <span class="kw">for</span> x <span class="kw">in</span> nums <span class="kw">if</span> x % <span class="num">2</span> == <span class="num">0</span>]     <span class="cm"># [4]</span>
+grid = [[<span class="num">0</span>] * <span class="num">3</span> <span class="kw">for</span> _ <span class="kw">in</span> range(<span class="num">2</span>)]        <span class="cm"># [[0, 0, 0], [0, 0, 0]]</span>
+<span class="cm"># grid = [[0] * 3] * 2  ← BUG: both rows are the SAME list object</span>
+print(squares, evens, grid)
+
+<span class="cm"># Membership: `in` on a list is a linear scan → O(n)</span>
+print(<span class="num">5</span> <span class="kw">in</span> nums)      <span class="cm"># True  (checks every element)</span>
+seen = <span class="cls">set</span>(nums)     <span class="cm"># build once: O(n)</span>
+print(<span class="num">5</span> <span class="kw">in</span> seen)      <span class="cm"># True  (hash lookup → O(1) average)</span>
+
+<span class="cm"># enumerate gives (index, value) — no manual counter needed</span>
+<span class="kw">for</span> i, x <span class="kw">in</span> enumerate(nums[:<span class="num">2</span>]):
+    print(i, x)       <span class="cm"># 0 3  then  1 1</span></pre>
+    </div>
+
+    <div class="callout warn">
+      <strong>References vs copies:</strong> <code>b = a</code> does NOT copy a list — both names point to the same object, so <code>b.append(1)</code> changes <code>a</code> too. Copy with <code>a[:]</code>, <code>a.copy()</code> or <code>list(a)</code> (shallow), or <code>copy.deepcopy(a)</code> for nested lists. Also: <code>x in my_list</code> inside a loop silently makes your solution O(n²) — convert to a <code>set</code> first.
+    </div>
+  </section>
+
+  <!-- TWO POINTERS -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Two Pointers</h2>
+    <p class="explanation">
+      Use <strong>two variables</strong> (left & right) that start at opposite ends and move toward each other. This converts O(n²) brute-force solutions into O(n). Classic for sorted arrays.
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-title">TWO POINTER MOVEMENT</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  [  1  ] [  2  ] [  3  ] [  4  ] [  5  ] [  6  ]
+     ↑                                       ↑
+    left                                   right
+    sum = 7  (target=7?) → YES! found it.</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Two Sum (sorted array)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">two_sum</span>(nums: <span class="cls">List</span>[<span class="cls">int</span>], target: <span class="cls">int</span>) -&gt; <span class="cls">List</span>[<span class="cls">int</span>]:
+    left, right = <span class="num">0</span>, len(nums) - <span class="num">1</span>   <span class="cm"># tuple unpacking: two assignments in one line</span>
+
+    <span class="kw">while</span> left &lt; right:
+        total = nums[left] + nums[right]  <span class="cm"># don't name it `sum` — that shadows the built-in</span>
+
+        <span class="kw">if</span> total == target:
+            <span class="kw">return</span> [left, right]  <span class="cm"># found!</span>
+        <span class="kw">elif</span> total &lt; target:
+            left += <span class="num">1</span>   <span class="cm"># need bigger sum → move left right (Python has no ++)</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>  <span class="cm"># need smaller sum → move right left</span>
+
+    <span class="kw">return</span> []  <span class="cm"># no solution</span>
+
+<span class="cm"># Example</span>
+print(<span class="fn">two_sum</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">6</span>], <span class="num">6</span>))  <span class="cm"># [1, 3]  (2+4=6)</span></pre>
+    </div>
+  </section>
+
+  <!-- SLIDING WINDOW -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Sliding Window</h2>
+    <p class="explanation">
+      Instead of recalculating a sub-array sum from scratch each step, <strong>slide a window</strong> — add the new element on the right, subtract the one leaving on the left. Reduces O(n·k) to O(n).
+    </p>
+
+    <div class="diagram">
+      <div class="diagram-title">WINDOW SLIDING (window size = 3)</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  [  2  ] [  1  ] [  5  ] [  3  ] [  6  ]
+  [█████████████████████]                    2+1+5 = 8
+          [█████████████████████]            1+5+3 = 9   (+3 −2)
+                  [█████████████████████]    5+3+6 = 14  (+6 −1)
+
+  Window sums: 8 → 9 → 14   Max = 14</pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Max subarray sum of size k</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">max_sum_window</span>(arr: <span class="cls">List</span>[<span class="cls">int</span>], k: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    <span class="cm"># Build the first window — sum() over a slice, O(k)</span>
+    window_sum = sum(arr[:k])
+    max_sum = window_sum
+
+    <span class="cm"># Slide the window: add right element, drop left element</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(k, len(arr)):
+        window_sum += arr[i] - arr[i - k]
+        max_sum = max(max_sum, window_sum)
+
+    <span class="kw">return</span> max_sum
+
+print(<span class="fn">max_sum_window</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">6</span>], <span class="num">3</span>))  <span class="cm"># 14  (5+3+6)</span>
+
+<span class="cm"># ⚠ Don't do max(sum(arr[i:i+k]) for i in ...) — re-summing each slice is O(n·k)</span></pre>
+    </div>
+  </section>
+
+  <!-- PREFIX SUMS -->
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">Prefix Sums</h2>
+    <p class="explanation">
+      Pre-compute cumulative sums so any <strong>range sum query</strong> runs in O(1). Build once, query many times. Essential for range problems.
+    </p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Range sum query</div>
+      <pre><span class="kw">from</span> itertools <span class="kw">import</span> accumulate
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">build_prefix</span>(arr: <span class="cls">List</span>[<span class="cls">int</span>]) -&gt; <span class="cls">List</span>[<span class="cls">int</span>]:
+    prefix = [<span class="num">0</span>]  <span class="cm"># prefix[0] = 0 (sentinel)</span>
+    <span class="kw">for</span> num <span class="kw">in</span> arr:
+        prefix.append(prefix[-<span class="num">1</span>] + num)  <span class="cm"># prefix[-1] = last value so far</span>
+    <span class="kw">return</span> prefix
+
+<span class="cm"># Pythonic one-liner: [0] + list(accumulate(arr))</span>
+
+<span class="cm"># Sum of arr[l..r] inclusive = prefix[r+1] - prefix[l]</span>
+<span class="kw">def</span> <span class="fn">range_sum</span>(prefix: <span class="cls">List</span>[<span class="cls">int</span>], l: <span class="cls">int</span>, r: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    <span class="kw">return</span> prefix[r + <span class="num">1</span>] - prefix[l]
+
+arr = [<span class="num">3</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">9</span>]
+pre = <span class="fn">build_prefix</span>(arr)
+print(pre)                              <span class="cm"># [0, 3, 4, 8, 9, 14, 23]</span>
+print([<span class="num">0</span>] + list(accumulate(arr)))      <span class="cm"># [0, 3, 4, 8, 9, 14, 23]  same thing</span>
+print(<span class="fn">range_sum</span>(pre, <span class="num">1</span>, <span class="num">4</span>))            <span class="cm"># 11 (1+4+1+5)</span></pre>
+    </div>
+  </section>
+
+  <!-- CALLOUT -->
+  <div class="callout">
+    <strong>Key Insight:</strong> Most array problems are variants of these three patterns. When you see "subarray", think sliding window or prefix sum. When you see "sorted array + target", think two pointers.
+  </div>
+
+  <!-- USE CASES -->
+  <section class="section">
+    <div class="section-label">REAL WORLD</div>
+    <h2 class="section-title">Where Arrays Are Used</h2>
+    <div class="use-cases">
+      <div class="use-case">Storing lists of items (to-do, products)</div>
+      <div class="use-case">Image pixels (2D arrays)</div>
+      <div class="use-case">Buffers for streaming data</div>
+      <div class="use-case">Matrix operations (ML)</div>
+      <div class="use-case">Implementing stacks & queues</div>
+      <div class="use-case">Sliding analytics windows</div>
+    </div>
+  </section>
+
+  <!-- PRACTICE PROBLEMS -->
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Two Sum (unsorted) <span class="problem-tag easy">EASY</span></li>
+      <li>Best Time to Buy and Sell Stock <span class="problem-tag easy">EASY</span></li>
+      <li>Contains Duplicate <span class="problem-tag easy">EASY</span></li>
+      <li>Maximum Subarray (Kadane's) <span class="problem-tag medium">MEDIUM</span></li>
+      <li>3Sum <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Container With Most Water <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Minimum Window Substring <a href="sol-15-two-pointers.html" style="color:var(--accent)">(solved in Two Pointers solutions)</a> <span class="problem-tag hard">HARD</span></li>
+      <li>Trapping Rain Water <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="00-python-basics.html" class="footer-back">← Python Basics</a>
+    <a href="02-strings.html" class="footer-next">Strings →</a>
+  </div>
+</div>
+
+</body>
+</html>

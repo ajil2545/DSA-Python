@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="14-binary-search.html" class="back-link">← Binary Search</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 14</div>
+    <h1 class="page-title">Binary Search <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Halve the problem space. Master the boundary conditions — that's where most bugs hide.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">First Bad Version</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Versions 1..n. Starting from some version k, all are bad. Find k with the minimum number of calls to the API <code>is_bad_version(version)</code>.<br><br>
+        <strong>Think:</strong> Binary search on the version number. If mid is bad, the first bad could be mid or earlier → hi = mid. If mid is good, it's after → lo = mid+1. When lo == hi, we found it.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(log n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> Callable
+
+
+<span class="kw">def</span> <span class="fn">first_bad_version</span>(n: <span class="cls">int</span>, is_bad_version: Callable[[<span class="cls">int</span>], <span class="cls">bool</span>]) -&gt; <span class="cls">int</span>:
+    lo, hi = <span class="num">1</span>, n
+
+    <span class="kw">while</span> lo &lt; hi:  <span class="cm"># ← &lt; not &lt;=  (we want lo == hi at end)</span>
+        mid = (lo + hi) // <span class="num">2</span>  <span class="cm"># no overflow worries — Python ints are unbounded</span>
+
+        <span class="kw">if</span> <span class="fn">is_bad_version</span>(mid):
+            hi = mid        <span class="cm"># bad → first bad is mid or before</span>
+        <span class="kw">else</span>:
+            lo = mid + <span class="num">1</span>    <span class="cm"># good → first bad is after mid</span>
+
+    <span class="kw">return</span> lo  <span class="cm"># lo == hi == first bad version</span>
+
+
+<span class="cm"># The "API": versions 4 and later are bad</span>
+<span class="fn">print</span>(<span class="fn">first_bad_version</span>(<span class="num">5</span>, <span class="kw">lambda</span> v: v &gt;= <span class="num">4</span>))  <span class="cm"># 4</span>
+<span class="fn">print</span>(<span class="fn">first_bad_version</span>(<span class="num">1</span>, <span class="kw">lambda</span> v: v &gt;= <span class="num">1</span>))  <span class="cm"># 1</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Find Minimum in Rotated Sorted Array</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> A sorted array of unique values was rotated at an unknown pivot. Find its minimum element in O(log n).<br><br>
+        <strong>Think:</strong> In a rotated sorted array, the minimum is where the "break" is. Compare nums[mid] with nums[hi]: if nums[mid] &gt; nums[hi], the minimum is in the RIGHT half (the break is there). Otherwise, it's in the left half (or at mid).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(log n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">find_min</span>(nums: List[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi) // <span class="num">2</span>
+
+        <span class="kw">if</span> nums[mid] &gt; nums[hi]:
+            <span class="cm"># Mid is in the "bigger" left portion → min is to the right</span>
+            lo = mid + <span class="num">1</span>
+        <span class="kw">else</span>:
+            <span class="cm"># Mid is in the "smaller" right portion → min is here or left</span>
+            hi = mid
+
+    <span class="kw">return</span> nums[lo]
+
+
+<span class="fn">print</span>(<span class="fn">find_min</span>([<span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">2</span>]))        <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">find_min</span>([<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>]))  <span class="cm"># 0</span>
+<span class="cm"># Sanity check (O(n), but great for testing): min() built-in</span>
+<span class="fn">print</span>(<span class="fn">min</span>([<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>]))       <span class="cm"># 0</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Koko Eating Bananas</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Koko can eat k bananas/hour. Find minimum k to eat all piles within h hours.<br><br>
+        <strong>Think:</strong> Binary search on the ANSWER (k). Min possible k = 1, max = max pile size. For a given k, check if it's feasible. Hours needed = sum of ceil(pile/k) for all piles. If ≤ h, k works.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Search space: k from 1 to max(piles).</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each mid k, calculate total hours: sum(ceil(pile/k)).</div></div>
+      <div class="step"><div class="step-num">3</div><div>If hours ≤ h, k works — try smaller (hi = mid).</div></div>
+      <div class="step"><div class="step-num">4</div><div>If hours &gt; h, k too slow — try bigger (lo = mid+1).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log m)</span> m=max pile</div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">min_eating_speed</span>(piles: List[<span class="cls">int</span>], h: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    lo, hi = <span class="num">1</span>, <span class="fn">max</span>(piles)
+
+    <span class="kw">while</span> lo &lt; hi:
+        mid = (lo + hi) // <span class="num">2</span>
+
+        <span class="cm"># Hours needed at speed mid. -(-p // k) is integer ceil(p / k):
+        # exact, no floats, no math.ceil import needed.</span>
+        hours = <span class="fn">sum</span>(-(-pile // mid) <span class="kw">for</span> pile <span class="kw">in</span> piles)
+
+        <span class="kw">if</span> hours &lt;= h:
+            hi = mid      <span class="cm"># fast enough — can we do with less?</span>
+        <span class="kw">else</span>:
+            lo = mid + <span class="num">1</span>  <span class="cm"># too slow — need to eat faster</span>
+
+    <span class="kw">return</span> lo
+
+
+<span class="fn">print</span>(<span class="fn">min_eating_speed</span>([<span class="num">3</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">11</span>], <span class="num">8</span>))  <span class="cm"># 4</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Median of Two Sorted Arrays</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given two sorted arrays of sizes m and n, return the median of the combined data in O(log(m + n)).<br><br>
+        <strong>Think:</strong> Binary search on the partition of the SMALLER array. Find a cut so that: left part of nums1 + left part of nums2 = half the total elements, AND all left elements ≤ all right elements. The median is derived from the boundary values.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(log(min(m, n)))</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">find_median_sorted_arrays</span>(nums1: List[<span class="cls">int</span>], nums2: List[<span class="cls">int</span>]) -&gt; <span class="cls">float</span>:
+    <span class="cm"># Ensure nums1 is the smaller array (binary search on smaller)</span>
+    <span class="kw">if</span> <span class="fn">len</span>(nums1) &gt; <span class="fn">len</span>(nums2):
+        nums1, nums2 = nums2, nums1
+
+    m, n = <span class="fn">len</span>(nums1), <span class="fn">len</span>(nums2)
+    INF = <span class="cls">float</span>(<span class="str">'inf'</span>)
+    lo, hi = <span class="num">0</span>, m
+
+    <span class="kw">while</span> lo &lt;= hi:
+        part_x = (lo + hi) // <span class="num">2</span>               <span class="cm"># partition in nums1</span>
+        part_y = (m + n + <span class="num">1</span>) // <span class="num">2</span> - part_x     <span class="cm"># partition in nums2</span>
+
+        max_left_x  = -INF <span class="kw">if</span> part_x == <span class="num">0</span> <span class="kw">else</span> nums1[part_x - <span class="num">1</span>]
+        min_right_x =  INF <span class="kw">if</span> part_x == m <span class="kw">else</span> nums1[part_x]
+        max_left_y  = -INF <span class="kw">if</span> part_y == <span class="num">0</span> <span class="kw">else</span> nums2[part_y - <span class="num">1</span>]
+        min_right_y =  INF <span class="kw">if</span> part_y == n <span class="kw">else</span> nums2[part_y]
+
+        <span class="kw">if</span> max_left_x &lt;= min_right_y <span class="kw">and</span> max_left_y &lt;= min_right_x:
+            <span class="cm"># Perfect partition found!</span>
+            <span class="kw">if</span> (m + n) % <span class="num">2</span> == <span class="num">0</span>:
+                <span class="kw">return</span> (<span class="fn">max</span>(max_left_x, max_left_y) + <span class="fn">min</span>(min_right_x, min_right_y)) / <span class="num">2</span>
+            <span class="kw">return</span> <span class="cls">float</span>(<span class="fn">max</span>(max_left_x, max_left_y))
+        <span class="kw">elif</span> max_left_x &gt; min_right_y:
+            hi = part_x - <span class="num">1</span>
+        <span class="kw">else</span>:
+            lo = part_x + <span class="num">1</span>
+
+    <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"input arrays must be sorted"</span>)
+
+
+<span class="fn">print</span>(<span class="fn">find_median_sorted_arrays</span>([<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>]))     <span class="cm"># 2.0</span>
+<span class="fn">print</span>(<span class="fn">find_median_sorted_arrays</span>([<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">4</span>]))  <span class="cm"># 2.5</span>
+<span class="cm"># Note: / always returns a float in Python 3; // is floor division.</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Also on the lesson's practice list:</strong> <em>Binary Search</em> and <em>Search in Rotated Sorted Array</em> are solved in full on the <a href="14-binary-search.html">Binary Search lesson page</a>.
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-10-dp.html" class="footer-back">← DP Solutions</a>
+    <a href="sol-15-two-pointers.html" class="footer-next">Two Pointer Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

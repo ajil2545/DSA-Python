@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interval Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="18-intervals.html" class="back-link">← Intervals</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 18</div>
+    <h1 class="page-title">Interval <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Sort, scan, compare with the previous block — and a heap or two pointers when you need to count overlaps.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Merge Intervals</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> After sorting by start, an interval can only overlap the block directly before it. Keep the output's last element as the block under construction and either stretch it or start a new one.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Sort by start (<strong>sorted(intervals, key=lambda x: x[0])</strong>).</div></div>
+      <div class="step"><div class="step-num">2</div><div>If <strong>start &lt;= merged[-1][1]</strong>, set the block's end to the max of both ends.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Otherwise append a fresh <strong>[start, end]</strong> (a new list, so the input is never mutated).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n)</span></div>
+        <div class="ci-item">Space: <span>O(n) for the output</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">merge</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    merged: <span class="cls">List</span>[<span class="cls">List</span>[int]] = []
+    <span class="kw">for</span> start, end <span class="kw">in</span> <span class="fn">sorted</span>(intervals, key=<span class="kw">lambda</span> x: x[<span class="num">0</span>]):
+        <span class="kw">if</span> merged <span class="kw">and</span> start &lt;= merged[-<span class="num">1</span>][<span class="num">1</span>]:
+            merged[-<span class="num">1</span>][<span class="num">1</span>] = <span class="fn">max</span>(merged[-<span class="num">1</span>][<span class="num">1</span>], end)
+        <span class="kw">else</span>:
+            merged.<span class="fn">append</span>([start, end])
+    <span class="kw">return</span> merged
+
+
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">18</span>]]))  <span class="cm"># [[1, 6], [8, 10], [15, 18]]</span>
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">4</span>], [<span class="num">4</span>, <span class="num">5</span>]]))                     <span class="cm"># [[1, 5]]  (touching merges)</span>
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">4</span>, <span class="num">7</span>], [<span class="num">1</span>, <span class="num">4</span>]]))                     <span class="cm"># [[1, 7]]  (unsorted input)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Insert Interval</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> The list is already sorted and disjoint, so no sort is needed. Everything splits into three runs: intervals entirely left of the new one, intervals overlapping it (absorb them), and intervals entirely to its right.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Copy intervals whose <strong>end &lt; new.start</strong>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>While <strong>interval.start &lt;= new.end</strong>, widen new to cover it.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Append the widened interval, then <strong>extend</strong> with the remaining slice.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n) for the output</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Three Phases</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">insert</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]], new_interval: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    result: <span class="cls">List</span>[<span class="cls">List</span>[int]] = []
+    start, end = new_interval
+    i, n = <span class="num">0</span>, <span class="fn">len</span>(intervals)
+    <span class="kw">while</span> i &lt; n <span class="kw">and</span> intervals[i][<span class="num">1</span>] &lt; start:          <span class="cm"># left of new</span>
+        result.<span class="fn">append</span>(intervals[i])
+        i += <span class="num">1</span>
+    <span class="kw">while</span> i &lt; n <span class="kw">and</span> intervals[i][<span class="num">0</span>] &lt;= end:           <span class="cm"># overlapping: merge into new</span>
+        start = <span class="fn">min</span>(start, intervals[i][<span class="num">0</span>])
+        end = <span class="fn">max</span>(end, intervals[i][<span class="num">1</span>])
+        i += <span class="num">1</span>
+    result.<span class="fn">append</span>([start, end])
+    result.<span class="fn">extend</span>(intervals[i:])                      <span class="cm"># right of new</span>
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">insert</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">6</span>, <span class="num">9</span>]], [<span class="num">2</span>, <span class="num">5</span>]))                          <span class="cm"># [[1, 5], [6, 9]]</span>
+<span class="fn">print</span>(<span class="fn">insert</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">5</span>], [<span class="num">6</span>, <span class="num">7</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">12</span>, <span class="num">16</span>]], [<span class="num">4</span>, <span class="num">8</span>]))  <span class="cm"># [[1, 2], [3, 10], [12, 16]]</span>
+<span class="fn">print</span>(<span class="fn">insert</span>([], [<span class="num">5</span>, <span class="num">7</span>]))                                        <span class="cm"># [[5, 7]]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Non-overlapping Intervals</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Minimum removals = n - (maximum number of non-overlapping intervals you can keep). Keeping the maximum is activity selection: sort by <strong>end</strong> and greedily keep each interval that starts at or after the last kept end. Ending earliest leaves the most room for the rest (exchange argument). Touching intervals like [1,2] and [2,3] do not overlap here.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Sort by end time.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Track <strong>prev_end</strong> of the last kept interval (start at -inf).</div></div>
+      <div class="step"><div class="step-num">3</div><div>If <strong>start &gt;= prev_end</strong>, keep it and update prev_end; otherwise count a removal.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n)</span></div>
+        <div class="ci-item">Space: <span>O(n) for the sorted copy</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Greedy by Earliest End</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">erase_overlap_intervals</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    removed = <span class="num">0</span>
+    prev_end = <span class="fn">float</span>(<span class="str">'-inf'</span>)
+    <span class="kw">for</span> start, end <span class="kw">in</span> <span class="fn">sorted</span>(intervals, key=<span class="kw">lambda</span> x: x[<span class="num">1</span>]):
+        <span class="kw">if</span> start &gt;= prev_end:      <span class="cm"># fits after the last kept interval</span>
+            prev_end = end
+        <span class="kw">else</span>:                      <span class="cm"># overlaps: drop it (it ends later than the kept one)</span>
+            removed += <span class="num">1</span>
+    <span class="kw">return</span> removed
+
+
+<span class="fn">print</span>(<span class="fn">erase_overlap_intervals</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>], [<span class="num">3</span>, <span class="num">4</span>], [<span class="num">1</span>, <span class="num">3</span>]]))  <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">erase_overlap_intervals</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">2</span>]]))          <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">erase_overlap_intervals</span>([[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>]]))                  <span class="cm"># 0</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Meeting Rooms</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> One person can attend all meetings iff no two overlap. After sorting by start, it's enough to compare each meeting with the previous one: if the previous ends after this one starts, there's a clash. Meetings are half-open, so ending at 10 and starting at 10 is fine.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Sort by start.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Pair neighbours with <strong>zip(intervals, intervals[1:])</strong>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Return <strong>all(prev_end &lt;= cur_start)</strong>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n)</span></div>
+        <div class="ci-item">Space: <span>O(n) for the sorted copy</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">can_attend_meetings</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; bool:
+    intervals = <span class="fn">sorted</span>(intervals, key=<span class="kw">lambda</span> x: x[<span class="num">0</span>])
+    <span class="kw">return</span> <span class="fn">all</span>(prev[<span class="num">1</span>] &lt;= cur[<span class="num">0</span>] <span class="kw">for</span> prev, cur <span class="kw">in</span> <span class="fn">zip</span>(intervals, intervals[<span class="num">1</span>:]))
+
+
+<span class="fn">print</span>(<span class="fn">can_attend_meetings</span>([[<span class="num">0</span>, <span class="num">30</span>], [<span class="num">5</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">20</span>]]))  <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">can_attend_meetings</span>([[<span class="num">7</span>, <span class="num">10</span>], [<span class="num">2</span>, <span class="num">4</span>]]))             <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">can_attend_meetings</span>([[<span class="num">1</span>, <span class="num">5</span>], [<span class="num">5</span>, <span class="num">8</span>]]))              <span class="cm"># True (back-to-back)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Meeting Rooms II</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Rooms needed = maximum number of meetings running at the same moment. Process meetings by start time and keep a min-heap of the end times of rooms currently in use. If the room that frees up earliest is free by this start, reuse it; otherwise open a new room.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Sort meetings by start.</div></div>
+      <div class="step"><div class="step-num">2</div><div>If <strong>ends[0] &lt;= start</strong>, <strong>heapreplace</strong> that end with the new end (room reused).</div></div>
+      <div class="step"><div class="step-num">3</div><div>Else <strong>heappush</strong> the new end (new room).</div></div>
+      <div class="step"><div class="step-num">4</div><div>Answer: <strong>len(ends)</strong>. The two-pointer version on separately sorted starts/ends gives the same count.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Min-Heap of End Times</div>
+        <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">min_meeting_rooms</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    ends: <span class="cls">List</span>[int] = []
+    <span class="kw">for</span> start, end <span class="kw">in</span> <span class="fn">sorted</span>(intervals, key=<span class="kw">lambda</span> x: x[<span class="num">0</span>]):
+        <span class="kw">if</span> ends <span class="kw">and</span> ends[<span class="num">0</span>] &lt;= start:
+            heapq.<span class="fn">heapreplace</span>(ends, end)    <span class="cm"># reuse the room that freed up earliest</span>
+        <span class="kw">else</span>:
+            heapq.<span class="fn">heappush</span>(ends, end)       <span class="cm"># all rooms busy: open a new one</span>
+    <span class="kw">return</span> <span class="fn">len</span>(ends)
+
+
+<span class="fn">print</span>(<span class="fn">min_meeting_rooms</span>([[<span class="num">0</span>, <span class="num">30</span>], [<span class="num">5</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">20</span>]]))          <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">min_meeting_rooms</span>([[<span class="num">7</span>, <span class="num">10</span>], [<span class="num">2</span>, <span class="num">4</span>]]))                     <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">min_meeting_rooms</span>([[<span class="num">1</span>, <span class="num">5</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">4</span>, <span class="num">8</span>], [<span class="num">5</span>, <span class="num">9</span>]]))      <span class="cm"># 3</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">ALTERNATIVE — Sorted Starts and Ends (Two Pointers)</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">min_meeting_rooms_sweep</span>(intervals: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    starts = <span class="fn">sorted</span>(s <span class="kw">for</span> s, _ <span class="kw">in</span> intervals)
+    ends = <span class="fn">sorted</span>(e <span class="kw">for</span> _, e <span class="kw">in</span> intervals)
+    rooms = j = <span class="num">0</span>
+    <span class="kw">for</span> s <span class="kw">in</span> starts:
+        <span class="kw">if</span> s &lt; ends[j]:       <span class="cm"># nothing has finished yet → need another room</span>
+            rooms += <span class="num">1</span>
+        <span class="kw">else</span>:                 <span class="cm"># a meeting ended: its room is reused</span>
+            j += <span class="num">1</span>
+    <span class="kw">return</span> rooms
+
+
+<span class="fn">print</span>(<span class="fn">min_meeting_rooms_sweep</span>([[<span class="num">0</span>, <span class="num">30</span>], [<span class="num">5</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">20</span>]]))      <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">min_meeting_rooms_sweep</span>([[<span class="num">1</span>, <span class="num">5</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">4</span>, <span class="num">8</span>], [<span class="num">5</span>, <span class="num">9</span>]]))  <span class="cm"># 3</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Interval List Intersections</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Both lists are sorted and internally disjoint, so walk them with two pointers like merging sorted arrays. The candidate intersection of the current pair is <strong>[max(starts), min(ends)]</strong>. Then advance whichever interval <strong>ends first</strong> — it cannot intersect anything further in the other list.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Pointers <strong>i</strong> into first and <strong>j</strong> into second.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Compute <strong>lo = max(a_start, b_start)</strong>, <strong>hi = min(a_end, b_end)</strong>; if lo &lt;= hi, record [lo, hi].</div></div>
+      <div class="step"><div class="step-num">3</div><div>Advance the pointer whose interval has the smaller end.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Stop when either list runs out.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(m + n)</span></div>
+        <div class="ci-item">Space: <span>O(1) extra (output aside)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Two Pointers</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">interval_intersection</span>(first: <span class="cls">List</span>[<span class="cls">List</span>[int]], second: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    i = j = <span class="num">0</span>
+    result: <span class="cls">List</span>[<span class="cls">List</span>[int]] = []
+    <span class="kw">while</span> i &lt; <span class="fn">len</span>(first) <span class="kw">and</span> j &lt; <span class="fn">len</span>(second):
+        lo = <span class="fn">max</span>(first[i][<span class="num">0</span>], second[j][<span class="num">0</span>])
+        hi = <span class="fn">min</span>(first[i][<span class="num">1</span>], second[j][<span class="num">1</span>])
+        <span class="kw">if</span> lo &lt;= hi:
+            result.<span class="fn">append</span>([lo, hi])
+        <span class="kw">if</span> first[i][<span class="num">1</span>] &lt; second[j][<span class="num">1</span>]:   <span class="cm"># the one that ends first is done</span>
+            i += <span class="num">1</span>
+        <span class="kw">else</span>:
+            j += <span class="num">1</span>
+    <span class="kw">return</span> result
+
+
+a = [[<span class="num">0</span>, <span class="num">2</span>], [<span class="num">5</span>, <span class="num">10</span>], [<span class="num">13</span>, <span class="num">23</span>], [<span class="num">24</span>, <span class="num">25</span>]]
+b = [[<span class="num">1</span>, <span class="num">5</span>], [<span class="num">8</span>, <span class="num">12</span>], [<span class="num">15</span>, <span class="num">24</span>], [<span class="num">25</span>, <span class="num">26</span>]]
+<span class="fn">print</span>(<span class="fn">interval_intersection</span>(a, b))  <span class="cm"># [[1, 2], [5, 5], [8, 10], [15, 23], [24, 24], [25, 25]]</span>
+<span class="fn">print</span>(<span class="fn">interval_intersection</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">5</span>, <span class="num">9</span>]], []))  <span class="cm"># []</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-17-greedy.html" class="footer-back">← Greedy Solutions</a>
+    <a href="sol-19-union-find.html" class="footer-next">Union-Find Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

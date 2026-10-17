@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trie — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Tries</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">11 / 19</div>
+    <h1 class="page-title">Tries <span class="highlight">Prefix</span><br>Trees</h1>
+    <p class="page-subtitle">A tree where each path from root to a node represents a prefix. Powers autocomplete, spell-check, and IP routing.</p>
+  </div>
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">INSERT</div><div class="complexity-value">O(m)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SEARCH</div><div class="complexity-value">O(m)</div></div>
+    <div class="complexity-item"><div class="complexity-label">PREFIX SEARCH</div><div class="complexity-value">O(m)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SPACE</div><div class="complexity-value">O(n·m)</div></div>
+  </div>
+  <div class="callout">m = length of the word, n = number of words</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">Trie Structure</h2>
+    <div class="diagram">
+      <div class="diagram-title">INSERTING: "cat", "car", "card", "care", "bat"</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  root
+  ├── c
+  │   └── a
+  │       ├── t  [end]        → "cat"
+  │       └── r  [end]        → "car"
+  │           ├── d  [end]    → "card"
+  │           └── e  [end]    → "care"
+  └── b
+      └── a
+          └── t  [end]        → "bat"</pre>
+    </div>
+    <p class="explanation">Each node stores its children in a <code>dict</code> mapping a character to the child node, plus a flag saying whether a word ends here. Using <code>__slots__</code> keeps millions of small nodes lighter in memory.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Trie Implementation</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>
+
+<span class="kw">class</span> <span class="cls">TrieNode</span>:
+    __slots__ = (<span class="str">"children"</span>, <span class="str">"is_end"</span>)
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.children: <span class="cls">Dict</span>[str, <span class="str">"TrieNode"</span>] = {}  <span class="cm"># char → TrieNode</span>
+        <span class="kw">self</span>.is_end = <span class="kw">False</span>                        <span class="cm"># marks end of a word</span>
+
+<span class="kw">class</span> <span class="cls">Trie</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.root = <span class="cls">TrieNode</span>()
+
+    <span class="kw">def</span> <span class="fn">insert</span>(<span class="kw">self</span>, word: str) -&gt; <span class="kw">None</span>:
+        node = <span class="kw">self</span>.root
+        <span class="kw">for</span> ch <span class="kw">in</span> word:
+            <span class="kw">if</span> ch <span class="kw">not</span> <span class="kw">in</span> node.children:
+                node.children[ch] = <span class="cls">TrieNode</span>()  <span class="cm"># create new node</span>
+            node = node.children[ch]            <span class="cm"># move down</span>
+        node.is_end = <span class="kw">True</span>                      <span class="cm"># mark word end</span>
+
+    <span class="kw">def</span> <span class="fn">_walk</span>(<span class="kw">self</span>, s: str):
+        <span class="str">"""Follow s from the root; return the last node or None."""</span>
+        node = <span class="kw">self</span>.root
+        <span class="kw">for</span> ch <span class="kw">in</span> s:
+            node = node.children.<span class="fn">get</span>(ch)
+            <span class="kw">if</span> node <span class="kw">is</span> <span class="kw">None</span>:
+                <span class="kw">return</span> <span class="kw">None</span>
+        <span class="kw">return</span> node
+
+    <span class="kw">def</span> <span class="fn">search</span>(<span class="kw">self</span>, word: str) -&gt; bool:
+        node = <span class="kw">self</span>.<span class="fn">_walk</span>(word)
+        <span class="kw">return</span> node <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span> <span class="kw">and</span> node.is_end  <span class="cm"># must be a complete word</span>
+
+    <span class="kw">def</span> <span class="fn">starts_with</span>(<span class="kw">self</span>, prefix: str) -&gt; bool:
+        <span class="kw">return</span> <span class="kw">self</span>.<span class="fn">_walk</span>(prefix) <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>    <span class="cm"># prefix exists (is_end doesn't matter)</span>
+
+trie = <span class="cls">Trie</span>()
+trie.<span class="fn">insert</span>(<span class="str">"cat"</span>)
+<span class="fn">print</span>(trie.<span class="fn">search</span>(<span class="str">"cat"</span>))       <span class="cm"># True</span>
+<span class="fn">print</span>(trie.<span class="fn">search</span>(<span class="str">"ca"</span>))        <span class="cm"># False (not a full word)</span>
+<span class="fn">print</span>(trie.<span class="fn">starts_with</span>(<span class="str">"ca"</span>))   <span class="cm"># True (prefix exists)</span></pre>
+    </div>
+    <div class="callout"><strong>Pythonic shortcut:</strong> <code>node.children.setdefault(ch, TrieNode())</code> replaces the "if missing, create" two-liner in <code>insert</code> — though it builds a throwaway <code>TrieNode</code> on every call, so the explicit <code>if</code> is slightly faster.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">The Nested-dict Trie (defaultdict Trick)</h2>
+    <p class="explanation">In interviews you often don't need a node class at all. A trie can be <strong>dicts nested inside dicts</strong>, with a special key such as <code>"$"</code> marking the end of a word. A recursive <code>defaultdict</code> creates child levels automatically, so insert becomes a one-line loop.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — dict-of-dicts Trie</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+END = <span class="str">"$"</span>   <span class="cm"># sentinel key: "a word ends here"</span>
+
+<span class="kw">def</span> <span class="fn">make_trie</span>():
+    <span class="kw">return</span> <span class="fn">defaultdict</span>(make_trie)   <span class="cm"># every missing child is itself a new trie</span>
+
+<span class="kw">def</span> <span class="fn">insert</span>(root, word):
+    node = root
+    <span class="kw">for</span> ch <span class="kw">in</span> word:
+        node = node[ch]             <span class="cm"># auto-creates the child level</span>
+    node[END] = <span class="kw">True</span>
+
+<span class="kw">def</span> <span class="fn">find</span>(root, s):
+    node = root
+    <span class="kw">for</span> ch <span class="kw">in</span> s:
+        <span class="kw">if</span> ch <span class="kw">not</span> <span class="kw">in</span> node:          <span class="cm"># use `in` — indexing would CREATE the key!</span>
+            <span class="kw">return</span> <span class="kw">None</span>
+        node = node[ch]
+    <span class="kw">return</span> node
+
+<span class="kw">def</span> <span class="fn">words_with_prefix</span>(root, prefix):
+    <span class="str">"""Autocomplete: collect every word below the prefix node (DFS)."""</span>
+    node, out = <span class="fn">find</span>(root, prefix), []
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(n, path):
+        <span class="kw">for</span> ch, child <span class="kw">in</span> n.<span class="fn">items</span>():
+            <span class="kw">if</span> ch == END:
+                out.<span class="fn">append</span>(prefix + path)
+            <span class="kw">else</span>:
+                <span class="fn">dfs</span>(child, path + ch)
+
+    <span class="kw">if</span> node <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>:
+        <span class="fn">dfs</span>(node, <span class="str">""</span>)
+    <span class="kw">return</span> <span class="fn">sorted</span>(out)
+
+root = <span class="fn">make_trie</span>()
+<span class="kw">for</span> w <span class="kw">in</span> [<span class="str">"cat"</span>, <span class="str">"car"</span>, <span class="str">"card"</span>, <span class="str">"care"</span>, <span class="str">"bat"</span>]:
+    <span class="fn">insert</span>(root, w)
+
+<span class="fn">print</span>(END <span class="kw">in</span> <span class="fn">find</span>(root, <span class="str">"car"</span>))        <span class="cm"># True  — "car" is a word</span>
+<span class="fn">print</span>(END <span class="kw">in</span> <span class="fn">find</span>(root, <span class="str">"ca"</span>))         <span class="cm"># False — only a prefix</span>
+<span class="fn">print</span>(<span class="fn">find</span>(root, <span class="str">"dog"</span>) <span class="kw">is</span> <span class="kw">None</span>)       <span class="cm"># True  — not even a prefix</span>
+<span class="fn">print</span>(<span class="fn">words_with_prefix</span>(root, <span class="str">"car"</span>))  <span class="cm"># ['car', 'card', 'care']</span></pre>
+    </div>
+    <div class="callout warn"><strong>Watch out:</strong> with a <code>defaultdict</code>, writing <code>node[ch]</code> during a <em>search</em> silently inserts empty branches. Always test membership with <code>ch in node</code> (or <code>node.get(ch)</code>) when you are only reading.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Implement Trie (Prefix Tree) <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Design Add and Search Words Data Structure <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Word Search II <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="10-graphs.html" class="footer-back">← Graphs</a>
+    <a href="12-recursion.html" class="footer-next">Recursion →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Sorting Algorithms</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">04 / 19</div>
+    <h1 class="page-title">Sorting <span class="highlight">Algorithms</span></h1>
+    <p class="page-subtitle">Every programmer must understand sorting. Learn the naive O(n²) ones to understand why O(n log n) algorithms are brilliant — then master Python's built-in <code>sorted()</code>.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">BUBBLE SORT</div><div class="complexity-value">O(n²)</div></div>
+    <div class="complexity-item"><div class="complexity-label">MERGE SORT</div><div class="complexity-value">O(n log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">QUICK SORT</div><div class="complexity-value">O(n log n)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">SPACE (MERGE)</div><div class="complexity-value">O(n)</div></div>
+  </div>
+
+  <section class="section">
+    <div class="section-label">ALGORITHM 01</div>
+    <h2 class="section-title">Bubble Sort — O(n²)</h2>
+    <p class="explanation">Repeatedly <strong>bubble</strong> the largest unsorted element to the end by swapping adjacent pairs. Simple to understand, terrible in practice. Only use it to explain why we need better algorithms.</p>
+    <div class="diagram">
+      <div class="diagram-title">BUBBLE SORT VISUALIZATION</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  Pass 1: [5, 3, 8, 1]  →  compare pairs, swap if out of order
+          [3, 5, 8, 1]  →  [3, 5, 1, 8]  ← 8 "bubbled" to end
+
+  Pass 2: [3, 5, 1, 8]  →  [3, 1, 5, 8]  ← 5 in place
+
+  Pass 3: [3, 1, 5, 8]  →  [1, 3, 5, 8]  ✓ sorted!</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Bubble Sort</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">bubble_sort</span>(arr: List[int]) -&gt; List[int]:
+    n = len(arr)
+
+    <span class="kw">for</span> i <span class="kw">in</span> range(n - <span class="num">1</span>):
+        swapped = <span class="kw">False</span>
+
+        <span class="kw">for</span> j <span class="kw">in</span> range(n - i - <span class="num">1</span>):
+            <span class="kw">if</span> arr[j] &gt; arr[j + <span class="num">1</span>]:
+                arr[j], arr[j + <span class="num">1</span>] = arr[j + <span class="num">1</span>], arr[j]  <span class="cm"># swap via tuple unpacking</span>
+                swapped = <span class="kw">True</span>
+
+        <span class="cm"># If no swaps this pass, the list is already sorted</span>
+        <span class="kw">if</span> <span class="kw">not</span> swapped:
+            <span class="kw">break</span>
+
+    <span class="kw">return</span> arr
+
+print(<span class="fn">bubble_sort</span>([<span class="num">5</span>, <span class="num">3</span>, <span class="num">8</span>, <span class="num">1</span>]))  <span class="cm"># [1, 3, 5, 8]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">ALGORITHM 02</div>
+    <h2 class="section-title">Merge Sort — O(n log n)</h2>
+    <p class="explanation"><strong>Divide and conquer</strong> — split the list in half recursively until single elements, then <strong>merge</strong> them back in sorted order. Stable, predictable O(n log n) in every case, and used in production — Python's own Timsort is built on the same merge step. Great for linked lists too.</p>
+    <div class="diagram">
+      <div class="diagram-title">DIVIDE & MERGE</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  [8, 3, 5, 1]
+  ↓ split
+  [8, 3]    [5, 1]
+  ↓ split    ↓ split
+  [8] [3]   [5] [1]
+  ↓ merge    ↓ merge
+  [3, 8]    [1, 5]
+  ↓ merge
+  [1, 3, 5, 8]  ✓</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Merge Sort</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">merge_sort</span>(arr: List[int]) -&gt; List[int]:
+    <span class="cm"># Base case: 0 or 1 element is already sorted</span>
+    <span class="kw">if</span> len(arr) &lt;= <span class="num">1</span>:
+        <span class="kw">return</span> arr
+
+    <span class="cm"># Split in half — // is integer (floor) division</span>
+    mid = len(arr) // <span class="num">2</span>
+    left = <span class="fn">merge_sort</span>(arr[:mid])     <span class="cm"># slicing makes a copy</span>
+    right = <span class="fn">merge_sort</span>(arr[mid:])
+
+    <span class="cm"># Merge two sorted halves</span>
+    <span class="kw">return</span> <span class="fn">merge</span>(left, right)
+
+
+<span class="kw">def</span> <span class="fn">merge</span>(left: List[int], right: List[int]) -&gt; List[int]:
+    result = []
+    i = j = <span class="num">0</span>
+
+    <span class="cm"># Pick the smaller element from each half</span>
+    <span class="kw">while</span> i &lt; len(left) <span class="kw">and</span> j &lt; len(right):
+        <span class="kw">if</span> left[i] &lt;= right[j]:          <span class="cm"># &lt;= (not &lt;) keeps the sort STABLE</span>
+            result.append(left[i])
+            i += <span class="num">1</span>
+        <span class="kw">else</span>:
+            result.append(right[j])
+            j += <span class="num">1</span>
+
+    <span class="cm"># Append remaining elements (at most one side has leftovers)</span>
+    result.extend(left[i:])
+    result.extend(right[j:])
+    <span class="kw">return</span> result
+
+print(<span class="fn">merge_sort</span>([<span class="num">8</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">1</span>]))  <span class="cm"># [1, 3, 5, 8]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">ALGORITHM 03</div>
+    <h2 class="section-title">Quick Sort — O(n log n) avg</h2>
+    <p class="explanation">Pick a <strong>pivot</strong>, put everything smaller on its left and everything larger on its right, then recursively sort each side. Extremely fast in practice — C++'s <code>std::sort</code> uses a variant (introsort). Python's built-in sort is <em>not</em> quicksort, though — it's Timsort (see below).</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Quick Sort (in place, Lomuto partition)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="kw">def</span> <span class="fn">quick_sort</span>(arr: List[int], low: int = <span class="num">0</span>, high: Optional[int] = <span class="kw">None</span>) -&gt; List[int]:
+    <span class="kw">if</span> high <span class="kw">is</span> <span class="kw">None</span>:          <span class="cm"># defaults can't refer to other params → None sentinel</span>
+        high = len(arr) - <span class="num">1</span>
+    <span class="kw">if</span> low &lt; high:
+        pivot = <span class="fn">partition</span>(arr, low, high)
+        <span class="fn">quick_sort</span>(arr, low, pivot - <span class="num">1</span>)    <span class="cm"># sort left of pivot</span>
+        <span class="fn">quick_sort</span>(arr, pivot + <span class="num">1</span>, high)   <span class="cm"># sort right of pivot</span>
+    <span class="kw">return</span> arr
+
+
+<span class="kw">def</span> <span class="fn">partition</span>(arr: List[int], low: int, high: int) -&gt; int:
+    pivot = arr[high]   <span class="cm"># use last element as pivot</span>
+    i = low - <span class="num">1</span>         <span class="cm"># i tracks where to place smaller elements</span>
+
+    <span class="kw">for</span> j <span class="kw">in</span> range(low, high):
+        <span class="kw">if</span> arr[j] &lt;= pivot:
+            i += <span class="num">1</span>
+            arr[i], arr[j] = arr[j], arr[i]   <span class="cm"># swap</span>
+
+    <span class="cm"># Put pivot in its correct position</span>
+    arr[i + <span class="num">1</span>], arr[high] = arr[high], arr[i + <span class="num">1</span>]
+    <span class="kw">return</span> i + <span class="num">1</span>        <span class="cm"># return pivot index</span>
+
+print(<span class="fn">quick_sort</span>([<span class="num">3</span>, <span class="num">6</span>, <span class="num">8</span>, <span class="num">10</span>, <span class="num">1</span>, <span class="num">2</span>]))  <span class="cm"># [1, 2, 3, 6, 8, 10]</span></pre>
+    </div>
+    <div class="callout warn">
+      <strong>Worst case:</strong> O(n²) when the pivot is always the smallest or largest (e.g., sorted input). Fix: use a random pivot (<code>random.randint(low, high)</code>, swap it to the end) or "median of three". In Python the degenerate case also recurses n levels deep and hits the default recursion limit (~1000) with a <code>RecursionError</code>.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">ALGORITHM 04</div>
+    <h2 class="section-title">Python Built-in Sort — Timsort</h2>
+    <p class="explanation">In interviews, use the built-ins freely. <code style="color:var(--accent)">sorted(iterable)</code> returns a <strong>new</strong> list; <code style="color:var(--accent)">list.sort()</code> sorts <strong>in place</strong> and returns <code>None</code>. Both use <strong>Timsort</strong> (a merge sort + insertion sort hybrid): O(n log n) worst case, O(n) on already-sorted data, and <strong>stable</strong> — equal elements keep their original order. Values are compared with <code>&lt;</code>, so numbers sort numerically with no comparator needed. Customise with <code>key=</code> and <code>reverse=</code>.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — sorted(), list.sort(), key=, reverse=</div>
+      <pre>nums = [<span class="num">10</span>, <span class="num">9</span>, <span class="num">2</span>]
+
+<span class="cm"># sorted() returns a NEW list; the original is untouched</span>
+print(sorted(nums))                   <span class="cm"># [2, 9, 10]</span>
+print(nums)                           <span class="cm"># [10, 9, 2]</span>
+
+<span class="cm"># list.sort() sorts IN PLACE and returns None</span>
+nums.sort()
+print(nums)                           <span class="cm"># [2, 9, 10]  ascending</span>
+nums.sort(reverse=<span class="kw">True</span>)
+print(nums)                           <span class="cm"># [10, 9, 2]  descending</span>
+<span class="cm"># ❌ Classic bug: result = nums.sort()   → result is None!</span>
+
+<span class="cm"># key= : sort by a computed value (called once per element)</span>
+words = [<span class="str">"banana"</span>, <span class="str">"kiwi"</span>, <span class="str">"Fig"</span>, <span class="str">"cherry"</span>, <span class="str">"apple"</span>]
+print(sorted(words))                  <span class="cm"># ['Fig', 'apple', 'banana', 'cherry', 'kiwi']  uppercase first!</span>
+print(sorted(words, key=str.lower))   <span class="cm"># ['apple', 'banana', 'cherry', 'Fig', 'kiwi']</span>
+print(sorted(words, key=len))         <span class="cm"># ['Fig', 'kiwi', 'apple', 'banana', 'cherry']</span>
+
+<span class="cm"># Sort records by a field — stability in action</span>
+people = [(<span class="str">"Charlie"</span>, <span class="num">30</span>), (<span class="str">"Alice"</span>, <span class="num">25</span>), (<span class="str">"Bob"</span>, <span class="num">30</span>)]
+print(sorted(people, key=<span class="kw">lambda</span> p: p[<span class="num">1</span>]))
+<span class="cm"># [('Alice', 25), ('Charlie', 30), ('Bob', 30)]  ← Charlie stays before Bob (stable)</span>
+
+<span class="cm"># Multi-key: age DESC, then name ASC — return a tuple, negate the number</span>
+print(sorted(people, key=<span class="kw">lambda</span> p: (-p[<span class="num">1</span>], p[<span class="num">0</span>])))
+<span class="cm"># [('Bob', 30), ('Charlie', 30), ('Alice', 25)]</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — comparator functions with functools.cmp_to_key</div>
+      <pre><span class="kw">from</span> functools <span class="kw">import</span> cmp_to_key
+
+<span class="cm"># Some orderings can't be expressed as a key — e.g. "Largest Number":</span>
+<span class="cm"># put a before b if a+b makes a bigger string than b+a.</span>
+<span class="kw">def</span> <span class="fn">by_concat</span>(a: str, b: str) -&gt; int:
+    <span class="kw">if</span> a + b &gt; b + a:
+        <span class="kw">return</span> -<span class="num">1</span>      <span class="cm"># negative → a comes first</span>
+    <span class="kw">if</span> a + b &lt; b + a:
+        <span class="kw">return</span> <span class="num">1</span>       <span class="cm"># positive → b comes first</span>
+    <span class="kw">return</span> <span class="num">0</span>
+
+digits = [<span class="str">"3"</span>, <span class="str">"30"</span>, <span class="str">"34"</span>, <span class="str">"5"</span>, <span class="str">"9"</span>]
+print(<span class="str">""</span>.join(sorted(digits, key=cmp_to_key(<span class="fn">by_concat</span>))))  <span class="cm"># 9534330</span></pre>
+    </div>
+    <div class="callout">
+      <strong>Prefer <code>key=</code> over comparators.</strong> A key function runs once per element (n calls); a comparator runs on every comparison (n log n calls). Reach for <code>cmp_to_key</code> only when the order truly depends on comparing two items together. Mixing incomparable types (e.g. <code>[1, "a"]</code>) raises <code>TypeError</code> rather than silently producing a strange order.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Sort Colors (Dutch National Flag) <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Merge Intervals <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Kth Largest Element in Array <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Sort a Nearly Sorted Array <span class="problem-tag medium">MEDIUM</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="03-hashmaps.html" class="footer-back">← Hash Maps</a>
+    <a href="05-linkedlist.html" class="footer-next">Linked Lists →</a>
+  </div>
+</div>
+</body>
+</html>

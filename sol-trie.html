@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trie Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="11-trie.html" class="back-link">← Tries</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 11</div>
+    <h1 class="page-title">Trie <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Prefix trees in Python — a dict of children per node, an is_end flag, and DFS when the pattern branches.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Implement Trie (Prefix Tree)</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Each node stores a <code>dict</code> mapping a character to the child node, plus an <code>is_end</code> flag meaning "a word finishes here". <code>insert</code> walks the word creating missing children; <code>search</code> and <code>starts_with</code> walk the same path — the only difference is whether the final node must have <code>is_end</code> set.
+      </div>
+      <div class="step"><div class="step-num">1</div><div><code>insert</code>: start at the root; for each char use <code>node.children.setdefault(ch, TrieNode())</code>; mark the last node <code>is_end = True</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Shared helper <code>_find(prefix)</code>: follow the chars, return <code>None</code> as soon as one is missing, otherwise the last node.</div></div>
+      <div class="step"><div class="step-num">3</div><div><code>search</code>: the node exists <strong>and</strong> <code>is_end</code> is <code>True</code>.</div></div>
+      <div class="step"><div class="step-num">4</div><div><code>starts_with</code>: the node exists.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(L) per operation, L = word length</span></div>
+        <div class="ci-item">Space: <span>O(total characters inserted)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — TrieNode with dict children</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">Optional</span>
+
+
+<span class="kw">class</span> <span class="cls">TrieNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.children: <span class="cls">Dict</span>[str, <span class="str">"TrieNode"</span>] = {}
+        <span class="kw">self</span>.is_end = <span class="kw">False</span>
+
+
+<span class="kw">class</span> <span class="cls">Trie</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.root = <span class="cls">TrieNode</span>()
+
+    <span class="kw">def</span> <span class="fn">insert</span>(<span class="kw">self</span>, word: str) -&gt; <span class="kw">None</span>:
+        node = <span class="kw">self</span>.root
+        <span class="kw">for</span> ch <span class="kw">in</span> word:
+            node = node.children.<span class="fn">setdefault</span>(ch, <span class="cls">TrieNode</span>())
+        node.is_end = <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">_find</span>(<span class="kw">self</span>, prefix: str) -&gt; <span class="cls">Optional</span>[<span class="cls">TrieNode</span>]:
+        node = <span class="kw">self</span>.root
+        <span class="kw">for</span> ch <span class="kw">in</span> prefix:
+            node = node.children.<span class="fn">get</span>(ch)
+            <span class="kw">if</span> node <span class="kw">is</span> <span class="kw">None</span>:
+                <span class="kw">return</span> <span class="kw">None</span>
+        <span class="kw">return</span> node
+
+    <span class="kw">def</span> <span class="fn">search</span>(<span class="kw">self</span>, word: str) -&gt; bool:
+        node = <span class="kw">self</span>.<span class="fn">_find</span>(word)
+        <span class="kw">return</span> node <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span> <span class="kw">and</span> node.is_end
+
+    <span class="kw">def</span> <span class="fn">starts_with</span>(<span class="kw">self</span>, prefix: str) -&gt; bool:
+        <span class="kw">return</span> <span class="kw">self</span>.<span class="fn">_find</span>(prefix) <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>
+
+
+trie = <span class="cls">Trie</span>()
+trie.<span class="fn">insert</span>(<span class="str">"apple"</span>)
+<span class="fn">print</span>(trie.<span class="fn">search</span>(<span class="str">"apple"</span>))    <span class="cm"># True</span>
+<span class="fn">print</span>(trie.<span class="fn">search</span>(<span class="str">"app"</span>))      <span class="cm"># False  ("app" is only a prefix so far)</span>
+<span class="fn">print</span>(trie.<span class="fn">starts_with</span>(<span class="str">"app"</span>)) <span class="cm"># True</span>
+trie.<span class="fn">insert</span>(<span class="str">"app"</span>)
+<span class="fn">print</span>(trie.<span class="fn">search</span>(<span class="str">"app"</span>))      <span class="cm"># True</span>
+<span class="fn">print</span>(trie.<span class="fn">starts_with</span>(<span class="str">"b"</span>))   <span class="cm"># False</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> <code>dict.setdefault(key, default)</code> returns the existing child or inserts and returns the new one in a single call. Note it builds a <code>TrieNode()</code> every time even when unused — <code>if ch not in node.children: ...</code> avoids that if it matters.</div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Design Add and Search Words Data Structure</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Same trie for <code>add_word</code>. <code>search</code> must also handle <code>'.'</code>, which matches <strong>any</strong> letter. A normal character has one path to follow; a dot means "try every child". That branching is a DFS: <code>dfs(node, i)</code> answers "can <code>word[i:]</code> be matched starting from <code>node</code>?".
+      </div>
+      <div class="step"><div class="step-num">1</div><div><code>add_word</code>: standard trie insert.</div></div>
+      <div class="step"><div class="step-num">2</div><div><code>dfs(node, i)</code>: if <code>i == len(word)</code>, return <code>node.is_end</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If <code>word[i] == '.'</code>, return <code>True</code> if <code>dfs(child, i + 1)</code> succeeds for <em>any</em> child.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Otherwise follow the single child for <code>word[i]</code> (return <code>False</code> if it is missing).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>add O(L); search O(L) without dots, up to O(26^L) worst case with dots</span></div>
+        <div class="ci-item">Space: <span>O(total characters) + O(L) recursion</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — Trie + DFS for '.' wildcard</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>
+
+
+<span class="kw">class</span> <span class="cls">TrieNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.children: <span class="cls">Dict</span>[str, <span class="str">"TrieNode"</span>] = {}
+        <span class="kw">self</span>.is_end = <span class="kw">False</span>
+
+
+<span class="kw">class</span> <span class="cls">WordDictionary</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.root = <span class="cls">TrieNode</span>()
+
+    <span class="kw">def</span> <span class="fn">add_word</span>(<span class="kw">self</span>, word: str) -&gt; <span class="kw">None</span>:
+        node = <span class="kw">self</span>.root
+        <span class="kw">for</span> ch <span class="kw">in</span> word:
+            <span class="kw">if</span> ch <span class="kw">not</span> <span class="kw">in</span> node.children:
+                node.children[ch] = <span class="cls">TrieNode</span>()
+            node = node.children[ch]
+        node.is_end = <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">search</span>(<span class="kw">self</span>, word: str) -&gt; bool:
+        <span class="kw">def</span> <span class="fn">dfs</span>(node: <span class="cls">TrieNode</span>, i: int) -&gt; bool:
+            <span class="kw">if</span> i == <span class="fn">len</span>(word):
+                <span class="kw">return</span> node.is_end
+            ch = word[i]
+            <span class="kw">if</span> ch == <span class="str">"."</span>:
+                <span class="cm"># wildcard: any child may continue the match</span>
+                <span class="kw">return</span> <span class="fn">any</span>(<span class="fn">dfs</span>(child, i + <span class="num">1</span>) <span class="kw">for</span> child <span class="kw">in</span> node.children.<span class="fn">values</span>())
+            child = node.children.<span class="fn">get</span>(ch)
+            <span class="kw">return</span> child <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span> <span class="kw">and</span> <span class="fn">dfs</span>(child, i + <span class="num">1</span>)
+
+        <span class="kw">return</span> <span class="fn">dfs</span>(<span class="kw">self</span>.root, <span class="num">0</span>)
+
+
+wd = <span class="cls">WordDictionary</span>()
+<span class="kw">for</span> w <span class="kw">in</span> [<span class="str">"bad"</span>, <span class="str">"dad"</span>, <span class="str">"mad"</span>]:
+    wd.<span class="fn">add_word</span>(w)
+<span class="fn">print</span>(wd.<span class="fn">search</span>(<span class="str">"pad"</span>))  <span class="cm"># False</span>
+<span class="fn">print</span>(wd.<span class="fn">search</span>(<span class="str">"bad"</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(wd.<span class="fn">search</span>(<span class="str">".ad"</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(wd.<span class="fn">search</span>(<span class="str">"b.."</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(wd.<span class="fn">search</span>(<span class="str">"b."</span>))   <span class="cm"># False  (too short — no word ends after 2 chars)</span>
+<span class="fn">print</span>(wd.<span class="fn">search</span>(<span class="str">"..."</span>))  <span class="cm"># True</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> <code>any()</code> with a generator short-circuits: it stops exploring children the moment one branch returns <code>True</code>.</div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Word Search II</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Running Word Search once per word repeats the same grid walks. Instead put <strong>all</strong> words in a trie and backtrack over the grid <strong>once</strong>: from each cell, only step to a neighbour if that letter is a child of the current trie node. Store the full word on its end node so you can record it when reached. Prune aggressively: clear the word after finding it (no duplicates) and delete trie leaves that are exhausted, so later searches skip dead branches.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Build a trie of the words; set <code>node.word = word</code> on each end node.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each cell, call <code>backtrack(r, c, root)</code> if <code>board[r][c]</code> is a child of the root.</div></div>
+      <div class="step"><div class="step-num">3</div><div>In <code>backtrack</code>: move to the child node; if it holds a word, add it to the result and set <code>node.word = None</code>.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Mark the cell <code>'#'</code> (visited), recurse into the 4 neighbours whose letter is a child, then restore the letter.</div></div>
+      <div class="step"><div class="step-num">5</div><div>Pruning: if the child has no children left after the recursion, delete it from its parent.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(rows × cols × 4 × 3^(L−1)), L = longest word</span></div>
+        <div class="ci-item">Space: <span>O(total characters in words)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — Trie + grid backtracking with pruning</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>, <span class="cls">Optional</span>
+
+
+<span class="kw">class</span> <span class="cls">TrieNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.children: <span class="cls">Dict</span>[str, <span class="str">"TrieNode"</span>] = {}
+        <span class="kw">self</span>.word: <span class="cls">Optional</span>[str] = <span class="kw">None</span>     <span class="cm"># full word stored at its end node</span>
+
+
+<span class="kw">def</span> <span class="fn">find_words</span>(board: <span class="cls">List</span>[<span class="cls">List</span>[str]], words: <span class="cls">List</span>[str]) -&gt; <span class="cls">List</span>[str]:
+    root = <span class="cls">TrieNode</span>()
+    <span class="kw">for</span> w <span class="kw">in</span> words:
+        node = root
+        <span class="kw">for</span> ch <span class="kw">in</span> w:
+            node = node.children.<span class="fn">setdefault</span>(ch, <span class="cls">TrieNode</span>())
+        node.word = w
+
+    rows, cols = <span class="fn">len</span>(board), <span class="fn">len</span>(board[<span class="num">0</span>])
+    found = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(r: int, c: int, parent: <span class="cls">TrieNode</span>) -&gt; <span class="kw">None</span>:
+        ch = board[r][c]
+        node = parent.children[ch]
+        <span class="kw">if</span> node.word <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>:
+            found.<span class="fn">append</span>(node.word)
+            node.word = <span class="kw">None</span>                 <span class="cm"># never report the same word twice</span>
+
+        board[r][c] = <span class="str">"#"</span>                    <span class="cm"># mark visited</span>
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):
+            nr, nc = r + dr, c + dc
+            <span class="kw">if</span> <span class="num">0</span> &lt;= nr &lt; rows <span class="kw">and</span> <span class="num">0</span> &lt;= nc &lt; cols <span class="kw">and</span> board[nr][nc] <span class="kw">in</span> node.children:
+                <span class="fn">backtrack</span>(nr, nc, node)
+        board[r][c] = ch                     <span class="cm"># restore (backtrack)</span>
+
+        <span class="kw">if</span> <span class="kw">not</span> node.children <span class="kw">and</span> node.word <span class="kw">is</span> <span class="kw">None</span>:
+            <span class="kw">del</span> parent.children[ch]          <span class="cm"># prune exhausted branch</span>
+
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+            <span class="kw">if</span> board[r][c] <span class="kw">in</span> root.children:
+                <span class="fn">backtrack</span>(r, c, root)
+    <span class="kw">return</span> found
+
+
+board = [
+    [<span class="str">"o"</span>, <span class="str">"a"</span>, <span class="str">"a"</span>, <span class="str">"n"</span>],
+    [<span class="str">"e"</span>, <span class="str">"t"</span>, <span class="str">"a"</span>, <span class="str">"e"</span>],
+    [<span class="str">"i"</span>, <span class="str">"h"</span>, <span class="str">"k"</span>, <span class="str">"r"</span>],
+    [<span class="str">"i"</span>, <span class="str">"f"</span>, <span class="str">"l"</span>, <span class="str">"v"</span>],
+]
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">find_words</span>(board, [<span class="str">"oath"</span>, <span class="str">"pea"</span>, <span class="str">"eat"</span>, <span class="str">"rain"</span>])))  <span class="cm"># ['eat', 'oath']</span>
+<span class="fn">print</span>(<span class="fn">find_words</span>([[<span class="str">"a"</span>, <span class="str">"b"</span>], [<span class="str">"c"</span>, <span class="str">"d"</span>]], [<span class="str">"abcb"</span>]))              <span class="cm"># []</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">find_words</span>([[<span class="str">"a"</span>, <span class="str">"b"</span>], [<span class="str">"c"</span>, <span class="str">"d"</span>]], [<span class="str">"ab"</span>, <span class="str">"abdc"</span>, <span class="str">"ac"</span>, <span class="str">"x"</span>])))  <span class="cm"># ['ab', 'abdc', 'ac']</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> The <code>'#'</code> marker is never a trie key, so the check <code>board[nr][nc] in node.children</code> rejects visited cells and non-matching letters in one test.</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-09-graphs.html" class="footer-back">← Graph Solutions</a>
+    <a href="sol-12-recursion.html" class="footer-next">Recursion Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

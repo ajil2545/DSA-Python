@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trees — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Trees &amp; BST</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">08 / 19</div>
+    <h1 class="page-title">Trees <span class="highlight">&amp;</span> BST</h1>
+    <p class="page-subtitle">Hierarchical data. Trees are everywhere — file systems, HTML DOM, databases, compilers. Master traversals and BST operations.</p>
+  </div>
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">BST SEARCH</div><div class="complexity-value">O(log n)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">BST INSERT</div><div class="complexity-value">O(log n)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">BST DELETE</div><div class="complexity-value">O(log n)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">TRAVERSAL</div><div class="complexity-value">O(n)</div></div>
+  </div>
+  <div class="callout warn"><strong>Note:</strong> *BST operations are really O(h), where h is the tree height. That is O(log n) only when the tree is balanced; inserting already-sorted values builds a "stick" tree with h = n, so every operation degrades to O(n). Self-balancing trees (AVL, red-black) guarantee O(log n).</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">Binary Tree Node</h2>
+    <div class="diagram">
+      <div class="diagram-title">BINARY TREE STRUCTURE</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+           [4]          ← root
+          /   \
+       [2]     [6]      ← children
+       / \     / \
+     [1] [3] [5] [7]   ← leaves
+
+  Every node has: val, left child, right child</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Tree Node</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="kw">class</span> <span class="cls">TreeNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val: int = <span class="num">0</span>,
+                 left: <span class="str">"Optional[TreeNode]"</span> = <span class="kw">None</span>,
+                 right: <span class="str">"Optional[TreeNode]"</span> = <span class="kw">None</span>) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.left = left
+        <span class="kw">self</span>.right = right
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(<span class="kw">self</span>) -&gt; str:       <span class="cm"># nicer print() output while debugging</span>
+        <span class="kw">return</span> <span class="str">"TreeNode({})"</span>.format(<span class="kw">self</span>.val)
+
+<span class="cm"># Build the tree above manually:</span>
+root = <span class="cls">TreeNode</span>(<span class="num">4</span>)
+root.left  = <span class="cls">TreeNode</span>(<span class="num">2</span>)
+root.right = <span class="cls">TreeNode</span>(<span class="num">6</span>)
+root.left.left   = <span class="cls">TreeNode</span>(<span class="num">1</span>)
+root.left.right  = <span class="cls">TreeNode</span>(<span class="num">3</span>)
+root.right.left  = <span class="cls">TreeNode</span>(<span class="num">5</span>)
+root.right.right = <span class="cls">TreeNode</span>(<span class="num">7</span>)
+
+<span class="cm"># ...or in one expression using the keyword defaults:</span>
+root = <span class="cls">TreeNode</span>(<span class="num">4</span>, <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">1</span>), <span class="cls">TreeNode</span>(<span class="num">3</span>)),
+                   <span class="cls">TreeNode</span>(<span class="num">6</span>, <span class="cls">TreeNode</span>(<span class="num">5</span>), <span class="cls">TreeNode</span>(<span class="num">7</span>)))
+<span class="fn">print</span>(root, root.left, root.right.right)  <span class="cm"># TreeNode(4) TreeNode(2) TreeNode(7)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Tree Traversals (DFS)</h2>
+    <p class="explanation">Three DFS orders differ only in <strong>when you visit the root</strong>: before children (preorder), between them (inorder), or after (postorder). Inorder on a BST gives sorted output!</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — All Three DFS Traversals</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="cm"># Inorder: Left → Root → Right  (gives sorted for BST)</span>
+<span class="kw">def</span> <span class="fn">inorder</span>(node: Optional[TreeNode], result: Optional[List[int]] = <span class="kw">None</span>) -&gt; List[int]:
+    <span class="kw">if</span> result <span class="kw">is</span> <span class="kw">None</span>:          <span class="cm"># never use result=[] as a default (see note)</span>
+        result = []
+    <span class="kw">if</span> node:
+        <span class="fn">inorder</span>(node.left, result)
+        result.append(node.val)  <span class="cm"># ← visit in MIDDLE</span>
+        <span class="fn">inorder</span>(node.right, result)
+    <span class="kw">return</span> result
+
+<span class="cm"># Preorder: Root → Left → Right  (useful for copying trees)</span>
+<span class="kw">def</span> <span class="fn">preorder</span>(node: Optional[TreeNode]) -&gt; List[int]:
+    <span class="kw">if</span> <span class="kw">not</span> node:
+        <span class="kw">return</span> []
+    <span class="kw">return</span> [node.val] + <span class="fn">preorder</span>(node.left) + <span class="fn">preorder</span>(node.right)  <span class="cm"># ← visit FIRST</span>
+
+<span class="cm"># Postorder: Left → Right → Root  (useful for deleting trees)</span>
+<span class="cm"># Generator version: yield values lazily, no result list to pass around</span>
+<span class="kw">def</span> <span class="fn">postorder</span>(node: Optional[TreeNode]):
+    <span class="kw">if</span> node:
+        <span class="kw">yield from</span> <span class="fn">postorder</span>(node.left)
+        <span class="kw">yield from</span> <span class="fn">postorder</span>(node.right)
+        <span class="kw">yield</span> node.val          <span class="cm"># ← visit LAST</span>
+
+<span class="cm"># On our tree [4,2,6,1,3,5,7]:</span>
+<span class="fn">print</span>(<span class="fn">inorder</span>(root))          <span class="cm"># → [1, 2, 3, 4, 5, 6, 7]  ← sorted!</span>
+<span class="fn">print</span>(<span class="fn">preorder</span>(root))         <span class="cm"># → [4, 2, 1, 3, 6, 5, 7]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">postorder</span>(root)))   <span class="cm"># → [1, 3, 2, 5, 7, 6, 4]</span></pre>
+    </div>
+    <div class="callout warn"><strong>Mutable default trap:</strong> <code>def inorder(node, result=[])</code> creates the list <em>once</em>, when the function is defined — every later call keeps appending to the same list. Use <code>result=None</code> and create the list inside, as above.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Iterative Traversals &amp; the Recursion Limit</h2>
+    <p class="explanation">CPython caps recursion depth at about <strong>1000 frames</strong> (<code>sys.getrecursionlimit()</code>). A balanced tree of a million nodes is only ~20 deep, but a degenerate (linked-list shaped) tree of 10,000 nodes raises <code>RecursionError</code>. You can raise the cap with <code>sys.setrecursionlimit(10**6)</code>, but very deep recursion can still crash the interpreter — the robust fix is an explicit stack.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Iterative Inorder &amp; Preorder</div>
+      <pre><span class="kw">import</span> sys
+<span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="kw">def</span> <span class="fn">inorder_iterative</span>(root: Optional[TreeNode]) -&gt; List[int]:
+    result, stack = [], []
+    node = root
+    <span class="kw">while</span> node <span class="kw">or</span> stack:
+        <span class="kw">while</span> node:              <span class="cm"># go as far left as possible</span>
+            stack.append(node)
+            node = node.left
+        node = stack.pop()       <span class="cm"># visit</span>
+        result.append(node.val)
+        node = node.right        <span class="cm"># then the right subtree</span>
+    <span class="kw">return</span> result
+
+<span class="kw">def</span> <span class="fn">preorder_iterative</span>(root: Optional[TreeNode]) -&gt; List[int]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> []
+    result, stack = [], [root]
+    <span class="kw">while</span> stack:
+        node = stack.pop()
+        result.append(node.val)
+        <span class="kw">if</span> node.right:            <span class="cm"># push right first so left is processed first</span>
+            stack.append(node.right)
+        <span class="kw">if</span> node.left:
+            stack.append(node.left)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">inorder_iterative</span>(root))   <span class="cm"># → [1, 2, 3, 4, 5, 6, 7]</span>
+<span class="fn">print</span>(<span class="fn">preorder_iterative</span>(root))  <span class="cm"># → [4, 2, 1, 3, 6, 5, 7]</span>
+
+<span class="cm"># A 5000-deep "stick" tree: recursion would hit the default limit</span>
+deep = <span class="cls">TreeNode</span>(<span class="num">0</span>)
+cur = deep
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="num">5000</span>):
+    cur.right = <span class="cls">TreeNode</span>(i)
+    cur = cur.right
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">inorder_iterative</span>(deep)))  <span class="cm"># → 5000, no RecursionError</span>
+<span class="fn">print</span>(sys.getrecursionlimit())          <span class="cm"># → 1000 (typical default)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">BST Insert &amp; Search</h2>
+    <p class="explanation">A <strong>Binary Search Tree</strong> maintains the invariant: left subtree values &lt; node value &lt; right subtree values. Each comparison discards one whole subtree, so a search costs O(h) — O(log n) in a balanced tree, where every step roughly halves the remaining nodes. Equal values go right in the code below.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — BST Insert &amp; Search</div>
+      <pre><span class="kw">def</span> <span class="fn">insert</span>(root: Optional[TreeNode], val: int) -&gt; TreeNode:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="cls">TreeNode</span>(val)                 <span class="cm"># place here</span>
+
+    <span class="kw">if</span> val &lt; root.val:
+        root.left = <span class="fn">insert</span>(root.left, val)    <span class="cm"># go left</span>
+    <span class="kw">else</span>:
+        root.right = <span class="fn">insert</span>(root.right, val)  <span class="cm"># go right</span>
+
+    <span class="kw">return</span> root
+
+<span class="kw">def</span> <span class="fn">search</span>(root: Optional[TreeNode], target: int) -&gt; bool:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="kw">False</span>                         <span class="cm"># not found</span>
+    <span class="kw">if</span> root.val == target:
+        <span class="kw">return</span> <span class="kw">True</span>                          <span class="cm"># found!</span>
+
+    <span class="kw">if</span> target &lt; root.val:
+        <span class="kw">return</span> <span class="fn">search</span>(root.left, target)     <span class="cm"># go left</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="fn">search</span>(root.right, target)    <span class="cm"># go right</span>
+
+bst = <span class="kw">None</span>
+<span class="kw">for</span> v <span class="kw">in</span> [<span class="num">4</span>, <span class="num">2</span>, <span class="num">6</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>]:
+    bst = <span class="fn">insert</span>(bst, v)
+<span class="fn">print</span>(<span class="fn">search</span>(bst, <span class="num">5</span>), <span class="fn">search</span>(bst, <span class="num">8</span>))  <span class="cm"># → True False</span>
+<span class="fn">print</span>(<span class="fn">inorder</span>(bst))                   <span class="cm"># → [1, 2, 3, 4, 5, 6, 7]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 04</div>
+    <h2 class="section-title">Tree Height &amp; Diameter</h2>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Max Depth of Binary Tree</div>
+      <pre><span class="kw">def</span> <span class="fn">max_depth</span>(root: Optional[TreeNode]) -&gt; int:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="num">0</span>  <span class="cm"># None node has depth 0</span>
+
+    left_depth = <span class="fn">max_depth</span>(root.left)
+    right_depth = <span class="fn">max_depth</span>(root.right)
+
+    <span class="cm"># Current node adds 1 to the deeper subtree</span>
+    <span class="kw">return</span> <span class="num">1</span> + <span class="fn">max</span>(left_depth, right_depth)
+
+<span class="fn">print</span>(<span class="fn">max_depth</span>(root))  <span class="cm"># → 3 (for our 7-node tree)</span></pre>
+    </div>
+    <p class="explanation">The <strong>diameter</strong> is the number of edges on the longest path between any two nodes. That path bends at some node, where it is <code>height(left) + height(right)</code> long. One postorder pass computes every height and tracks the best bend — O(n). The <code>nonlocal</code> keyword lets the inner function update the outer variable.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Diameter of Binary Tree</div>
+      <pre><span class="kw">def</span> <span class="fn">diameter</span>(root: Optional[TreeNode]) -&gt; int:
+    best = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">height</span>(node: Optional[TreeNode]) -&gt; int:
+        <span class="kw">nonlocal</span> best
+        <span class="kw">if</span> <span class="kw">not</span> node:
+            <span class="kw">return</span> <span class="num">0</span>
+        left, right = <span class="fn">height</span>(node.left), <span class="fn">height</span>(node.right)
+        best = <span class="fn">max</span>(best, left + right)   <span class="cm"># longest path bending at this node</span>
+        <span class="kw">return</span> <span class="num">1</span> + <span class="fn">max</span>(left, right)
+
+    <span class="fn">height</span>(root)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">diameter</span>(root))  <span class="cm"># → 4 (e.g. 1 → 2 → 4 → 6 → 7)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Maximum Depth of Binary Tree <span class="problem-tag easy">EASY</span></li>
+      <li>Invert Binary Tree <span class="problem-tag easy">EASY</span></li>
+      <li>Symmetric Tree <span class="problem-tag easy">EASY</span></li>
+      <li>Validate BST <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Lowest Common Ancestor of a BST <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Binary Tree Right Side View <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Serialize and Deserialize Binary Tree <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="07-queues.html" class="footer-back">← Queues</a>
+    <a href="09-heaps.html" class="footer-next">Heaps →</a>
+  </div>
+</div>
+</body>
+</html>

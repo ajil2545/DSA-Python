@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Union-Find — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Union-Find</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">19 / 19</div>
+    <h1 class="page-title">Union-Find <span class="highlight">DSU</span></h1>
+    <p class="page-subtitle">Disjoint Set Union: merge groups and ask "same group?" in near-constant time. The engine behind connected components, cycle detection and Kruskal's MST.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">FIND</div><div class="complexity-value">O(α(n))</div></div>
+    <div class="complexity-item"><div class="complexity-label">UNION</div><div class="complexity-value">O(α(n))</div></div>
+    <div class="complexity-item"><div class="complexity-label">BUILD</div><div class="complexity-value">O(n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SPACE</div><div class="complexity-value">O(n)</div></div>
+  </div>
+  <div class="callout"><strong>Pattern trigger:</strong> "are these connected?", "how many groups?", edges arriving one by one, or "merge items that share something". If you only need connectivity — not paths — reach for DSU.</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">The Problem It Solves</h2>
+    <p class="explanation">You have <strong>n</strong> items and a stream of statements "<strong>a and b are connected</strong>". At any moment you want to answer "<strong>are x and y in the same group?</strong>" and "<strong>how many groups are there?</strong>". Re-running BFS/DFS after every new edge costs O(V + E) each time. A <strong>Disjoint Set Union</strong> (DSU, a.k.a. Union-Find) answers both in near-constant time, and edges can arrive one by one (<em>online</em>).</p>
+    <p class="explanation">It supports exactly two operations: <strong>find(x)</strong> — return the representative (root) of x's group — and <strong>union(a, b)</strong> — merge the groups of a and b. Two items are connected iff <strong>find(a) == find(b)</strong>. It cannot <em>split</em> groups; if you need deletions, look elsewhere.</p>
+    <div class="use-cases">
+      <div class="use-case">Connected components in a graph</div>
+      <div class="use-case">Cycle detection in undirected graphs</div>
+      <div class="use-case">Kruskal's minimum spanning tree</div>
+      <div class="use-case">Grouping equal items (accounts, synonyms)</div>
+      <div class="use-case">Percolation / islands added over time</div>
+      <div class="use-case">Equations like a == b, b != c</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">The Parent Array</h2>
+    <p class="explanation">Each group is stored as a tree drawn <strong>upwards</strong>: every node points to its parent, and the root points to itself. All you need is one list, <strong>parent = list(range(n))</strong> — initially every node is its own group. <strong>find</strong> follows parent pointers to the root; <strong>union</strong> hangs one root under the other.</p>
+    <div class="diagram">
+      <div class="diagram-title">AFTER union(0,1), union(1,2), union(3,4)  —  parent = [1, 2, 2, 4, 4, 5]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">index :  0  1  2  3  4  5
+parent:  1  2  2  4  4  5
+
+     2           4        5
+     |           |
+     1           3        (three groups: {0,1,2} {3,4} {5})
+     |
+     0</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Naive Parent Array</div>
+      <pre>n = <span class="num">6</span>
+parent = <span class="fn">list</span>(<span class="fn">range</span>(n))        <span class="cm"># [0, 1, 2, 3, 4, 5] — everyone is a root</span>
+
+
+<span class="kw">def</span> <span class="fn">find_naive</span>(x: int) -&gt; int:
+    <span class="kw">while</span> parent[x] != x:      <span class="cm"># walk up until a node points to itself</span>
+        x = parent[x]
+    <span class="kw">return</span> x
+
+
+<span class="kw">def</span> <span class="fn">union_naive</span>(a: int, b: int) -&gt; <span class="kw">None</span>:
+    parent[<span class="fn">find_naive</span>(a)] = <span class="fn">find_naive</span>(b)   <span class="cm"># hang a's root under b's root</span>
+
+
+<span class="fn">union_naive</span>(<span class="num">0</span>, <span class="num">1</span>)
+<span class="fn">union_naive</span>(<span class="num">1</span>, <span class="num">2</span>)
+<span class="fn">union_naive</span>(<span class="num">3</span>, <span class="num">4</span>)
+<span class="fn">print</span>(parent)                              <span class="cm"># [1, 2, 2, 4, 4, 5]</span>
+<span class="fn">print</span>(<span class="fn">find_naive</span>(<span class="num">0</span>) == <span class="fn">find_naive</span>(<span class="num">2</span>))      <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">find_naive</span>(<span class="num">0</span>) == <span class="fn">find_naive</span>(<span class="num">3</span>))      <span class="cm"># False</span></pre>
+    </div>
+    <div class="callout warn"><strong>Why naive is slow:</strong> unions like (0,1), (1,2), (2,3), ... can build a chain of height n, so find becomes O(n). The two fixes below — path compression and union by rank/size — flatten the trees.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Find with Path Compression</h2>
+    <p class="explanation">While walking up to the root, <strong>re-point every node on the path directly at the root</strong>. The next find on any of them is a single hop. The recursive version is the shortest to write; the iterative version avoids Python's recursion limit (default <strong>sys.getrecursionlimit() == 1000</strong>), which a long chain can blow before compression kicks in.</p>
+    <div class="diagram">
+      <div class="diagram-title">find(0) ON A CHAIN 0 → 1 → 2 → 3 → 4</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">before              after find(0)
+  4                       4
+  |                 / / |  \
+  3                0 1  2   3
+  |
+  2                every node on the path now points at the root
+  |
+  1
+  |
+  0</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Recursive Path Compression</div>
+      <pre>parent = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">4</span>]           <span class="cm"># chain: 0 → 1 → 2 → 3 → 4 (root)</span>
+
+
+<span class="kw">def</span> <span class="fn">find</span>(x: int) -&gt; int:
+    <span class="kw">if</span> parent[x] != x:
+        parent[x] = <span class="fn">find</span>(parent[x])    <span class="cm"># point x straight at the root</span>
+    <span class="kw">return</span> parent[x]
+
+
+<span class="fn">print</span>(<span class="fn">find</span>(<span class="num">0</span>))   <span class="cm"># 4</span>
+<span class="fn">print</span>(parent)    <span class="cm"># [4, 4, 4, 4, 4]</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Iterative (Two-Pass) and Path Halving</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">find_iterative</span>(parent: <span class="cls">List</span>[int], x: int) -&gt; int:
+    root = x
+    <span class="kw">while</span> parent[root] != root:        <span class="cm"># pass 1: locate the root</span>
+        root = parent[root]
+    <span class="kw">while</span> x != root:                   <span class="cm"># pass 2: re-point the whole path</span>
+        nxt = parent[x]
+        parent[x] = root
+        x = nxt
+    <span class="kw">return</span> root
+
+
+<span class="kw">def</span> <span class="fn">find_halving</span>(parent: <span class="cls">List</span>[int], x: int) -&gt; int:
+    <span class="kw">while</span> parent[x] != x:
+        parent[x] = parent[parent[x]]  <span class="cm"># skip to grandparent: halves the path each time</span>
+        x = parent[x]
+    <span class="kw">return</span> x
+
+
+p = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">4</span>]
+<span class="fn">print</span>(<span class="fn">find_iterative</span>(p, <span class="num">0</span>), p)   <span class="cm"># 4 [4, 4, 4, 4, 4]</span>
+q = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">4</span>]
+<span class="fn">print</span>(<span class="fn">find_halving</span>(q, <span class="num">0</span>), q)     <span class="cm"># 4 [2, 2, 4, 4, 4]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Union by Rank / Size</h2>
+    <p class="explanation">When merging two trees, always hang the <strong>smaller</strong> tree under the <strong>larger</strong> root. <strong>Union by size</strong> tracks node counts; <strong>union by rank</strong> tracks an upper bound on height. Either guarantees tree height O(log n) on its own, and size has a bonus: <strong>size[find(x)]</strong> tells you how big x's group is.</p>
+    <div class="diagram">
+      <div class="diagram-title">union(a, b) — SMALL TREE GOES UNDER BIG ROOT</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">  A (size 4)      B (size 2)              A (size 6)
+ /|\              |              →      /|\  \
+. . .             .                    . . .   B
+                                               |
+                                               .
+the smaller tree sinks one level; with union by rank, rank grows only when two equal-rank trees merge</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Union by Size and by Rank</div>
+      <pre>n = <span class="num">6</span>
+parent = <span class="fn">list</span>(<span class="fn">range</span>(n))
+size = [<span class="num">1</span>] * n
+rank = [<span class="num">0</span>] * n
+
+
+<span class="kw">def</span> <span class="fn">find</span>(x: int) -&gt; int:
+    <span class="kw">if</span> parent[x] != x:
+        parent[x] = <span class="fn">find</span>(parent[x])
+    <span class="kw">return</span> parent[x]
+
+
+<span class="kw">def</span> <span class="fn">union_by_size</span>(a: int, b: int) -&gt; bool:
+    ra, rb = <span class="fn">find</span>(a), <span class="fn">find</span>(b)
+    <span class="kw">if</span> ra == rb:
+        <span class="kw">return</span> <span class="kw">False</span>                  <span class="cm"># already in the same group</span>
+    <span class="kw">if</span> size[ra] &lt; size[rb]:
+        ra, rb = rb, ra               <span class="cm"># make ra the bigger root</span>
+    parent[rb] = ra
+    size[ra] += size[rb]
+    <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="kw">def</span> <span class="fn">union_by_rank</span>(a: int, b: int) -&gt; bool:
+    ra, rb = <span class="fn">find</span>(a), <span class="fn">find</span>(b)
+    <span class="kw">if</span> ra == rb:
+        <span class="kw">return</span> <span class="kw">False</span>
+    <span class="kw">if</span> rank[ra] &lt; rank[rb]:
+        ra, rb = rb, ra
+    parent[rb] = ra
+    <span class="kw">if</span> rank[ra] == rank[rb]:          <span class="cm"># equal heights: the result is one taller</span>
+        rank[ra] += <span class="num">1</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="fn">union_by_size</span>(<span class="num">0</span>, <span class="num">1</span>)
+<span class="fn">union_by_size</span>(<span class="num">2</span>, <span class="num">3</span>)
+<span class="fn">union_by_size</span>(<span class="num">0</span>, <span class="num">2</span>)
+<span class="fn">print</span>(parent)                  <span class="cm"># [0, 0, 0, 2, 4, 5]</span>
+<span class="fn">print</span>(size[<span class="fn">find</span>(<span class="num">3</span>)])           <span class="cm"># 4  (group {0, 1, 2, 3})</span>
+<span class="fn">print</span>(<span class="fn">union_by_size</span>(<span class="num">1</span>, <span class="num">3</span>))     <span class="cm"># False (already connected)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 03</div>
+    <h2 class="section-title">Near-O(1) Amortized: Inverse Ackermann</h2>
+    <p class="explanation">With <strong>both</strong> path compression and union by rank/size, any sequence of m operations on n elements takes <strong>O(m · α(n))</strong>, where α is the <strong>inverse Ackermann function</strong>. α grows so slowly that α(n) &le; 4 for every n you could ever store — so treat each operation as <strong>amortized O(1)</strong>. (Amortized: an individual find can still walk a few levels, but the total work is bounded.)</p>
+    <div class="diagram">
+      <div class="diagram-title">COST PER OPERATION</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">version                               find (worst / amortized)
+naive parent array                    O(n)
+union by rank/size only               O(log n)
+path compression only                 O(log n) amortized
+both                                  O(α(n))  ≈ O(1)    α(n) &lt;= 4 for any n you could ever store</pre>
+    </div>
+    <div class="callout"><strong>In interviews</strong> say: "near-constant, inverse Ackermann amortized" and move on. In practice, path compression alone is usually fast enough — but writing union by size costs two extra lines.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">A Reusable DSU Class</h2>
+    <p class="explanation">Wrap it up once and reuse it everywhere. This version uses iterative path halving (no recursion limit issues), union by size, keeps a live <strong>count</strong> of components, and returns <strong>True/False</strong> from <strong>union</strong> so callers can tell whether the edge actually merged two groups.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — DSU Class</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">class</span> <span class="cls">DSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, n: int):
+        <span class="kw">self</span>.parent: <span class="cls">List</span>[int] = <span class="fn">list</span>(<span class="fn">range</span>(n))
+        <span class="kw">self</span>.size: <span class="cls">List</span>[int] = [<span class="num">1</span>] * n
+        <span class="kw">self</span>.count = n                    <span class="cm"># number of disjoint groups</span>
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]   <span class="cm"># path halving</span>
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>                  <span class="cm"># same group: nothing to merge</span>
+        <span class="kw">if</span> <span class="kw">self</span>.size[ra] &lt; <span class="kw">self</span>.size[rb]:
+            ra, rb = rb, ra
+        <span class="kw">self</span>.parent[rb] = ra              <span class="cm"># smaller tree under bigger root</span>
+        <span class="kw">self</span>.size[ra] += <span class="kw">self</span>.size[rb]
+        <span class="kw">self</span>.count -= <span class="num">1</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">connected</span>(<span class="kw">self</span>, a: int, b: int) -&gt; bool:
+        <span class="kw">return</span> <span class="kw">self</span>.<span class="fn">find</span>(a) == <span class="kw">self</span>.<span class="fn">find</span>(b)
+
+    <span class="kw">def</span> <span class="fn">group_size</span>(<span class="kw">self</span>, x: int) -&gt; int:
+        <span class="kw">return</span> <span class="kw">self</span>.size[<span class="kw">self</span>.<span class="fn">find</span>(x)]
+
+
+dsu = <span class="cls">DSU</span>(<span class="num">5</span>)
+dsu.<span class="fn">union</span>(<span class="num">0</span>, <span class="num">1</span>)
+dsu.<span class="fn">union</span>(<span class="num">3</span>, <span class="num">4</span>)
+<span class="fn">print</span>(dsu.<span class="fn">connected</span>(<span class="num">0</span>, <span class="num">1</span>), dsu.<span class="fn">connected</span>(<span class="num">1</span>, <span class="num">3</span>))  <span class="cm"># True False</span>
+<span class="fn">print</span>(dsu.count, dsu.<span class="fn">group_size</span>(<span class="num">4</span>))              <span class="cm"># 3 2</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Dict-Based DSU for Any Hashable Keys</div>
+      <pre><span class="kw">class</span> <span class="cls">KeyDSU</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.parent = {}                  <span class="cm"># created lazily: no need to know n up front</span>
+
+    <span class="kw">def</span> <span class="fn">find</span>(<span class="kw">self</span>, x):
+        <span class="kw">self</span>.parent.<span class="fn">setdefault</span>(x, x)
+        <span class="kw">while</span> <span class="kw">self</span>.parent[x] != x:
+            <span class="kw">self</span>.parent[x] = <span class="kw">self</span>.parent[<span class="kw">self</span>.parent[x]]
+            x = <span class="kw">self</span>.parent[x]
+        <span class="kw">return</span> x
+
+    <span class="kw">def</span> <span class="fn">union</span>(<span class="kw">self</span>, a, b) -&gt; bool:
+        ra, rb = <span class="kw">self</span>.<span class="fn">find</span>(a), <span class="kw">self</span>.<span class="fn">find</span>(b)
+        <span class="kw">if</span> ra == rb:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">self</span>.parent[ra] = rb
+        <span class="kw">return</span> <span class="kw">True</span>
+
+
+words = <span class="cls">KeyDSU</span>()
+<span class="kw">for</span> a, b <span class="kw">in</span> [(<span class="str">"great"</span>, <span class="str">"fine"</span>), (<span class="str">"fine"</span>, <span class="str">"good"</span>), (<span class="str">"bad"</span>, <span class="str">"poor"</span>)]:
+    words.<span class="fn">union</span>(a, b)
+<span class="fn">print</span>(words.<span class="fn">find</span>(<span class="str">"great"</span>) == words.<span class="fn">find</span>(<span class="str">"good"</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(words.<span class="fn">find</span>(<span class="str">"great"</span>) == words.<span class="fn">find</span>(<span class="str">"poor"</span>))  <span class="cm"># False</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 04</div>
+    <h2 class="section-title">Counting Components</h2>
+    <p class="explanation">Start with n groups and union along every edge — each successful union removes exactly one group, so the answer is <strong>dsu.count</strong>. Without a counter, count the distinct roots: <strong>len({dsu.find(i) for i in range(n)})</strong>.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Components from an Edge List</div>
+      <pre><span class="kw">def</span> <span class="fn">components</span>(n, edges):
+    dsu = <span class="cls">DSU</span>(n)                          <span class="cm"># the class above</span>
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        dsu.<span class="fn">union</span>(u, v)
+    <span class="kw">return</span> dsu.count, <span class="fn">len</span>({dsu.<span class="fn">find</span>(i) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)})
+
+
+<span class="fn">print</span>(<span class="fn">components</span>(<span class="num">6</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">4</span>]]))   <span class="cm"># (3, 3)  {0,1,2} {3,4} {5}</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 05</div>
+    <h2 class="section-title">Cycle Detection (Undirected)</h2>
+    <p class="explanation">Process edges one at a time. If an edge's endpoints are <strong>already connected</strong>, adding it closes a loop. That is exactly when <strong>union</strong> returns False. (For <em>directed</em> graphs use DFS colouring or topological sort instead — DSU ignores direction.)</p>
+    <div class="diagram">
+      <div class="diagram-title">EDGES 0-1, 1-2, 2-0</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">0-1 : find(0)=0, find(1)=1 → merge          {0,1} {2}
+1-2 : find(1)=0, find(2)=2 → merge          {0,1,2}
+2-0 : find(2)=0, find(0)=0 → same root!     cycle ✓</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — has_cycle</div>
+      <pre><span class="kw">def</span> <span class="fn">has_cycle</span>(n, edges):
+    dsu = <span class="cls">DSU</span>(n)
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        <span class="kw">if</span> <span class="kw">not</span> dsu.<span class="fn">union</span>(u, v):           <span class="cm"># endpoints already connected</span>
+            <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">return</span> <span class="kw">False</span>
+
+
+<span class="fn">print</span>(<span class="fn">has_cycle</span>(<span class="num">4</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">3</span>]]))  <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">has_cycle</span>(<span class="num">4</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">2</span>, <span class="num">0</span>]]))  <span class="cm"># True</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 06</div>
+    <h2 class="section-title">Kruskal's Minimum Spanning Tree</h2>
+    <p class="explanation">An MST connects all n vertices with n - 1 edges of minimum total weight. <strong>Kruskal's</strong> algorithm is greedy + DSU: sort edges by weight, and take each edge unless it would form a cycle (its endpoints are already connected). Stop after n - 1 edges. Sorting dominates: <strong>O(E log E)</strong>.</p>
+    <div class="diagram">
+      <div class="diagram-title">EDGES (w, u, v): (1,0,1) (2,1,3) (3,1,2) (4,0,2) (5,2,3)</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">     1              take (1,0,1)  ✓  total 1
+0 ------- 1         take (2,1,3)  ✓  total 3
+ \      / \         take (3,1,2)  ✓  total 6   (n - 1 = 3 edges → stop)
+4 \  3 /   \ 2      (4,0,2)  ✗  would be skipped: 0 and 2 already connected
+   \  /     \       (5,2,3)  ✗  would be skipped: 2 and 3 already connected
+    2 ------- 3
+         5</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Kruskal with DSU</div>
+      <pre><span class="kw">def</span> <span class="fn">kruskal</span>(n, edges):
+    dsu = <span class="cls">DSU</span>(n)
+    total, mst = <span class="num">0</span>, []
+    <span class="kw">for</span> w, u, v <span class="kw">in</span> <span class="fn">sorted</span>(edges):         <span class="cm"># tuples sort by weight first</span>
+        <span class="kw">if</span> dsu.<span class="fn">union</span>(u, v):               <span class="cm"># skip edges that would form a cycle</span>
+            total += w
+            mst.<span class="fn">append</span>((u, v, w))
+            <span class="kw">if</span> <span class="fn">len</span>(mst) == n - <span class="num">1</span>:
+                <span class="kw">break</span>
+    <span class="kw">return</span> total, mst
+
+
+edges = [(<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>), (<span class="num">4</span>, <span class="num">0</span>, <span class="num">2</span>), (<span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>), (<span class="num">2</span>, <span class="num">1</span>, <span class="num">3</span>), (<span class="num">5</span>, <span class="num">2</span>, <span class="num">3</span>)]
+<span class="fn">print</span>(<span class="fn">kruskal</span>(<span class="num">4</span>, edges))  <span class="cm"># (6, [(0, 1, 1), (1, 3, 2), (1, 2, 3)])</span></pre>
+    </div>
+    <div class="callout"><strong>Kruskal vs Prim:</strong> Kruskal (sort + DSU) shines on sparse edge lists. Prim (grow from one vertex with a <strong>heapq</strong> of crossing edges) is often simpler on dense graphs or adjacency lists. Both are greedy, both proven by the cut property.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Number of Connected Components in an Undirected Graph <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Redundant Connection <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Graph Valid Tree <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Accounts Merge <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Number of Provinces <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Min Cost to Connect All Points (Kruskal) <span class="problem-tag medium">MEDIUM</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="18-intervals.html" class="footer-back">← Intervals</a>
+    <a href="index.html" class="footer-next">Roadmap →</a>
+  </div>
+</div>
+</body>
+</html>

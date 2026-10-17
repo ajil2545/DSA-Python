@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greedy Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="17-greedy.html" class="back-link">← Greedy Algorithms</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 17</div>
+    <h1 class="page-title">Greedy <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Every solution here is a sort or a single scan — plus the one-line reason the local choice is safe.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Jump Game</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Instead of trying every jump (exponential, or O(n²) DP), track the <strong>farthest index reachable so far</strong>. Walk left to right: if the current index is beyond that reach, nothing earlier can get you here, so the end is unreachable.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Start with <code>reach = 0</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each index <code>i</code>: if <code>i &gt; reach</code>, return <code>False</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Otherwise extend <code>reach = max(reach, i + nums[i])</code>; return early once <code>reach</code> covers the last index.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">can_jump</span>(nums: <span class="cls">List</span>[int]) -&gt; bool:
+    reach = <span class="num">0</span>
+    last = <span class="fn">len</span>(nums) - <span class="num">1</span>
+    <span class="kw">for</span> i, jump <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        <span class="kw">if</span> i &gt; reach:              <span class="cm"># index i can't be reached</span>
+            <span class="kw">return</span> <span class="kw">False</span>
+        reach = <span class="fn">max</span>(reach, i + jump)
+        <span class="kw">if</span> reach &gt;= last:          <span class="cm"># early exit: end is already covered</span>
+            <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="fn">print</span>(<span class="fn">can_jump</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">4</span>]))  <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">can_jump</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">4</span>]))  <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">can_jump</span>([<span class="num">0</span>]))              <span class="cm"># True (already at the end)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Jump Game II</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Think of it as BFS without a queue. All indices reachable with <code>k</code> jumps form a contiguous window <code>[start, cur_end]</code>. While scanning that window, record the farthest index the <strong>next</strong> jump can reach. When you hit the end of the window you are forced to jump: increment the count and the window becomes <code>[cur_end + 1, farthest]</code>.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Keep <code>jumps</code>, <code>cur_end</code> (edge of the current level) and <code>farthest</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Scan <code>i</code> from 0 to <code>n - 2</code> (never jump <em>from</em> the last index), updating <code>farthest</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>When <code>i == cur_end</code>: <code>jumps += 1</code> and <code>cur_end = farthest</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Implicit BFS Levels</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">jump</span>(nums: <span class="cls">List</span>[int]) -&gt; int:
+    jumps = cur_end = farthest = <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums) - <span class="num">1</span>):        <span class="cm"># stop before the last index</span>
+        farthest = <span class="fn">max</span>(farthest, i + nums[i])
+        <span class="kw">if</span> i == cur_end:                  <span class="cm"># used up this jump's window</span>
+            jumps += <span class="num">1</span>
+            cur_end = farthest
+    <span class="kw">return</span> jumps
+
+
+<span class="fn">print</span>(<span class="fn">jump</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">4</span>]))  <span class="cm"># 2  (0 -&gt; 1 -&gt; 4)</span>
+<span class="fn">print</span>(<span class="fn">jump</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">4</span>]))  <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">jump</span>([<span class="num">1</span>]))              <span class="cm"># 0</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Gas Station</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Two facts. (1) If total gas &lt; total cost, no start works. (2) If you start at <code>s</code> and the tank first goes negative at station <code>i</code>, then <strong>no station between <code>s</code> and <code>i</code> can be the start either</strong> — each of them would arrive at <code>i</code> with even less fuel (they skip the non-negative prefix you had). So jump the candidate start to <code>i + 1</code> and reset the tank.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>If <code>sum(gas) &lt; sum(cost)</code>, return <code>-1</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Scan once with a running tank: <code>tank += gas[i] - cost[i]</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>When the tank drops below 0, set <code>start = i + 1</code> and <code>tank = 0</code>.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Because a solution exists (step 1), the final <code>start</code> is the answer.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">can_complete_circuit</span>(gas: <span class="cls">List</span>[int], cost: <span class="cls">List</span>[int]) -&gt; int:
+    <span class="kw">if</span> <span class="fn">sum</span>(gas) &lt; <span class="fn">sum</span>(cost):
+        <span class="kw">return</span> -<span class="num">1</span>
+    start = tank = <span class="num">0</span>
+    <span class="kw">for</span> i, (g, c) <span class="kw">in</span> <span class="fn">enumerate</span>(<span class="fn">zip</span>(gas, cost)):
+        tank += g - c
+        <span class="kw">if</span> tank &lt; <span class="num">0</span>:          <span class="cm"># can't reach i + 1 from start (or from anything in between)</span>
+            start = i + <span class="num">1</span>
+            tank = <span class="num">0</span>
+    <span class="kw">return</span> start
+
+
+<span class="fn">print</span>(<span class="fn">can_complete_circuit</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>], [<span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">2</span>]))  <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">can_complete_circuit</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>], [<span class="num">3</span>, <span class="num">4</span>, <span class="num">3</span>]))              <span class="cm"># -1</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Assign Cookies</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Each child <code>i</code> needs a cookie of size &ge; <code>g[i]</code>; each cookie goes to at most one child. Sort both lists. Give the <strong>smallest cookie that satisfies the least greedy unsatisfied child</strong>. Wasting a big cookie on a small appetite is never better (exchange argument), and a cookie too small for the least greedy child is useless to everyone.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Sort greed factors <code>g</code> and cookie sizes <code>s</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Walk the cookies smallest to largest with a pointer <code>child</code> into <code>g</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If the cookie satisfies <code>g[child]</code>, feed that child (<code>child += 1</code>); otherwise discard the cookie.</div></div>
+      <div class="step"><div class="step-num">4</div><div>The answer is the final value of <code>child</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n + m log m)</span></div>
+        <div class="ci-item">Space: <span>O(n + m) for the sorted copies</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Sort + Two Pointers</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">find_content_children</span>(g: <span class="cls">List</span>[int], s: <span class="cls">List</span>[int]) -&gt; int:
+    g, s = <span class="fn">sorted</span>(g), <span class="fn">sorted</span>(s)       <span class="cm"># sorted() copies: caller's lists stay untouched</span>
+    child = <span class="num">0</span>
+    <span class="kw">for</span> cookie <span class="kw">in</span> s:
+        <span class="kw">if</span> child &lt; <span class="fn">len</span>(g) <span class="kw">and</span> cookie &gt;= g[child]:
+            child += <span class="num">1</span>                <span class="cm"># this cookie satisfies the least greedy child left</span>
+    <span class="kw">return</span> child
+
+
+<span class="fn">print</span>(<span class="fn">find_content_children</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], [<span class="num">1</span>, <span class="num">1</span>]))     <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">find_content_children</span>([<span class="num">1</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))     <span class="cm"># 2</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Task Scheduler</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Only the most frequent task really constrains the schedule. If it appears <code>max_freq</code> times, it forms <code>max_freq - 1</code> full blocks of length <code>n + 1</code>, plus a final row holding every task that ties for <code>max_freq</code>. Other tasks fill the idle slots; if there are more tasks than slots, no idling is needed at all and the answer is <code>len(tasks)</code>.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Count tasks with <code>collections.Counter</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div><code>max_freq</code> = highest count; <code>max_count</code> = how many tasks have that count.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Answer = <code>max(len(tasks), (max_freq - 1) * (n + 1) + max_count)</code>.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Alternative: simulate with a max-heap of remaining counts and a cooldown deque (shown second).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(N)  (heap version: O(answer · log 26), idle ticks included)</span></div>
+        <div class="ci-item">Space: <span>O(1) — at most 26 task types</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Counting Formula</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">least_interval</span>(tasks: <span class="cls">List</span>[str], n: int) -&gt; int:
+    counts = <span class="cls">Counter</span>(tasks)
+    max_freq = <span class="fn">max</span>(counts.<span class="fn">values</span>())
+    max_count = <span class="fn">sum</span>(<span class="num">1</span> <span class="kw">for</span> c <span class="kw">in</span> counts.<span class="fn">values</span>() <span class="kw">if</span> c == max_freq)
+    <span class="cm"># A _ _ A _ _ A   -&gt; (max_freq - 1) blocks of (n + 1) slots, then the tied tasks</span>
+    <span class="kw">return</span> <span class="fn">max</span>(<span class="fn">len</span>(tasks), (max_freq - <span class="num">1</span>) * (n + <span class="num">1</span>) + max_count)
+
+
+<span class="fn">print</span>(<span class="fn">least_interval</span>([<span class="str">"A"</span>, <span class="str">"A"</span>, <span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"B"</span>, <span class="str">"B"</span>], <span class="num">2</span>))  <span class="cm"># 8   A B _ A B _ A B</span>
+<span class="fn">print</span>(<span class="fn">least_interval</span>([<span class="str">"A"</span>, <span class="str">"C"</span>, <span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"D"</span>, <span class="str">"B"</span>], <span class="num">1</span>))  <span class="cm"># 6   no idle needed</span>
+<span class="fn">print</span>(<span class="fn">least_interval</span>([<span class="str">"A"</span>, <span class="str">"A"</span>, <span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"B"</span>, <span class="str">"B"</span>], <span class="num">3</span>))  <span class="cm"># 10  A B _ _ A B _ _ A B</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">ALTERNATIVE — Heap Simulation (Greedy: Run the Most Remaining Task)</div>
+        <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>, deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">least_interval_heap</span>(tasks: <span class="cls">List</span>[str], n: int) -&gt; int:
+    heap = [-c <span class="kw">for</span> c <span class="kw">in</span> <span class="cls">Counter</span>(tasks).<span class="fn">values</span>()]   <span class="cm"># max-heap via negation</span>
+    heapq.<span class="fn">heapify</span>(heap)
+    cooldown = <span class="fn">deque</span>()                              <span class="cm"># (time it becomes ready, -remaining)</span>
+    time = <span class="num">0</span>
+    <span class="kw">while</span> heap <span class="kw">or</span> cooldown:
+        time += <span class="num">1</span>
+        <span class="kw">if</span> heap:
+            remaining = heapq.<span class="fn">heappop</span>(heap) + <span class="num">1</span>     <span class="cm"># run one instance (counts are negative)</span>
+            <span class="kw">if</span> remaining:
+                cooldown.<span class="fn">append</span>((time + n, remaining))
+        <span class="kw">if</span> cooldown <span class="kw">and</span> cooldown[<span class="num">0</span>][<span class="num">0</span>] == time:
+            heapq.<span class="fn">heappush</span>(heap, cooldown.<span class="fn">popleft</span>()[<span class="num">1</span>])
+    <span class="kw">return</span> time
+
+
+<span class="fn">print</span>(<span class="fn">least_interval_heap</span>([<span class="str">"A"</span>, <span class="str">"A"</span>, <span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"B"</span>, <span class="str">"B"</span>], <span class="num">2</span>))  <span class="cm"># 8</span>
+<span class="fn">print</span>(<span class="fn">least_interval_heap</span>([<span class="str">"A"</span>, <span class="str">"C"</span>, <span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"D"</span>, <span class="str">"B"</span>], <span class="num">1</span>))  <span class="cm"># 6</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Partition Labels</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> A part must contain <strong>every occurrence</strong> of each letter in it. Precompute each letter's last index. Scan and keep <code>end</code> = the farthest last-occurrence of any letter seen in the current part. When <code>i</code> reaches <code>end</code>, nothing inside reaches further, so cut here — cutting as early as possible maximises the number of parts.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Build <code>last = {ch: i for i, ch in enumerate(s)}</code> (later indices overwrite earlier ones).</div></div>
+      <div class="step"><div class="step-num">2</div><div>Scan with <code>start</code> and <code>end</code>; set <code>end = max(end, last[ch])</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>When <code>i == end</code>, record the size <code>end - start + 1</code> and start the next part at <code>i + 1</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1) — at most 26 keys</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">partition_labels</span>(s: str) -&gt; <span class="cls">List</span>[int]:
+    last = {ch: i <span class="kw">for</span> i, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s)}   <span class="cm"># last index of every character</span>
+    sizes = []
+    start = end = <span class="num">0</span>
+    <span class="kw">for</span> i, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        end = <span class="fn">max</span>(end, last[ch])               <span class="cm"># this part must stretch to here</span>
+        <span class="kw">if</span> i == end:                           <span class="cm"># every letter so far is closed</span>
+            sizes.<span class="fn">append</span>(end - start + <span class="num">1</span>)
+            start = i + <span class="num">1</span>
+    <span class="kw">return</span> sizes
+
+
+<span class="fn">print</span>(<span class="fn">partition_labels</span>(<span class="str">"ababcbacadefegdehijhklij"</span>))  <span class="cm"># [9, 7, 8]</span>
+<span class="fn">print</span>(<span class="fn">partition_labels</span>(<span class="str">"eccbbbbdec"</span>))                <span class="cm"># [10]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-16-bit-manipulation.html" class="footer-back">← Bit Manipulation Solutions</a>
+    <a href="sol-18-intervals.html" class="footer-next">Interval Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

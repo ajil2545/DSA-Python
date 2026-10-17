@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 1 — Foundation | DSA Mastery in Python</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=DM+Serif+Display&display=swap');
+  :root{--bg:#0b0c10;--surface:#12141a;--surface2:#1a1d26;--border:#222531;--accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--warn:#ffc947;--text:#e8eaf0;--muted:#7a7f99;--dim:#3a3f52}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:1.7}
+  .container{max-width:880px;margin:0 auto;padding:0 24px}
+
+  /* NAV */
+  .topnav{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .topnav a{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;color:var(--muted);text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:100px;transition:0.18s}
+  .topnav a:hover,.topnav a.active{border-color:var(--accent);color:var(--accent)}
+  .topnav .brand{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);border:none;padding:0;margin-right:auto}
+
+  /* HERO */
+  .week-hero{padding:80px 0 60px;position:relative}
+  .week-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 30% 0%,rgba(108,99,255,0.1) 0%,transparent 70%);pointer-events:none}
+  .week-num{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+  .week-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,5vw,3.5rem);line-height:1.1;margin-bottom:20px;letter-spacing:-0.01em}
+  .week-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+
+  /* DAY SECTIONS */
+  .day-section{padding:60px 0;border-top:1px solid var(--border)}
+  .day-label{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .day-section h2{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);line-height:1.15;margin-bottom:16px}
+  .day-section>p,.topic-block p{color:var(--muted);font-size:0.92rem;line-height:1.75;margin-bottom:16px}
+  .day-section>p strong,.topic-block p strong{color:var(--text)}
+
+  /* TOPIC BLOCKS */
+  .topic-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin:24px 0;position:relative;overflow:hidden}
+  .topic-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+  .topic-block h3{font-size:1.05rem;font-weight:600;margin-bottom:12px;color:var(--text)}
+  .topic-block.teal::before{background:var(--accent2)}
+  .topic-block.red::before{background:var(--accent3)}
+  .topic-block.yellow::before{background:var(--warn)}
+
+  /* COMPLEXITY TABLE */
+  .complexity-table{width:100%;border-collapse:collapse;font-size:0.84rem;margin:16px 0}
+  .complexity-table th{text-align:left;padding:10px 14px;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)}
+  .complexity-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--muted);vertical-align:top}
+  .complexity-table td:first-child{color:var(--text);font-weight:500;font-family:'Space Mono',monospace;font-size:0.82rem}
+  .complexity-table tr:last-child td{border-bottom:none}
+  .tag-o{display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.72rem;font-family:'Space Mono',monospace}
+  .tag-o.good{background:rgba(0,212,170,0.1);color:var(--accent2);border:1px solid rgba(0,212,170,0.2)}
+  .tag-o.ok{background:rgba(255,201,71,0.08);color:var(--warn);border:1px solid rgba(255,201,71,0.2)}
+  .tag-o.bad{background:rgba(255,107,107,0.1);color:var(--accent3);border:1px solid rgba(255,107,107,0.2)}
+
+  /* CODE BLOCKS */
+  .code-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:20px 0}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
+  .code-title{font-family:'Space Mono',monospace;font-size:0.73rem;color:var(--muted)}
+  .code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%}
+  .d1{background:#ff5f57}.d2{background:#ffbd2e}.d3{background:#28c940}
+  pre{padding:24px;overflow-x:auto;font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.85;color:var(--text)}
+  .cmt{color:var(--dim);font-style:italic}
+  .kw{color:#c792ea}
+  .fn{color:#82aaff}
+  .str{color:#c3e88d}
+  .num{color:#f78c6c}
+  .cls{color:#ffcb6b}
+
+  /* INSIGHT BOX */
+  .insight{border-left:3px solid var(--accent2);padding:16px 22px;background:rgba(0,212,170,0.04);border-radius:0 10px 10px 0;margin:20px 0;font-size:0.88rem;color:var(--muted)}
+  .insight strong{color:var(--accent2);display:block;margin-bottom:4px;font-size:0.82rem;font-family:'Space Mono',monospace;letter-spacing:0.05em}
+  .insight.warn{border-left-color:var(--warn);background:rgba(255,201,71,0.04)}
+  .insight.warn strong{color:var(--warn)}
+
+  /* FOOTER */
+  footer{text-align:center;padding:60px 24px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--dim);font-family:'Space Mono',monospace}
+
+  @media(max-width:600px){
+    .complexity-table{font-size:0.75rem}
+    .complexity-table th,.complexity-table td{padding:8px}
+    pre{font-size:0.7rem;padding:16px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="brand">DSA Mastery</a>
+  <a href="week1-foundation.html" class="active">Week 1</a>
+  <a href="week2-core-patterns.html">Week 2</a>
+  <a href="week3-trees-graphs.html">Week 3</a>
+  <a href="week4-dp-synthesis.html">Week 4</a>
+</nav>
+
+<div class="container">
+
+<div class="week-hero">
+  <div class="week-num">Week 1 of 4</div>
+  <h1>Rewire the Foundation</h1>
+  <p>Fix the cracks. Python internals, complexity thinking, and your first four patterns — Hash Map, Two Pointers, Sliding Window, Binary Search.</p>
+</div>
+
+<!-- ============ DAY 1 ============ -->
+<div class="day-section" id="day1">
+  <div class="day-label">Day 1 · 90 min</div>
+  <h2>Python Memory Model + Complexity Mindset</h2>
+  <p>Before you write another solution, you need to know the <strong>true cost of every operation</strong> in Python and exactly what a variable holds. Most bugs and performance issues in Python DSA come from not understanding what CPython does under the hood.</p>
+
+  <div class="topic-block">
+    <h3>Everything Is an Object — Names Are References</h3>
+    <p>In Python a variable is a <strong>name bound to an object</strong>. Assignment never copies; it just adds another name for the same object. What matters is whether the object is <strong>immutable</strong> (<code>int</code>, <code>float</code>, <code>bool</code>, <code>str</code>, <code>tuple</code>, <code>frozenset</code>, <code>None</code>) or <strong>mutable</strong> (<code>list</code>, <code>dict</code>, <code>set</code>, <code>deque</code>, your own class instances). Mutating a shared mutable object is visible through every name.</p>
+    <p><strong><code>==</code> asks "same value?"</strong>, <strong><code>is</code> asks "same object?"</strong>. Use <code>is</code> only for <code>None</code> (and sentinels); use <code>==</code> for everything else.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">names_and_references.py</span>
+    </div>
+    <pre><span class="cmt"># IMMUTABLE — rebinding a name never affects other names</span>
+a = <span class="num">5</span>
+b = a          <span class="cmt"># b names the SAME int object as a</span>
+b = <span class="num">10</span>         <span class="cmt"># rebinds b to a new object; a is untouched</span>
+<span class="fn">print</span>(a)       <span class="cmt"># 5</span>
+
+<span class="cmt"># MUTABLE — every name sees the mutation (dangerous in DSA!)</span>
+arr1 = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+arr2 = arr1    <span class="cmt"># arr2 points to the SAME list</span>
+arr2.<span class="fn">append</span>(<span class="num">4</span>)
+<span class="fn">print</span>(arr1)    <span class="cmt"># [1, 2, 3, 4] — mutated!</span>
+
+<span class="cmt"># is vs ==  →  identity vs equality</span>
+<span class="fn">print</span>(arr1 == [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>])   <span class="cmt"># True  — same contents</span>
+<span class="fn">print</span>(arr1 <span class="kw">is</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>])   <span class="cmt"># False — different objects</span>
+<span class="fn">print</span>(arr1 <span class="kw">is</span> arr2)           <span class="cmt"># True  — one object, two names</span>
+x = <span class="kw">None</span>
+<span class="fn">print</span>(x <span class="kw">is</span> <span class="kw">None</span>)              <span class="cmt"># True  — the idiomatic None check</span>
+
+<span class="cmt"># Functions receive references too ("pass by object reference")</span>
+<span class="kw">def</span> <span class="fn">add_item</span>(lst):
+    lst.<span class="fn">append</span>(<span class="num">99</span>)    <span class="cmt"># mutates the caller's list</span>
+
+<span class="kw">def</span> <span class="fn">rebind</span>(lst):
+    lst = [<span class="num">0</span>]         <span class="cmt"># only rebinds the LOCAL name — caller unaffected</span>
+
+nums = [<span class="num">1</span>]
+<span class="fn">add_item</span>(nums)
+<span class="fn">rebind</span>(nums)
+<span class="fn">print</span>(nums)          <span class="cmt"># [1, 99]</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Shallow vs Deep Copy — and the Three Classic Traps</h3>
+    <p><code>lst[:]</code>, <code>list(lst)</code> and <code>lst.copy()</code> make a <strong>shallow</strong> copy: a new outer list whose slots still point at the same inner objects. <code>copy.deepcopy</code> copies recursively. Three bugs every Python DSA learner hits: the <code>[[0] * n] * m</code> grid, the mutable default argument, and appending a path in backtracking without copying it.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">copies_and_traps.py</span>
+    </div>
+    <pre><span class="kw">import</span> copy
+
+nested = [[<span class="num">1</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">4</span>]]
+shallow = nested[:]               <span class="cmt"># shallow copy (same as list(nested) / nested.copy())</span>
+deep = copy.<span class="fn">deepcopy</span>(nested)     <span class="cmt"># deep copy — inner lists copied too</span>
+
+nested[<span class="num">0</span>].<span class="fn">append</span>(<span class="num">99</span>)
+<span class="fn">print</span>(shallow)   <span class="cmt"># [[1, 2, 99], [3, 4]] — inner lists are shared!</span>
+<span class="fn">print</span>(deep)      <span class="cmt"># [[1, 2], [3, 4]]     — fully independent</span>
+
+<span class="cmt"># TRAP 1: [[0] * n] * m  →  m references to ONE row</span>
+grid = [[<span class="num">0</span>] * <span class="num">3</span>] * <span class="num">2</span>
+grid[<span class="num">0</span>][<span class="num">0</span>] = <span class="num">1</span>
+<span class="fn">print</span>(grid)      <span class="cmt"># [[1, 0, 0], [1, 0, 0]] — both rows changed!</span>
+
+grid = [[<span class="num">0</span>] * <span class="num">3</span> <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>)]   <span class="cmt"># FIX: a fresh row per iteration</span>
+grid[<span class="num">0</span>][<span class="num">0</span>] = <span class="num">1</span>
+<span class="fn">print</span>(grid)      <span class="cmt"># [[1, 0, 0], [0, 0, 0]]</span>
+
+<span class="cmt"># TRAP 2: default arguments are evaluated ONCE, at def time</span>
+<span class="kw">def</span> <span class="fn">bad_append</span>(x, acc=[]):
+    acc.<span class="fn">append</span>(x)
+    <span class="kw">return</span> acc
+
+<span class="fn">print</span>(<span class="fn">bad_append</span>(<span class="num">1</span>))   <span class="cmt"># [1]</span>
+<span class="fn">print</span>(<span class="fn">bad_append</span>(<span class="num">2</span>))   <span class="cmt"># [1, 2] — the same list is reused!</span>
+
+<span class="kw">def</span> <span class="fn">good_append</span>(x, acc=<span class="kw">None</span>):
+    <span class="kw">if</span> acc <span class="kw">is</span> <span class="kw">None</span>:
+        acc = []
+    acc.<span class="fn">append</span>(x)
+    <span class="kw">return</span> acc
+
+<span class="fn">print</span>(<span class="fn">good_append</span>(<span class="num">2</span>))  <span class="cmt"># [2]</span>
+
+<span class="cmt"># TRAP 3: backtracking — store a SNAPSHOT of the path</span>
+res, path = [], [<span class="num">1</span>, <span class="num">2</span>]
+res.<span class="fn">append</span>(path)       <span class="cmt"># WRONG: keeps a live reference</span>
+res.<span class="fn">append</span>(path[:])    <span class="cmt"># RIGHT: copy of the current state</span>
+path.<span class="fn">pop</span>()
+<span class="fn">print</span>(res)             <span class="cmt"># [[1], [1, 2]] — the first entry changed under you</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Big-O of Every Built-in You'll Use</h3>
+    <p>Memorize these. When you write a solution, you should <strong>instantly</strong> know the cost of every line. A Python <code>list</code> is a dynamic array; <code>dict</code> and <code>set</code> are hash tables.</p>
+  </div>
+
+  <table class="complexity-table">
+    <thead><tr><th>Operation</th><th>Time</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>lst[i] / len(lst)</td><td><span class="tag-o good">O(1)</span></td><td>Direct index access; length is stored</td></tr>
+      <tr><td>lst.append(x)</td><td><span class="tag-o good">O(1)</span></td><td>Append to end (amortized)</td></tr>
+      <tr><td>lst.pop()</td><td><span class="tag-o good">O(1)</span></td><td>Remove from end</td></tr>
+      <tr><td>lst.pop(0)</td><td><span class="tag-o bad">O(n)</span></td><td>Remove from front — shifts everything left</td></tr>
+      <tr><td>lst.insert(0, x)</td><td><span class="tag-o bad">O(n)</span></td><td>Insert at front — shifts everything right</td></tr>
+      <tr><td>del lst[i] / lst.pop(i)</td><td><span class="tag-o bad">O(n)</span></td><td>Shifts elements after index</td></tr>
+      <tr><td>x in lst</td><td><span class="tag-o bad">O(n)</span></td><td>Linear scan</td></tr>
+      <tr><td>lst.index(x) / lst.count(x)</td><td><span class="tag-o bad">O(n)</span></td><td>Linear scan</td></tr>
+      <tr><td>lst[a:b]</td><td><span class="tag-o ok">O(k)</span></td><td>Slicing COPIES k elements — not free inside loops</td></tr>
+      <tr><td>min / max / sum(lst)</td><td><span class="tag-o bad">O(n)</span></td><td>Full scan every call</td></tr>
+      <tr><td>lst.sort() / sorted(lst)</td><td><span class="tag-o ok">O(n log n)</span></td><td>TimSort (stable)</td></tr>
+      <tr><td>d[k] / d.get(k) / k in d</td><td><span class="tag-o good">O(1)</span></td><td>Hash table (average)</td></tr>
+      <tr><td>s.add(x) / x in s</td><td><span class="tag-o good">O(1)</span></td><td>Hash table (average)</td></tr>
+      <tr><td>deque.append / appendleft / pop / popleft</td><td><span class="tag-o good">O(1)</span></td><td>Doubly-linked blocks — both ends are cheap</td></tr>
+      <tr><td>heapq.heappush / heappop</td><td><span class="tag-o ok">O(log n)</span></td><td>Binary min-heap on a list</td></tr>
+      <tr><td>s += "x" in a loop</td><td><span class="tag-o bad">O(n)</span></td><td>Per <code>+=</code>: str is immutable, so each one may copy the whole string — O(n²) over the loop; use <code>"".join(parts)</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="insight warn">
+    <strong>PYTHON TRAP: Using list.pop(0) as a queue</strong>
+    If you use a list as a queue with pop(0), every dequeue is O(n). For BFS on large graphs, this silently turns your O(V+E) algorithm into O(V²). Use <code>collections.deque</code> and <code>popleft()</code> — always.
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">efficient_queue.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="cmt"># BAD: O(n) per dequeue</span>
+queue = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+queue.<span class="fn">append</span>(<span class="num">4</span>)     <span class="cmt"># enqueue</span>
+queue.<span class="fn">pop</span>(<span class="num">0</span>)        <span class="cmt"># dequeue — O(n)! shifts every element</span>
+
+<span class="cmt"># GOOD: O(1) at both ends — collections.deque</span>
+q = <span class="fn">deque</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])
+q.<span class="fn">append</span>(<span class="num">4</span>)         <span class="cmt"># enqueue on the right</span>
+<span class="fn">print</span>(q.<span class="fn">popleft</span>())  <span class="cmt"># 1 — O(1) dequeue</span>
+q.<span class="fn">appendleft</span>(<span class="num">0</span>)     <span class="cmt"># O(1) push to the front</span>
+<span class="fn">print</span>(q)            <span class="cmt"># deque([0, 2, 3, 4])</span>
+
+<span class="cmt"># A thin Queue wrapper (you rarely need one — deque IS the queue)</span>
+<span class="kw">class</span> <span class="cls">Queue</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>._items = <span class="fn">deque</span>()
+
+    <span class="kw">def</span> <span class="fn">enqueue</span>(<span class="kw">self</span>, val):
+        <span class="kw">self</span>._items.<span class="fn">append</span>(val)
+
+    <span class="kw">def</span> <span class="fn">dequeue</span>(<span class="kw">self</span>):
+        <span class="kw">return</span> <span class="kw">self</span>._items.<span class="fn">popleft</span>()
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(<span class="kw">self</span>):
+        <span class="kw">return</span> <span class="fn">len</span>(<span class="kw">self</span>._items)
+
+    <span class="kw">def</span> <span class="fn">is_empty</span>(<span class="kw">self</span>):
+        <span class="kw">return</span> <span class="kw">not</span> <span class="kw">self</span>._items   <span class="cmt"># empty deque is falsy</span>
+
+qq = <span class="cls">Queue</span>()
+qq.<span class="fn">enqueue</span>(<span class="str">'a'</span>)
+qq.<span class="fn">enqueue</span>(<span class="str">'b'</span>)
+<span class="fn">print</span>(qq.<span class="fn">dequeue</span>(), <span class="fn">len</span>(qq), qq.<span class="fn">is_empty</span>())   <span class="cmt"># a 1 False</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>dict vs defaultdict vs Counter — When to Use Which</h3>
+    <p>A <strong>dict</strong> key can be any <strong>hashable</strong> (immutable) object: <code>int</code>, <code>str</code>, <code>tuple</code>, <code>frozenset</code> — never a <code>list</code>. Keys are not coerced (<code>1</code> and <code>'1'</code> are different keys), and insertion order is preserved. Reach for <code>defaultdict</code> when every missing key needs a starting value, and <code>Counter</code> whenever you are counting.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">dict_defaultdict_counter.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict, Counter
+
+<span class="cmt"># dict: any HASHABLE key, no type coercion</span>
+d = {}
+d[<span class="num">1</span>] = <span class="str">'number one'</span>
+d[<span class="str">'1'</span>] = <span class="str">'string one'</span>
+<span class="fn">print</span>(<span class="fn">len</span>(d))              <span class="cmt"># 2 — no collision</span>
+d[(<span class="num">0</span>, <span class="num">1</span>)] = <span class="str">'cell'</span>          <span class="cmt"># tuples make perfect grid-coordinate keys</span>
+<span class="cmt"># d[[0, 1]] = 'x'          # TypeError: unhashable type: 'list'</span>
+
+<span class="cmt"># GOTCHA: 1, 1.0 and True are equal AND hash the same → one key</span>
+<span class="fn">print</span>({<span class="num">1</span>: <span class="str">'a'</span>, <span class="num">1.0</span>: <span class="str">'b'</span>, <span class="kw">True</span>: <span class="str">'c'</span>})   <span class="cmt"># {1: 'c'}</span>
+
+<span class="cmt"># FREQUENCY COUNTER — the #1 DSA pattern, three ways</span>
+<span class="kw">def</span> <span class="fn">freq_count</span>(arr):
+    freq = {}
+    <span class="kw">for</span> item <span class="kw">in</span> arr:
+        freq[item] = freq.<span class="fn">get</span>(item, <span class="num">0</span>) + <span class="num">1</span>
+    <span class="kw">return</span> freq
+
+<span class="fn">print</span>(<span class="fn">freq_count</span>(<span class="str">"banana"</span>))     <span class="cmt"># {'b': 1, 'a': 3, 'n': 2}</span>
+
+freq = <span class="fn">defaultdict</span>(<span class="fn">int</span>)           <span class="cmt"># missing keys start at int() == 0</span>
+<span class="kw">for</span> ch <span class="kw">in</span> <span class="str">"banana"</span>:
+    freq[ch] += <span class="num">1</span>
+<span class="fn">print</span>(<span class="fn">dict</span>(freq))                <span class="cmt"># {'b': 1, 'a': 3, 'n': 2}</span>
+
+c = <span class="fn">Counter</span>(<span class="str">"banana"</span>)               <span class="cmt"># the one-liner</span>
+<span class="fn">print</span>(c.<span class="fn">most_common</span>(<span class="num">1</span>))          <span class="cmt"># [('a', 3)]</span>
+<span class="fn">print</span>(c[<span class="str">'z'</span>])                   <span class="cmt"># 0 — missing keys read as 0, no KeyError</span></pre>
+  </div>
+
+  <div class="topic-block yellow">
+    <h3>Truthiness, Big Integers &amp; Immutable Strings</h3>
+    <p><strong>Truthiness:</strong> <code>0</code>, <code>0.0</code>, <code>''</code>, <code>None</code>, and empty containers are falsy — so <code>while stack:</code> and <code>if not queue:</code> are idiomatic. But a valid value of <code>0</code> is also falsy: use <code>is not None</code> when 0 is legal. <strong>Integers</strong> are arbitrary precision — no overflow, ever (but <code>//</code> floors toward negative infinity). <strong>Strings</strong> are immutable: convert to a list to edit, and build results with <code>"".join()</code>.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">truthiness_ints_strings.py</span>
+    </div>
+    <pre><span class="cmt"># TRUTHINESS</span>
+stack = []
+<span class="kw">if</span> <span class="kw">not</span> stack:                <span class="cmt"># idiomatic "is empty?" check</span>
+    <span class="fn">print</span>(<span class="str">"empty"</span>)           <span class="cmt"># empty</span>
+<span class="fn">print</span>(<span class="fn">bool</span>(<span class="num">0</span>), <span class="fn">bool</span>(<span class="str">''</span>), <span class="fn">bool</span>(<span class="kw">None</span>), <span class="fn">bool</span>([<span class="num">0</span>]))   <span class="cmt"># False False False True</span>
+val = <span class="num">0</span>                     <span class="cmt"># e.g. a tree node whose value is 0</span>
+<span class="fn">print</span>(<span class="fn">bool</span>(val), val <span class="kw">is not</span> <span class="kw">None</span>)   <span class="cmt"># False True — test None explicitly</span>
+
+<span class="cmt"># INTEGERS — arbitrary precision, no overflow</span>
+<span class="fn">print</span>(<span class="num">2</span> ** <span class="num">100</span>)              <span class="cmt"># 1267650600228229401496703205376</span>
+<span class="fn">print</span>(<span class="num">7</span> // <span class="num">2</span>, -<span class="num">7</span> // <span class="num">2</span>)       <span class="cmt"># 3 -4  — floor division rounds DOWN</span>
+<span class="fn">print</span>(<span class="fn">int</span>(-<span class="num">7</span> / <span class="num">2</span>))           <span class="cmt"># -3    — truncate toward zero</span>
+<span class="fn">print</span>(<span class="num">7</span> / <span class="num">2</span>)                 <span class="cmt"># 3.5   — / ALWAYS returns a float</span>
+INF = <span class="fn">float</span>(<span class="str">'inf'</span>)          <span class="cmt"># sentinel for running min/max</span>
+<span class="fn">print</span>(<span class="fn">min</span>(INF, <span class="num">42</span>))          <span class="cmt"># 42</span>
+
+<span class="cmt"># STRINGS — immutable</span>
+s = <span class="str">"abc"</span>
+<span class="cmt"># s[0] = 'z'                # TypeError: 'str' object does not support item assignment</span>
+chars = <span class="fn">list</span>(s)
+chars[<span class="num">0</span>] = <span class="str">'z'</span>
+<span class="fn">print</span>(<span class="str">""</span>.<span class="fn">join</span>(chars))        <span class="cmt"># zbc — O(n) total</span>
+<span class="fn">print</span>(s[::-<span class="num">1</span>])               <span class="cmt"># cba — reverse by slicing</span>
+<span class="fn">print</span>(<span class="fn">ord</span>(<span class="str">'a'</span>), <span class="fn">chr</span>(<span class="num">98</span>))     <span class="cmt"># 97 b</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 2 ============ -->
+<div class="day-section" id="day2">
+  <div class="day-label">Day 2 · 90 min</div>
+  <h2>Hash Map Pattern</h2>
+  <p>The hash map is the most versatile DSA tool in Python. The pattern: <strong>trade space for time</strong> — use a <code>dict</code>/<code>set</code> to turn O(n) lookups into O(1).</p>
+
+  <div class="insight">
+    <strong>PATTERN TRIGGER</strong>
+    "Find a pair / complement / duplicate / frequency / group by" → reach for a Hash Map.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Two Sum</h3>
+    <p>Given an array of integers and a target, return indices of two numbers that add up to the target. <strong>Each input has exactly one solution.</strong></p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">two_sum.py — 3-Layer Method</span>
+    </div>
+    <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="cmt"># LAYER 1: Brute Force — O(n²) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">two_sum_brute</span>(nums: List[<span class="fn">int</span>], target: <span class="fn">int</span>) -&gt; List[<span class="fn">int</span>]:
+    n = <span class="fn">len</span>(nums)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i + <span class="num">1</span>, n):
+            <span class="kw">if</span> nums[i] + nums[j] == target:
+                <span class="kw">return</span> [i, j]
+    <span class="kw">return</span> []
+
+<span class="cmt"># BOTTLENECK: inner loop searches for complement linearly
+# KEY INSIGHT: store seen numbers in a dict for O(1) lookup</span>
+
+<span class="cmt"># LAYER 2: Hash Map — O(n) time, O(n) space</span>
+<span class="kw">def</span> <span class="fn">two_sum</span>(nums: List[<span class="fn">int</span>], target: <span class="fn">int</span>) -&gt; List[<span class="fn">int</span>]:
+    seen = {}  <span class="cmt"># value → index</span>
+    <span class="kw">for</span> i, num <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        complement = target - num
+        <span class="kw">if</span> complement <span class="kw">in</span> seen:
+            <span class="kw">return</span> [seen[complement], i]
+        seen[num] = i
+    <span class="kw">return</span> []
+
+<span class="fn">print</span>(<span class="fn">two_sum_brute</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">11</span>, <span class="num">15</span>], <span class="num">9</span>))  <span class="cmt"># [0, 1]</span>
+<span class="fn">print</span>(<span class="fn">two_sum</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">4</span>], <span class="num">6</span>))              <span class="cmt"># [1, 2]</span>
+
+<span class="cmt"># LAYER 3: Pattern Journal
+# Pattern: Hash Map Complement Lookup
+# Trigger: "find pair that sums to target"
+# Trade-off: O(n) space buys O(n) time (from O(n²))
+# Related: 3Sum (sort + two pointers), 4Sum</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Group Anagrams</h3>
+    <p>Given an array of strings, group the anagrams together. Two strings are anagrams if they have the same characters with the same frequency.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">group_anagrams.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="cmt"># LAYER 1: Brute Force — compare every pair O(n² · k log k)</span>
+<span class="cmt"># Skip — wasteful. Jump to the real insight.</span>
+
+<span class="cmt"># LAYER 2: Sort as Key — O(n · k log k) time, O(n·k) space</span>
+<span class="kw">def</span> <span class="fn">group_anagrams</span>(strs):
+    groups = <span class="fn">defaultdict</span>(<span class="fn">list</span>)
+    <span class="kw">for</span> s <span class="kw">in</span> strs:
+        key = <span class="str">""</span>.<span class="fn">join</span>(<span class="fn">sorted</span>(s))   <span class="cmt"># "eat" → "aet"</span>
+        groups[key].<span class="fn">append</span>(s)
+    <span class="kw">return</span> <span class="fn">list</span>(groups.<span class="fn">values</span>())
+
+<span class="cmt"># LAYER 2b: Frequency Key — O(n · k) time (no sorting!)</span>
+<span class="kw">def</span> <span class="fn">group_anagrams_freq</span>(strs):
+    groups = <span class="fn">defaultdict</span>(<span class="fn">list</span>)
+    <span class="kw">for</span> s <span class="kw">in</span> strs:
+        count = [<span class="num">0</span>] * <span class="num">26</span>
+        <span class="kw">for</span> c <span class="kw">in</span> s:
+            count[<span class="fn">ord</span>(c) - <span class="fn">ord</span>(<span class="str">'a'</span>)] += <span class="num">1</span>
+        groups[<span class="fn">tuple</span>(count)].<span class="fn">append</span>(s)   <span class="cmt"># lists aren't hashable → tuple</span>
+    <span class="kw">return</span> <span class="fn">list</span>(groups.<span class="fn">values</span>())
+
+words = [<span class="str">"eat"</span>, <span class="str">"tea"</span>, <span class="str">"tan"</span>, <span class="str">"ate"</span>, <span class="str">"nat"</span>, <span class="str">"bat"</span>]
+<span class="fn">print</span>(<span class="fn">group_anagrams</span>(words))       <span class="cmt"># [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]</span>
+<span class="fn">print</span>(<span class="fn">group_anagrams_freq</span>(words))  <span class="cmt"># [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]</span>
+
+<span class="cmt"># LAYER 3: Pattern — Hash Map Grouping
+# Trigger: "group items by shared property"
+# Key trick: canonical form as dict key (sorted string or count tuple)
+# Trade-off: O(n·k) space; freq key avoids k log k sorting cost</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Top K Frequent Elements</h3>
+    <p>Given an integer array and integer k, return the k most frequent elements. Guaranteed unique answer.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">top_k_frequent.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> Counter
+
+<span class="cmt"># LAYER 1: Sort by frequency — O(n log n)</span>
+<span class="kw">def</span> <span class="fn">top_k_frequent_sort</span>(nums, k):
+    freq = <span class="fn">Counter</span>(nums)
+    ranked = <span class="fn">sorted</span>(freq.<span class="fn">items</span>(), key=<span class="kw">lambda</span> e: e[<span class="num">1</span>], reverse=<span class="kw">True</span>)
+    <span class="kw">return</span> [num <span class="kw">for</span> num, _ <span class="kw">in</span> ranked[:k]]
+    <span class="cmt"># Interview-ready shortcut: [num for num, _ in freq.most_common(k)]</span>
+
+<span class="cmt"># BOTTLENECK: sorting is O(n log n). Can we do O(n)?</span>
+
+<span class="cmt"># LAYER 2: Bucket Sort — O(n) time, O(n) space</span>
+<span class="kw">def</span> <span class="fn">top_k_frequent</span>(nums, k):
+    freq = <span class="fn">Counter</span>(nums)
+
+    <span class="cmt"># Bucket: index = frequency, value = list of numbers</span>
+    <span class="cmt"># NOT [[]] * (n + 1) — that would be n+1 references to ONE list</span>
+    buckets = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums) + <span class="num">1</span>)]
+    <span class="kw">for</span> num, count <span class="kw">in</span> freq.<span class="fn">items</span>():
+        buckets[count].<span class="fn">append</span>(num)
+
+    <span class="cmt"># Walk buckets from highest frequency</span>
+    result = []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(buckets) - <span class="num">1</span>, <span class="num">0</span>, -<span class="num">1</span>):
+        <span class="kw">for</span> num <span class="kw">in</span> buckets[i]:
+            result.<span class="fn">append</span>(num)
+            <span class="kw">if</span> <span class="fn">len</span>(result) == k:
+                <span class="kw">return</span> result
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">top_k_frequent_sort</span>([<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>))  <span class="cmt"># [1, 2]</span>
+<span class="fn">print</span>(<span class="fn">top_k_frequent</span>([<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>))       <span class="cmt"># [1, 2]</span>
+
+<span class="cmt"># LAYER 3: Pattern — Frequency Map + Bucket Sort
+# Trigger: "top k" / "k most frequent" / "k most common"
+# Key insight: bucket index = frequency, walk backwards
+# Trade-off: O(n) space for bucket array; O(n) time total</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 3 ============ -->
+<div class="day-section" id="day3">
+  <div class="day-label">Day 3 · 90 min</div>
+  <h2>Two Pointers Pattern</h2>
+  <p>Two pointers eliminates an inner loop by using the structure of the data (usually sorted). One pointer starts left, one right — they walk toward each other based on conditions. This turns O(n²) into O(n).</p>
+
+  <div class="insight">
+    <strong>PATTERN TRIGGER</strong>
+    "Sorted array + find pair/triplet" or "palindrome check" or "partition" → Two Pointers.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Valid Palindrome</h3>
+    <p>Given a string, determine if it's a palindrome considering only alphanumeric characters, ignoring case.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">valid_palindrome.py</span>
+    </div>
+    <pre><span class="cmt"># LAYER 1: Clean + Reverse — O(n) time, O(n) space</span>
+<span class="kw">def</span> <span class="fn">is_palindrome_brute</span>(s: <span class="fn">str</span>) -&gt; <span class="fn">bool</span>:
+    clean = [c.<span class="fn">lower</span>() <span class="kw">for</span> c <span class="kw">in</span> s <span class="kw">if</span> c.<span class="fn">isalnum</span>()]
+    <span class="kw">return</span> clean == clean[::-<span class="num">1</span>]
+
+<span class="cmt"># LAYER 2: Two Pointers — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">is_palindrome</span>(s: <span class="fn">str</span>) -&gt; <span class="fn">bool</span>:
+    l, r = <span class="num">0</span>, <span class="fn">len</span>(s) - <span class="num">1</span>
+    <span class="kw">while</span> l &lt; r:
+        <span class="kw">while</span> l &lt; r <span class="kw">and</span> <span class="kw">not</span> s[l].<span class="fn">isalnum</span>():
+            l += <span class="num">1</span>
+        <span class="kw">while</span> l &lt; r <span class="kw">and</span> <span class="kw">not</span> s[r].<span class="fn">isalnum</span>():
+            r -= <span class="num">1</span>
+        <span class="kw">if</span> s[l].<span class="fn">lower</span>() != s[r].<span class="fn">lower</span>():
+            <span class="kw">return</span> <span class="kw">False</span>
+        l, r = l + <span class="num">1</span>, r - <span class="num">1</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="fn">print</span>(<span class="fn">is_palindrome_brute</span>(<span class="str">"A man, a plan, a canal: Panama"</span>))  <span class="cmt"># True</span>
+<span class="fn">print</span>(<span class="fn">is_palindrome</span>(<span class="str">"race a car"</span>))                        <span class="cmt"># False</span>
+
+<span class="cmt"># LAYER 3: Pattern — Inward Two Pointers
+# Trigger: "is palindrome" / "compare from both ends"
+# Why O(1) space: no reversed copy needed (s[::-1] would be O(n))
+# Template: l = 0, r = end, move inward, compare</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Three Sum (3Sum)</h3>
+    <p>Given array nums, find all unique triplets [a, b, c] where a + b + c = 0.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">three_sum.py</span>
+    </div>
+    <pre><span class="cmt"># LAYER 2: Sort + Two Pointers — O(n²) time, O(1) extra space</span>
+<span class="cmt"># (Brute force is O(n³) — 3 nested loops. Skip.)</span>
+
+<span class="kw">def</span> <span class="fn">three_sum</span>(nums):
+    nums.<span class="fn">sort</span>()           <span class="cmt"># in-place sort — O(n log n)</span>
+    result = []
+    n = <span class="fn">len</span>(nums)
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">2</span>):
+        <span class="cmt"># Skip duplicate first element</span>
+        <span class="kw">if</span> i &gt; <span class="num">0</span> <span class="kw">and</span> nums[i] == nums[i - <span class="num">1</span>]:
+            <span class="kw">continue</span>
+
+        l, r = i + <span class="num">1</span>, n - <span class="num">1</span>
+        <span class="kw">while</span> l &lt; r:
+            total = nums[i] + nums[l] + nums[r]   <span class="cmt"># don't shadow built-in sum()</span>
+            <span class="kw">if</span> total == <span class="num">0</span>:
+                result.<span class="fn">append</span>([nums[i], nums[l], nums[r]])
+                <span class="cmt"># Skip duplicates</span>
+                <span class="kw">while</span> l &lt; r <span class="kw">and</span> nums[l] == nums[l + <span class="num">1</span>]:
+                    l += <span class="num">1</span>
+                <span class="kw">while</span> l &lt; r <span class="kw">and</span> nums[r] == nums[r - <span class="num">1</span>]:
+                    r -= <span class="num">1</span>
+                l, r = l + <span class="num">1</span>, r - <span class="num">1</span>
+            <span class="kw">elif</span> total &lt; <span class="num">0</span>:
+                l += <span class="num">1</span>   <span class="cmt"># need bigger sum → move left pointer right</span>
+            <span class="kw">else</span>:
+                r -= <span class="num">1</span>   <span class="cmt"># need smaller sum → move right pointer left</span>
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">three_sum</span>([-<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>, -<span class="num">1</span>, -<span class="num">4</span>]))   <span class="cmt"># [[-1, -1, 2], [-1, 0, 1]]</span>
+
+<span class="cmt"># LAYER 3: Pattern — Fix one + Two Pointer sweep
+# Trigger: "find triplet summing to X" in unsorted array
+# Key trick: sort first → enables two-pointer on remainder
+# Duplicate skip: the most common bug source. Handle explicitly.</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Container With Most Water</h3>
+    <p>Given heights array, find two lines that form a container holding the most water.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">container_water.py</span>
+    </div>
+    <pre><span class="cmt"># LAYER 2: Two Pointers — O(n) time, O(1) space</span>
+<span class="cmt"># Brute force O(n²) checks all pairs. We can do better.</span>
+<span class="cmt"># KEY INSIGHT: start wide, move the shorter side inward.</span>
+<span class="cmt"># Why? Moving the taller side can only decrease width</span>
+<span class="cmt"># while the height is still capped by the shorter side.</span>
+
+<span class="kw">def</span> <span class="fn">max_area</span>(height):
+    l, r = <span class="num">0</span>, <span class="fn">len</span>(height) - <span class="num">1</span>
+    best = <span class="num">0</span>                <span class="cmt"># don't shadow built-in max()</span>
+
+    <span class="kw">while</span> l &lt; r:
+        area = <span class="fn">min</span>(height[l], height[r]) * (r - l)
+        best = <span class="fn">max</span>(best, area)
+
+        <span class="kw">if</span> height[l] &lt; height[r]:
+            l += <span class="num">1</span>   <span class="cmt"># move the shorter side</span>
+        <span class="kw">else</span>:
+            r -= <span class="num">1</span>
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">max_area</span>([<span class="num">1</span>, <span class="num">8</span>, <span class="num">6</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">8</span>, <span class="num">3</span>, <span class="num">7</span>]))   <span class="cmt"># 49</span>
+
+<span class="cmt"># LAYER 3: Pattern — Greedy Two Pointers
+# Trigger: "maximize area/product between two positions"
+# Why it works: moving shorter side is the only move
+# that can increase the area. Greedy + proof by elimination.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 4 ============ -->
+<div class="day-section" id="day4">
+  <div class="day-label">Day 4 · 90 min</div>
+  <h2>Sliding Window Pattern</h2>
+  <p>Sliding window maintains a "window" over a contiguous subarray or substring and slides it forward. Two types: <strong>fixed-size</strong> (window = k) and <strong>variable-size</strong> (window expands/contracts based on a condition).</p>
+
+  <div class="insight">
+    <strong>PATTERN TRIGGER</strong>
+    "Subarray of size k" or "longest/shortest substring with condition" → Sliding Window.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Max Sum Subarray of Size K (Fixed Window)</h3>
+    <p>Find the maximum sum of any contiguous subarray of size k.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">max_sum_k.py</span>
+    </div>
+    <pre><span class="cmt"># LAYER 2: Fixed Sliding Window — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">max_sum_subarray</span>(arr, k):
+    window_sum = <span class="fn">sum</span>(arr[:k])     <span class="cmt"># build first window — O(k), once</span>
+    best = window_sum
+
+    <span class="cmt"># Slide: add right, remove left</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(arr)):
+        window_sum += arr[i] - arr[i - k]
+        best = <span class="fn">max</span>(best, window_sum)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">max_sum_subarray</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>], <span class="num">3</span>))   <span class="cmt"># 9</span>
+
+<span class="cmt"># Template: fixed window is always this shape.
+# Build window [0..k-1], then slide by adding/removing one at a time.
+# TRAP: sum(arr[i:i+k]) inside the loop re-slices → O(n·k).</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Longest Substring Without Repeating Characters (Variable Window)</h3>
+    <p>Given a string, find the length of the longest substring without repeating characters.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">longest_unique_substring.py</span>
+    </div>
+    <pre><span class="cmt"># LAYER 2: Variable Sliding Window — O(n) time, O(min(n, alphabet)) space</span>
+<span class="kw">def</span> <span class="fn">length_of_longest_substring</span>(s: <span class="fn">str</span>) -&gt; <span class="fn">int</span>:
+    seen = {}            <span class="cmt"># char → most recent index</span>
+    left = best = <span class="num">0</span>
+
+    <span class="kw">for</span> right, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        <span class="kw">if</span> ch <span class="kw">in</span> seen <span class="kw">and</span> seen[ch] &gt;= left:
+            <span class="cmt"># Shrink window: jump left past the duplicate</span>
+            left = seen[ch] + <span class="num">1</span>
+        seen[ch] = right
+        best = <span class="fn">max</span>(best, right - left + <span class="num">1</span>)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"abcabcbb"</span>))   <span class="cmt"># 3  ("abc")</span>
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"pwwkew"</span>))     <span class="cmt"># 3  ("wke")</span>
+
+<span class="cmt"># LAYER 3: Pattern — Variable Sliding Window (expand/shrink)
+# Template: right pointer always moves forward (expand)
+#           left pointer jumps forward when condition breaks (shrink)
+# Trigger: "longest/shortest substring/subarray with property X"
+# Key: dict stores last seen index, enables O(1) jump for left ptr</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Minimum Window Substring (Hard — Variable Window + Frequency)</h3>
+    <p>Given strings s and t, find the minimum window in s that contains all characters of t.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">minimum_window_substring.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> Counter, defaultdict
+
+<span class="cmt"># O(n) time, O(t) space — the hardest sliding window template</span>
+<span class="kw">def</span> <span class="fn">min_window</span>(s: <span class="fn">str</span>, t: <span class="fn">str</span>) -&gt; <span class="fn">str</span>:
+    need = <span class="fn">Counter</span>(t)
+    required = <span class="fn">len</span>(need)          <span class="cmt"># unique chars needed</span>
+    window_counts = <span class="fn">defaultdict</span>(<span class="fn">int</span>)
+    left = formed = <span class="num">0</span>
+    result = (<span class="fn">float</span>(<span class="str">'inf'</span>), <span class="num">0</span>, <span class="num">0</span>)   <span class="cmt"># (length, left, right)</span>
+
+    <span class="kw">for</span> right, c <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        window_counts[c] += <span class="num">1</span>
+
+        <span class="cmt"># Check if this char's frequency requirement is met</span>
+        <span class="kw">if</span> c <span class="kw">in</span> need <span class="kw">and</span> window_counts[c] == need[c]:
+            formed += <span class="num">1</span>
+
+        <span class="cmt"># Contract window while all chars are satisfied</span>
+        <span class="kw">while</span> formed == required:
+            <span class="kw">if</span> right - left + <span class="num">1</span> &lt; result[<span class="num">0</span>]:
+                result = (right - left + <span class="num">1</span>, left, right)
+            left_char = s[left]
+            window_counts[left_char] -= <span class="num">1</span>
+            <span class="kw">if</span> left_char <span class="kw">in</span> need <span class="kw">and</span> window_counts[left_char] &lt; need[left_char]:
+                formed -= <span class="num">1</span>
+            left += <span class="num">1</span>
+
+    length, lo, hi = result
+    <span class="kw">return</span> <span class="str">""</span> <span class="kw">if</span> length == <span class="fn">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> s[lo:hi + <span class="num">1</span>]
+
+<span class="fn">print</span>(<span class="fn">min_window</span>(<span class="str">"ADOBECODEBANC"</span>, <span class="str">"ABC"</span>))   <span class="cmt"># BANC</span>
+<span class="fn">print</span>(<span class="fn">repr</span>(<span class="fn">min_window</span>(<span class="str">"a"</span>, <span class="str">"aa"</span>)))         <span class="cmt"># ''</span>
+
+<span class="cmt"># LAYER 3: Pattern — Variable Window + Frequency Counter
+# This is the "master template" for sliding window problems.
+# Expand right, track condition, contract left when condition met.
+# Trade-off: 2 dicts (Counter + defaultdict) + 2 counters for O(n) time.
+# NOTE: `c in need` isn't strictly required — a Counter returns 0 for a
+#       missing key (without inserting it) — but it keeps the intent explicit.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 5 ============ -->
+<div class="day-section" id="day5">
+  <div class="day-label">Day 5 · 60 min</div>
+  <h2>Blind Rewrite Day</h2>
+  <p><strong>Close all tabs.</strong> No references. Rewrite the best solution from Days 2, 3, and 4 from memory. Grade yourself: syntax errors are fine, wrong approach is not. This is where real learning happens.</p>
+
+  <div class="insight">
+    <strong>HOW TO GRADE YOURSELF</strong>
+    A-grade: correct approach + correct code from memory. B-grade: correct approach, minor bugs. C-grade: needed to peek at the approach. F: couldn't start. If F, re-study that pattern from scratch tomorrow.
+  </div>
+
+  <div class="topic-block yellow">
+    <h3>Rewrite Checklist</h3>
+    <p><strong>From Day 2:</strong> Top K Frequent Elements (bucket sort approach)<br>
+    <strong>From Day 3:</strong> 3Sum (sort + two pointer + dedup)<br>
+    <strong>From Day 4:</strong> Longest Substring Without Repeating Characters (variable window + dict)</p>
+    <p>After rewriting each, write the pattern name, trigger, and Big-O from memory. If you can do all three, the pattern is internalized. Bonus: run each file with <code>python file.py</code> and check the printed output matches your expectation.</p>
+  </div>
+</div>
+
+<!-- ============ DAY 6 ============ -->
+<div class="day-section" id="day6">
+  <div class="day-label">Day 6 · 90 min</div>
+  <h2>Binary Search Pattern</h2>
+  <p>Binary search is more than "find element in sorted array." The real power: <strong>find the boundary</strong> — the first/last position where a condition changes from <code>False</code> to <code>True</code>. This solves problems you wouldn't recognize as binary search.</p>
+
+  <div class="insight">
+    <strong>PATTERN TRIGGER</strong>
+    Sorted input, "find minimum/maximum that satisfies X", "search space can be halved" → Binary Search.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Binary Search — The Universal Template</h3>
+    <p>Memorize this. Every binary search problem is a variation of this template. Python also ships the boundary version in the standard library: <code>bisect.bisect_left</code> / <code>bisect_right</code>.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">binary_search_template.py</span>
+    </div>
+    <pre><span class="kw">import</span> bisect
+
+<span class="cmt"># THE TEMPLATE — O(log n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">binary_search</span>(arr, target):
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span>
+
+    <span class="kw">while</span> lo &lt;= hi:
+        mid = lo + (hi - lo) // <span class="num">2</span>   <span class="cmt"># // = integer (floor) division</span>
+        <span class="kw">if</span> arr[mid] == target:
+            <span class="kw">return</span> mid
+        <span class="kw">if</span> arr[mid] &lt; target:
+            lo = mid + <span class="num">1</span>
+        <span class="kw">else</span>:
+            hi = mid - <span class="num">1</span>
+    <span class="kw">return</span> -<span class="num">1</span>
+
+arr = [<span class="num">1</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">9</span>]
+<span class="fn">print</span>(<span class="fn">binary_search</span>(arr, <span class="num">7</span>))      <span class="cmt"># 3</span>
+<span class="fn">print</span>(<span class="fn">binary_search</span>(arr, <span class="num">4</span>))      <span class="cmt"># -1</span>
+
+<span class="cmt"># STANDARD LIBRARY: first index i with arr[i] &gt;= x (insertion point)</span>
+<span class="fn">print</span>(bisect.<span class="fn">bisect_left</span>(arr, <span class="num">5</span>))   <span class="cmt"># 2</span>
+<span class="fn">print</span>(bisect.<span class="fn">bisect_left</span>(arr, <span class="num">4</span>))   <span class="cmt"># 2</span>
+<span class="fn">print</span>(bisect.<span class="fn">bisect_right</span>(arr, <span class="num">5</span>))  <span class="cmt"># 3 — first index with arr[i] &gt; x</span>
+
+<span class="cmt"># KEY: use `//`, not `/` — `/` returns a float and arr[2.0] raises TypeError.
+# Python ints never overflow, so (lo + hi) // 2 is safe here, but
+# lo + (hi - lo) // 2 is the habit that transfers to Java/C++ interviews.</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Search in Rotated Sorted Array</h3>
+    <p>Array was sorted then rotated at some pivot. Search for a target in O(log n).</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">search_rotated.py</span>
+    </div>
+    <pre><span class="cmt"># O(log n) — one of the most important binary search variants</span>
+<span class="kw">def</span> <span class="fn">search</span>(nums, target):
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+
+    <span class="kw">while</span> lo &lt;= hi:
+        mid = lo + (hi - lo) // <span class="num">2</span>
+        <span class="kw">if</span> nums[mid] == target:
+            <span class="kw">return</span> mid
+
+        <span class="cmt"># Determine which half is sorted</span>
+        <span class="kw">if</span> nums[lo] &lt;= nums[mid]:
+            <span class="cmt"># Left half is sorted</span>
+            <span class="kw">if</span> nums[lo] &lt;= target &lt; nums[mid]:   <span class="cmt"># chained comparison</span>
+                hi = mid - <span class="num">1</span>  <span class="cmt"># target in sorted left half</span>
+            <span class="kw">else</span>:
+                lo = mid + <span class="num">1</span>  <span class="cmt"># target in right half</span>
+        <span class="kw">else</span>:
+            <span class="cmt"># Right half is sorted</span>
+            <span class="kw">if</span> nums[mid] &lt; target &lt;= nums[hi]:
+                lo = mid + <span class="num">1</span>  <span class="cmt"># target in sorted right half</span>
+            <span class="kw">else</span>:
+                hi = mid - <span class="num">1</span>  <span class="cmt"># target in left half</span>
+    <span class="kw">return</span> -<span class="num">1</span>
+
+<span class="fn">print</span>(<span class="fn">search</span>([<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>], <span class="num">0</span>))   <span class="cmt"># 4</span>
+<span class="fn">print</span>(<span class="fn">search</span>([<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>], <span class="num">3</span>))   <span class="cmt"># -1</span>
+
+<span class="cmt"># KEY INSIGHT: in a rotated sorted array, at least one half
+# is ALWAYS sorted. Check which half, then decide if target
+# is in that sorted range. Eliminates half each step.</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Find Minimum in Rotated Sorted Array</h3>
+    <p>Find the minimum element in a rotated sorted array (no duplicates).</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">find_min_rotated.py</span>
+    </div>
+    <pre><span class="cmt"># O(log n) — "find the boundary" style binary search</span>
+<span class="kw">def</span> <span class="fn">find_min</span>(nums):
+    lo, hi = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+
+    <span class="kw">while</span> lo &lt; hi:
+        mid = lo + (hi - lo) // <span class="num">2</span>
+        <span class="kw">if</span> nums[mid] &gt; nums[hi]:
+            <span class="cmt"># Minimum is in the right half (rotation happened here)</span>
+            lo = mid + <span class="num">1</span>
+        <span class="kw">else</span>:
+            <span class="cmt"># Minimum is in the left half (including mid)</span>
+            hi = mid
+    <span class="kw">return</span> nums[lo]
+
+<span class="fn">print</span>(<span class="fn">find_min</span>([<span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">2</span>]))      <span class="cmt"># 1</span>
+<span class="fn">print</span>(<span class="fn">find_min</span>([<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>])) <span class="cmt"># 0</span>
+
+<span class="cmt"># LAYER 3: Pattern — Binary Search on Condition
+# Note: `lo &lt; hi` (not &lt;=), and `hi = mid` (not mid-1)
+# This is the "boundary finding" template.
+# Converges lo and hi to the exact transition point.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 7 ============ -->
+<div class="day-section" id="day7">
+  <div class="day-label">Day 7 · 60 min</div>
+  <h2>Week 1 Review + Decision Tree</h2>
+  <p>Today you build the foundation of your personal decision tree. This is the document you'll carry forward and keep expanding for the rest of the 30 days.</p>
+
+  <div class="topic-block yellow">
+    <h3>Your Decision Tree So Far</h3>
+    <p>Write this out on paper or in a blank file — from memory first, then verify:</p>
+    <p><strong>"I need to find a complement/pair/match"</strong> → Hash Map (store seen, check complement)<br><br>
+    <strong>"I need to group items by shared property"</strong> → Hash Map (canonical form as key)<br><br>
+    <strong>"I need k most frequent/largest/smallest"</strong> → Hash Map + Bucket Sort (or Heap later)<br><br>
+    <strong>"Input is sorted + find pair/triplet"</strong> → Two Pointers (left + right, walk inward)<br><br>
+    <strong>"Palindrome check or compare from both ends"</strong> → Two Pointers (inward)<br><br>
+    <strong>"Subarray/substring of fixed size k"</strong> → Fixed Sliding Window<br><br>
+    <strong>"Longest/shortest subarray with condition"</strong> → Variable Sliding Window (expand right, shrink left)<br><br>
+    <strong>"Sorted input + search/find boundary"</strong> → Binary Search (lo/hi/mid, or <code>bisect</code>)<br><br>
+    <strong>"Rotated sorted array"</strong> → Modified Binary Search (find sorted half)</p>
+  </div>
+
+  <div class="insight">
+    <strong>SELF-CHECK</strong>
+    Can you write the template code for each pattern from memory? Can you name the trigger words? Can you explain why <code>[[0] * n] * m</code> is wrong and what <code>list.pop(0)</code> costs? If not, spend the remaining time re-studying the weakest pattern. Honesty here is everything.
+  </div>
+</div>
+
+</div><!-- end container -->
+
+<footer>Week 1 of 4 · DSA Mastery in Python · Foundation Patterns</footer>
+
+</body>
+</html>

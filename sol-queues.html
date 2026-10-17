@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queue Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="07-queues.html" class="back-link">← Queues</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 07</div>
+    <h1 class="page-title">Queue <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Breadth-first search with collections.deque — explore level by level, ripple outward from every source at once.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Number of Islands</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Scan the grid. Every time you hit an unvisited <code>'1'</code>, you have found a new island — count it, then BFS from that cell to sink (mark visited) every connected land cell so it is never counted again. A <code>collections.deque</code> gives O(1) <code>popleft()</code>; a plain <code>list.pop(0)</code> would be O(n) per pop.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Loop over every cell <code>(r, c)</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>When the cell is <code>'1'</code>, increment the island count and set it to <code>'0'</code> (visited).</div></div>
+      <div class="step"><div class="step-num">3</div><div>BFS: pop a cell, look at its 4 neighbours; any in-bounds <code>'1'</code> is marked <code>'0'</code> and appended to the queue.</div></div>
+      <div class="step"><div class="step-num">4</div><div>When the queue empties, the whole island is sunk — continue scanning.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(rows × cols)</span></div>
+        <div class="ci-item">Space: <span>O(min(rows, cols)) queue</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — BFS with deque</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">num_islands</span>(grid: <span class="cls">List</span>[<span class="cls">List</span>[str]]) -&gt; int:
+    <span class="kw">if</span> <span class="kw">not</span> grid:
+        <span class="kw">return</span> <span class="num">0</span>
+    rows, cols = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])
+    islands = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">bfs</span>(r: int, c: int) -&gt; <span class="kw">None</span>:
+        queue = <span class="fn">deque</span>([(r, c)])
+        grid[r][c] = <span class="str">"0"</span>                      <span class="cm"># mark visited when ENQUEUED</span>
+        <span class="kw">while</span> queue:
+            row, col = queue.<span class="fn">popleft</span>()
+            <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):
+                nr, nc = row + dr, col + dc
+                <span class="kw">if</span> <span class="num">0</span> &lt;= nr &lt; rows <span class="kw">and</span> <span class="num">0</span> &lt;= nc &lt; cols <span class="kw">and</span> grid[nr][nc] == <span class="str">"1"</span>:
+                    grid[nr][nc] = <span class="str">"0"</span>
+                    queue.<span class="fn">append</span>((nr, nc))
+
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+            <span class="kw">if</span> grid[r][c] == <span class="str">"1"</span>:
+                islands += <span class="num">1</span>                  <span class="cm"># found a brand-new island</span>
+                <span class="fn">bfs</span>(r, c)                     <span class="cm"># sink all of it</span>
+    <span class="kw">return</span> islands
+
+
+grid1 = [
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>],
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>],
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+]
+grid2 = [
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"1"</span>, <span class="str">"1"</span>],
+]
+<span class="fn">print</span>(<span class="fn">num_islands</span>(grid1))  <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">num_islands</span>(grid2))  <span class="cm"># 3</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> Mark a cell visited <strong>when you enqueue it</strong>, not when you pop it. Otherwise the same cell can be appended several times by different neighbours. (The grid is modified in place — copy it with <code>[row[:] for row in grid]</code> first if the caller still needs it.)</div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Binary Tree Level Order Traversal</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> BFS visits nodes in exactly level order. The trick to group them by level: at the start of each round, <code>len(queue)</code> is the number of nodes on the current level. Pop exactly that many, collecting their values and enqueuing their children — those children form the next level.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Start with a deque holding the root (return <code>[]</code> for an empty tree).</div></div>
+      <div class="step"><div class="step-num">2</div><div>While the queue is not empty, record <code>level_size = len(queue)</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Pop <code>level_size</code> nodes, append each value to <code>level</code>, enqueue non-<code>None</code> children.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Append <code>level</code> to the result and repeat.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(w) where w = max width</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — Level-by-level BFS</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Optional</span>
+
+
+<span class="kw">class</span> <span class="cls">TreeNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val: int = <span class="num">0</span>, left: <span class="str">"Optional[TreeNode]"</span> = <span class="kw">None</span>, right: <span class="str">"Optional[TreeNode]"</span> = <span class="kw">None</span>):
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.left = left
+        <span class="kw">self</span>.right = right
+
+
+<span class="kw">def</span> <span class="fn">build_tree</span>(values: <span class="cls">List</span>[<span class="cls">Optional</span>[int]]) -&gt; <span class="cls">Optional</span>[<span class="cls">TreeNode</span>]:
+    <span class="str">"""Build a tree from LeetCode-style level order list, e.g. [3, 9, 20, None, None, 15, 7]."""</span>
+    <span class="kw">if</span> <span class="kw">not</span> values <span class="kw">or</span> values[<span class="num">0</span>] <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="kw">return</span> <span class="kw">None</span>
+    root = <span class="cls">TreeNode</span>(values[<span class="num">0</span>])
+    queue = <span class="fn">deque</span>([root])
+    i = <span class="num">1</span>
+    <span class="kw">while</span> queue <span class="kw">and</span> i &lt; <span class="fn">len</span>(values):
+        node = queue.<span class="fn">popleft</span>()
+        <span class="kw">if</span> i &lt; <span class="fn">len</span>(values) <span class="kw">and</span> values[i] <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>:
+            node.left = <span class="cls">TreeNode</span>(values[i])
+            queue.<span class="fn">append</span>(node.left)
+        i += <span class="num">1</span>
+        <span class="kw">if</span> i &lt; <span class="fn">len</span>(values) <span class="kw">and</span> values[i] <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span>:
+            node.right = <span class="cls">TreeNode</span>(values[i])
+            queue.<span class="fn">append</span>(node.right)
+        i += <span class="num">1</span>
+    <span class="kw">return</span> root
+
+
+<span class="kw">def</span> <span class="fn">level_order</span>(root: <span class="cls">Optional</span>[<span class="cls">TreeNode</span>]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    <span class="kw">if</span> root <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="kw">return</span> []
+    result = []
+    queue = <span class="fn">deque</span>([root])
+    <span class="kw">while</span> queue:
+        level = []
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(queue)):           <span class="cm"># exactly the nodes of THIS level</span>
+            node = queue.<span class="fn">popleft</span>()
+            level.<span class="fn">append</span>(node.val)
+            <span class="kw">if</span> node.left:
+                queue.<span class="fn">append</span>(node.left)
+            <span class="kw">if</span> node.right:
+                queue.<span class="fn">append</span>(node.right)
+        result.<span class="fn">append</span>(level)
+    <span class="kw">return</span> result
+
+
+<span class="fn">print</span>(<span class="fn">level_order</span>(<span class="fn">build_tree</span>([<span class="num">3</span>, <span class="num">9</span>, <span class="num">20</span>, <span class="kw">None</span>, <span class="kw">None</span>, <span class="num">15</span>, <span class="num">7</span>])))  <span class="cm"># [[3], [9, 20], [15, 7]]</span>
+<span class="fn">print</span>(<span class="fn">level_order</span>(<span class="fn">build_tree</span>([<span class="num">1</span>])))                            <span class="cm"># [[1]]</span>
+<span class="fn">print</span>(<span class="fn">level_order</span>(<span class="fn">build_tree</span>([])))                             <span class="cm"># []</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> <code>range(len(queue))</code> is evaluated <strong>once</strong>, before the loop starts, so children appended during the loop do not leak into the current level.</div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Rotting Oranges</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> All rotten oranges spread at the same time, so start BFS from <strong>all of them at once</strong> (multi-source BFS). Each BFS round is one minute. Count fresh oranges up front; if any remain after the BFS, the answer is <code>-1</code>.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Scan the grid: enqueue every rotten orange <code>(2)</code>, count every fresh one <code>(1)</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>While there are fresh oranges and the queue is non-empty, process one full level (one minute).</div></div>
+      <div class="step"><div class="step-num">3</div><div>For each popped orange, rot every fresh 4-neighbour, decrement <code>fresh</code>, enqueue it.</div></div>
+      <div class="step"><div class="step-num">4</div><div>After each level, <code>minutes += 1</code>. Return <code>minutes</code> if <code>fresh == 0</code>, else <code>-1</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(rows × cols)</span></div>
+        <div class="ci-item">Space: <span>O(rows × cols)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — Multi-source BFS</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">oranges_rotting</span>(grid: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; int:
+    rows, cols = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])
+    queue = <span class="fn">deque</span>()
+    fresh = <span class="num">0</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+            <span class="kw">if</span> grid[r][c] == <span class="num">2</span>:
+                queue.<span class="fn">append</span>((r, c))          <span class="cm"># every rotten orange is a source</span>
+            <span class="kw">elif</span> grid[r][c] == <span class="num">1</span>:
+                fresh += <span class="num">1</span>
+
+    minutes = <span class="num">0</span>
+    <span class="kw">while</span> queue <span class="kw">and</span> fresh &gt; <span class="num">0</span>:
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(queue)):           <span class="cm"># one level == one minute</span>
+            r, c = queue.<span class="fn">popleft</span>()
+            <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):
+                nr, nc = r + dr, c + dc
+                <span class="kw">if</span> <span class="num">0</span> &lt;= nr &lt; rows <span class="kw">and</span> <span class="num">0</span> &lt;= nc &lt; cols <span class="kw">and</span> grid[nr][nc] == <span class="num">1</span>:
+                    grid[nr][nc] = <span class="num">2</span>
+                    fresh -= <span class="num">1</span>
+                    queue.<span class="fn">append</span>((nr, nc))
+        minutes += <span class="num">1</span>
+
+    <span class="kw">return</span> minutes <span class="kw">if</span> fresh == <span class="num">0</span> <span class="kw">else</span> -<span class="num">1</span>
+
+
+<span class="fn">print</span>(<span class="fn">oranges_rotting</span>([[<span class="num">2</span>, <span class="num">1</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">1</span>, <span class="num">1</span>]]))  <span class="cm"># 4</span>
+<span class="fn">print</span>(<span class="fn">oranges_rotting</span>([[<span class="num">2</span>, <span class="num">1</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">1</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>]]))  <span class="cm"># -1 (bottom-left never rots)</span>
+<span class="fn">print</span>(<span class="fn">oranges_rotting</span>([[<span class="num">0</span>, <span class="num">2</span>]]))                           <span class="cm"># 0 (nothing fresh)</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> The loop condition <code>fresh &gt; 0</code> matters: without it you would count one extra minute for the final round in which nothing new rots.</div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Walls and Gates</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Fill each empty room (<code>INF</code>) with the distance to its <strong>nearest</strong> gate (<code>0</code>). Running BFS from every room is O((mn)²). Instead flip it: start one multi-source BFS from every gate at once. The first time BFS reaches a room is guaranteed to be via the closest gate, so each cell is written exactly once.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Enqueue every gate <code>(value 0)</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Pop a cell; for each 4-neighbour that is still <code>INF</code>, set it to <code>grid[r][c] + 1</code> and enqueue it.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Walls (<code>-1</code>) and already-filled rooms are never <code>INF</code>, so they are skipped automatically.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(rows × cols)</span></div>
+        <div class="ci-item">Space: <span>O(rows × cols)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">PYTHON — Multi-source BFS from the gates</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+INF = <span class="num">2</span> ** <span class="num">31</span> - <span class="num">1</span>   <span class="cm"># empty room;  -1 = wall;  0 = gate</span>
+
+
+<span class="kw">def</span> <span class="fn">walls_and_gates</span>(rooms: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="kw">None</span>:
+    <span class="str">"""Modify rooms in place."""</span>
+    <span class="kw">if</span> <span class="kw">not</span> rooms:
+        <span class="kw">return</span>
+    rows, cols = <span class="fn">len</span>(rooms), <span class="fn">len</span>(rooms[<span class="num">0</span>])
+    queue = <span class="fn">deque</span>((r, c) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols) <span class="kw">if</span> rooms[r][c] == <span class="num">0</span>)
+
+    <span class="kw">while</span> queue:
+        r, c = queue.<span class="fn">popleft</span>()
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):
+            nr, nc = r + dr, c + dc
+            <span class="kw">if</span> <span class="num">0</span> &lt;= nr &lt; rows <span class="kw">and</span> <span class="num">0</span> &lt;= nc &lt; cols <span class="kw">and</span> rooms[nr][nc] == INF:
+                rooms[nr][nc] = rooms[r][c] + <span class="num">1</span>   <span class="cm"># first visit = shortest distance</span>
+                queue.<span class="fn">append</span>((nr, nc))
+
+
+rooms = [
+    [INF,  -<span class="num">1</span>,   <span class="num">0</span>, INF],
+    [INF, INF, INF,  -<span class="num">1</span>],
+    [INF,  -<span class="num">1</span>, INF,  -<span class="num">1</span>],
+    [  <span class="num">0</span>,  -<span class="num">1</span>, INF, INF],
+]
+<span class="fn">walls_and_gates</span>(rooms)
+<span class="kw">for</span> row <span class="kw">in</span> rooms:
+    <span class="fn">print</span>(row)
+<span class="cm"># [3, -1, 0, 1]</span>
+<span class="cm"># [2, 2, 1, -1]</span>
+<span class="cm"># [1, -1, 2, -1]</span>
+<span class="cm"># [0, -1, 3, 4]</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> Multi-source BFS is the same as adding one imaginary "super source" connected to every gate with distance 0. Use it whenever the question asks for "distance to the nearest X".</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-06-stacks.html" class="footer-back">← Stack Solutions</a>
+    <a href="sol-07-trees.html" class="footer-next">Tree Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

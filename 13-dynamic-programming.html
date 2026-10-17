@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dynamic Programming — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Dynamic Programming</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">13 / 19</div>
+    <h1 class="page-title">Dynamic <span class="highlight">Programming</span></h1>
+    <p class="page-subtitle">DP = recursion + caching. Solve each subproblem once, store the answer, never recompute it. The hardest — and most rewarding — topic in DSA.</p>
+  </div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">When to Use DP</h2>
+    <p class="explanation">A problem is a DP candidate if it has: <strong>1) Optimal substructure</strong> — optimal solution builds on optimal sub-solutions, and <strong>2) Overlapping subproblems</strong> — same subproblems are solved repeatedly.</p>
+    <div class="callout">
+      <strong>Recognition pattern:</strong> "Minimum/maximum of...", "Number of ways to...", "Can you reach...", "Longest/shortest sequence..." — these are DP.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">APPROACH 01</div>
+    <h2 class="section-title">Top-Down: Memoization</h2>
+    <p class="explanation">Start with recursion, add a <strong>cache (memo)</strong>. Before computing, check if the answer is already stored. Natural and intuitive — write recursion first, add memo second. In Python the memo is just a <code>dict</code> keyed by the subproblem's arguments.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Coin Change (Manual dict Memo)</div>
+      <pre><span class="cm"># How many coins (min) to make amount?</span>
+<span class="kw">from</span> typing <span class="kw">import</span> Dict, List
+
+
+<span class="kw">def</span> <span class="fn">coin_change</span>(coins: List[<span class="cls">int</span>], amount: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    memo: Dict[<span class="cls">int</span>, <span class="cls">float</span>] = {}
+
+    <span class="kw">def</span> <span class="fn">dp</span>(remaining: <span class="cls">int</span>) -&gt; <span class="cls">float</span>:
+        <span class="kw">if</span> remaining == <span class="num">0</span>:
+            <span class="kw">return</span> <span class="num">0</span>                 <span class="cm"># base: no coins needed</span>
+        <span class="kw">if</span> remaining &lt; <span class="num">0</span>:
+            <span class="kw">return</span> <span class="cls">float</span>(<span class="str">'inf'</span>)      <span class="cm"># base: impossible</span>
+        <span class="kw">if</span> remaining <span class="kw">in</span> memo:
+            <span class="kw">return</span> memo[remaining]   <span class="cm"># already solved → O(1) lookup</span>
+
+        best = <span class="fn">min</span>(<span class="num">1</span> + <span class="fn">dp</span>(remaining - coin) <span class="kw">for</span> coin <span class="kw">in</span> coins)
+
+        memo[remaining] = best
+        <span class="kw">return</span> best
+
+    result = <span class="fn">dp</span>(amount)
+    <span class="kw">return</span> -<span class="num">1</span> <span class="kw">if</span> result == <span class="cls">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> result
+
+
+<span class="fn">print</span>(<span class="fn">coin_change</span>([<span class="num">1</span>, <span class="num">5</span>, <span class="num">10</span>, <span class="num">25</span>], <span class="num">30</span>))  <span class="cm"># 2  (25+5)</span></pre>
+    </div>
+    <p class="explanation">Python ships the memo for you: <code>functools.lru_cache</code> wraps any function whose arguments are hashable and caches every result. Same algorithm, zero bookkeeping.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Coin Change with @lru_cache</div>
+      <pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">coin_change_cached</span>(coins: List[<span class="cls">int</span>], amount: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+
+    <span class="fn">@lru_cache</span>(maxsize=<span class="kw">None</span>)          <span class="cm"># unbounded cache = classic memo</span>
+    <span class="kw">def</span> <span class="fn">dp</span>(remaining: <span class="cls">int</span>) -&gt; <span class="cls">float</span>:
+        <span class="kw">if</span> remaining == <span class="num">0</span>:
+            <span class="kw">return</span> <span class="num">0</span>
+        <span class="kw">if</span> remaining &lt; <span class="num">0</span>:
+            <span class="kw">return</span> <span class="cls">float</span>(<span class="str">'inf'</span>)
+        <span class="kw">return</span> <span class="fn">min</span>(<span class="num">1</span> + <span class="fn">dp</span>(remaining - coin) <span class="kw">for</span> coin <span class="kw">in</span> coins)
+
+    result = <span class="fn">dp</span>(amount)
+    <span class="kw">return</span> -<span class="num">1</span> <span class="kw">if</span> result == <span class="cls">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> result
+
+
+<span class="fn">print</span>(<span class="fn">coin_change_cached</span>([<span class="num">1</span>, <span class="num">5</span>, <span class="num">10</span>, <span class="num">25</span>], <span class="num">30</span>))  <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">coin_change_cached</span>([<span class="num">2</span>], <span class="num">3</span>))                <span class="cm"># -1</span></pre>
+    </div>
+    <div class="callout warn">
+      <strong>Python gotchas:</strong> <code>@lru_cache</code> needs <em>hashable</em> arguments — pass a <code>tuple</code>, not a <code>list</code>, or key on indices instead. Define the cached function <em>inside</em> the outer function (as above) so the cache is fresh per call. Deep recursion hits Python's default limit of ~1000 frames (<code>RecursionError</code>); raise it with <code>sys.setrecursionlimit(10**6)</code> or, better, switch to bottom-up tabulation. (<code>functools.cache</code> is a 3.9+ shorthand for <code>lru_cache(maxsize=None)</code>.)
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">APPROACH 02</div>
+    <h2 class="section-title">Bottom-Up: Tabulation</h2>
+    <p class="explanation">Build solutions from the <strong>smallest subproblems upward</strong>. Fill a table iteratively. Usually faster (no recursion overhead) and avoids <code>RecursionError</code> on deep problems.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Coin Change (Tabulation)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">coin_change_dp</span>(coins: List[<span class="cls">int</span>], amount: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    <span class="cm"># dp[i] = min coins to make amount i</span>
+    INF = <span class="cls">float</span>(<span class="str">'inf'</span>)
+    dp = [INF] * (amount + <span class="num">1</span>)       <span class="cm"># 1D list of immutables: [x] * n is safe</span>
+    dp[<span class="num">0</span>] = <span class="num">0</span>                         <span class="cm"># base case: 0 coins for amount 0</span>
+
+    <span class="cm"># Fill table from 1 to amount</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, amount + <span class="num">1</span>):
+        <span class="kw">for</span> coin <span class="kw">in</span> coins:
+            <span class="kw">if</span> coin &lt;= i:
+                dp[i] = <span class="fn">min</span>(dp[i], <span class="num">1</span> + dp[i - coin])
+
+    <span class="kw">return</span> -<span class="num">1</span> <span class="kw">if</span> dp[amount] == INF <span class="kw">else</span> dp[amount]
+
+
+<span class="fn">print</span>(<span class="fn">coin_change_dp</span>([<span class="num">1</span>, <span class="num">5</span>], <span class="num">6</span>))  <span class="cm"># 2</span>
+
+<span class="cm"># Trace for coins=[1,5], amount=6:
+#  i:   0  1  2  3  4  5  6
+# dp: [0, 1, 2, 3, 4, 1, 2]
+# dp[5] = 1 (one 5-coin), dp[6] = 2 (5+1)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">EXAMPLE 01</div>
+    <h2 class="section-title">0/1 Knapsack</h2>
+    <p class="explanation">Given items with weights and values, maximize value without exceeding capacity. Classic 2D DP — dp[i][w] = max value using first i items with capacity w. In Python, build the 2D table with a <strong>list comprehension</strong> so every row is its own list.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — 0/1 Knapsack</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">knapsack</span>(weights: List[<span class="cls">int</span>], values: List[<span class="cls">int</span>], capacity: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    n = <span class="fn">len</span>(weights)
+    <span class="cm"># dp[i][w] = max value with first i items, capacity w</span>
+    dp = [[<span class="num">0</span>] * (capacity + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n + <span class="num">1</span>)]
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+        wt, val = weights[i - <span class="num">1</span>], values[i - <span class="num">1</span>]
+        <span class="kw">for</span> w <span class="kw">in</span> <span class="fn">range</span>(capacity + <span class="num">1</span>):
+            <span class="cm"># Don't take item i</span>
+            dp[i][w] = dp[i - <span class="num">1</span>][w]
+
+            <span class="cm"># Take item i (if it fits)</span>
+            <span class="kw">if</span> wt &lt;= w:
+                dp[i][w] = <span class="fn">max</span>(dp[i][w], val + dp[i - <span class="num">1</span>][w - wt])
+
+    <span class="kw">return</span> dp[n][capacity]
+
+
+<span class="fn">print</span>(<span class="fn">knapsack</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>], [<span class="num">1</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">7</span>], <span class="num">7</span>))  <span class="cm"># 9  (weights 3+4)</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — The [[0]*m]*n Aliasing Trap</div>
+      <pre><span class="cm"># WRONG: the outer * copies the SAME row reference 3 times</span>
+bad = [[<span class="num">0</span>] * <span class="num">3</span>] * <span class="num">3</span>
+bad[<span class="num">0</span>][<span class="num">0</span>] = <span class="num">1</span>
+<span class="fn">print</span>(bad)           <span class="cm"># [[1, 0, 0], [1, 0, 0], [1, 0, 0]]  ← every row changed!</span>
+<span class="fn">print</span>(bad[<span class="num">0</span>] <span class="kw">is</span> bad[<span class="num">1</span>])  <span class="cm"># True — one list, three names</span>
+
+<span class="cm"># RIGHT: the comprehension builds a NEW row on every iteration</span>
+good = [[<span class="num">0</span>] * <span class="num">3</span> <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>)]
+good[<span class="num">0</span>][<span class="num">0</span>] = <span class="num">1</span>
+<span class="fn">print</span>(good)          <span class="cm"># [[1, 0, 0], [0, 0, 0], [0, 0, 0]]</span>
+<span class="fn">print</span>(good[<span class="num">0</span>] <span class="kw">is</span> good[<span class="num">1</span>])  <span class="cm"># False</span></pre>
+    </div>
+    <div class="callout warn">
+      <strong>Why it happens:</strong> <code>[0] * m</code> is fine because ints are immutable — reassigning a cell just rebinds it. But <code>[row] * n</code> copies the <em>reference</em> to one mutable list n times. This is the single most common 2D-DP bug in Python. Always write <code>[[0] * (m + 1) for _ in range(n + 1)]</code>.
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Climbing Stairs <span class="problem-tag easy">EASY</span></li>
+      <li>House Robber <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Coin Change <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Longest Increasing Subsequence <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Unique Paths <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Edit Distance <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Longest Common Subsequence <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Burst Balloons <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="12-recursion.html" class="footer-back">← Recursion</a>
+    <a href="14-binary-search.html" class="footer-next">Binary Search →</a>
+  </div>
+</div>
+</body>
+</html>

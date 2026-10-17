@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Pointers &amp; Sliding Window — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Two Pointers &amp; Sliding Window</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">15 / 19</div>
+    <h1 class="page-title">Two Pointers <span class="highlight">&amp; Sliding Window</span></h1>
+    <p class="page-subtitle">Turn O(n²) pair and subarray searches into a single O(n) pass — by moving two indices instead of nesting two loops.</p>
+  </div>
+
+<div class="complexity-box">
+  <div class="complexity-item"><div class="complexity-label">TIME</div><div class="complexity-value">O(n)</div></div>
+  <div class="complexity-item"><div class="complexity-label">EXTRA SPACE</div><div class="complexity-value">O(1) – O(k)</div></div>
+  <div class="complexity-item"><div class="complexity-label">REPLACES</div><div class="complexity-value">O(n²)</div></div>
+</div>
+
+<div class="callout"><strong>Big idea:</strong> instead of checking every pair with two nested loops, keep <strong>two indices</strong> that only ever move forward (or toward each other). Each index crosses the list at most once, so the whole scan is O(n). Works on anything indexable: <code>list</code>, <code>str</code>, <code>tuple</code>.</div>
+
+<section class="section">
+  <div class="section-label">CONCEPT 01</div>
+  <h2 class="section-title">Why Two Pointers Beat Nested Loops</h2>
+<p class="explanation">Brute force for “find a pair with sum <strong>target</strong>” tries all n·(n-1)/2 pairs. If the list is <strong>sorted</strong>, one comparison tells us which pairs can never work, so we can throw away a whole row of candidates per step instead of one pair.</p>
+<div class="diagram">
+  <div class="diagram-title">BRUTE FORCE vs TWO POINTERS</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> brute force:  for i in range(n):          two pointers:  left, right = 0, n - 1
+                   for j in range(i+1, n):                 while left &lt; right:
+                       check(i, j)                              check(left, right)
+                                                                 move ONE pointer
+ work:  ~n²/2 checks                         work:  at most n - 1 checks</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Brute Force Pair Sum (O(n²))</div>
+  <pre><span class="kw">def</span> <span class="fn">pair_sum_brute</span>(nums, target):
+    n = <span class="fn">len</span>(nums)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i + <span class="num">1</span>, n):
+            <span class="kw">if</span> nums[i] + nums[j] == target:
+                <span class="kw">return</span> i, j
+    <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="fn">print</span>(<span class="fn">pair_sum_brute</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>, <span class="num">7</span>, <span class="num">11</span>, <span class="num">15</span>], <span class="num">15</span>))  <span class="cm"># (2, 4)</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">PATTERN 01</div>
+  <h2 class="section-title">Opposite Ends — Converging Pointers</h2>
+<p class="explanation">Start <strong>left</strong> at index 0 and <strong>right</strong> at the last index. Look at both ends, decide which pointer to move inward, repeat until they meet. Classic uses: pair/triplet sums in a sorted list, palindromes, reversing in place, and “container” style area problems.</p>
+<div class="diagram">
+  <div class="diagram-title">PAIR SUM IN SORTED LIST — target = 15</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> nums = [ 1,  2,  4,  7, 11, 15 ]
+          L                    R     1 + 15 = 16 &gt; 15  → too big,   right -= 1
+          L                R         1 + 11 = 12 &lt; 15  → too small, left  += 1
+              L            R         2 + 11 = 13 &lt; 15  → too small, left  += 1
+                  L        R         4 + 11 = 15 ✓     → return (2, 4)</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Pair Sum in a Sorted List (O(n), O(1) space)</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Optional</span>, <span class="cls">Tuple</span>
+
+<span class="kw">def</span> <span class="fn">pair_sum_sorted</span>(nums: <span class="cls">List</span>[int], target: int) -&gt; <span class="cls">Optional</span>[<span class="cls">Tuple</span>[int, int]]:
+    left, right = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+    <span class="kw">while</span> left &lt; right:
+        total = nums[left] + nums[right]
+        <span class="kw">if</span> total == target:
+            <span class="kw">return</span> left, right
+        <span class="kw">if</span> total &lt; target:
+            left += <span class="num">1</span>      <span class="cm"># need a bigger sum → move the small end up</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>     <span class="cm"># need a smaller sum → move the big end down</span>
+    <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="fn">print</span>(<span class="fn">pair_sum_sorted</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>, <span class="num">7</span>, <span class="num">11</span>, <span class="num">15</span>], <span class="num">15</span>))  <span class="cm"># (2, 4)</span>
+<span class="fn">print</span>(<span class="fn">pair_sum_sorted</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">100</span>))            <span class="cm"># None</span></pre>
+</div>
+<div class="callout"><strong>Why it is safe:</strong> if <code>nums[left] + nums[right]</code> is too small, then <code>nums[left]</code> plus <em>any</em> element left of <code>right</code> is also too small — so <code>left</code> can never be part of an answer and we drop it. Every move discards a whole row of pairs.</div>
+<p class="explanation"><strong>Container With Most Water</strong> uses the same shape with a different rule: the area between two walls is <code>min(h[L], h[R]) * (R - L)</code>. Always move the <strong>shorter</strong> wall — moving the taller one shrinks the width while the height stays capped by the short wall, so it can never help.</p>
+<div class="diagram">
+  <div class="diagram-title">CONTAINER WITH MOST WATER</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> height = [1, 8, 6, 2, 5, 4, 8, 3, 7]
+              ↑                    ↑        L=1 (8), R=8 (7)
+              |~~~~~~~~~~~~~~~~~~~~|        area = min(8, 7) * (8 - 1) = 49  ← best
+ shorter wall is R → move R left and keep the running max</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Container With Most Water</div>
+  <pre><span class="kw">def</span> <span class="fn">max_area</span>(height):
+    left, right = <span class="num">0</span>, <span class="fn">len</span>(height) - <span class="num">1</span>
+    best = <span class="num">0</span>
+    <span class="kw">while</span> left &lt; right:
+        width = right - left
+        best = <span class="fn">max</span>(best, <span class="fn">min</span>(height[left], height[right]) * width)
+        <span class="kw">if</span> height[left] &lt; height[right]:
+            left += <span class="num">1</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">max_area</span>([<span class="num">1</span>, <span class="num">8</span>, <span class="num">6</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">8</span>, <span class="num">3</span>, <span class="num">7</span>]))  <span class="cm"># 49</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Valid Palindrome (opposite ends on a str)</div>
+  <pre><span class="kw">def</span> <span class="fn">is_palindrome</span>(s: str) -&gt; bool:
+    left, right = <span class="num">0</span>, <span class="fn">len</span>(s) - <span class="num">1</span>
+    <span class="kw">while</span> left &lt; right:
+        <span class="kw">if</span> <span class="kw">not</span> s[left].<span class="fn">isalnum</span>():
+            left += <span class="num">1</span>
+        <span class="kw">elif</span> <span class="kw">not</span> s[right].<span class="fn">isalnum</span>():
+            right -= <span class="num">1</span>
+        <span class="kw">elif</span> s[left].<span class="fn">lower</span>() != s[right].<span class="fn">lower</span>():
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">else</span>:
+            left, right = left + <span class="num">1</span>, right - <span class="num">1</span>
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="fn">print</span>(<span class="fn">is_palindrome</span>(<span class="str">"A man, a plan, a canal: Panama"</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">is_palindrome</span>(<span class="str">"race a car"</span>))                      <span class="cm"># False</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">PATTERN 02</div>
+  <h2 class="section-title">Same Direction — Fast &amp; Slow (Reader / Writer)</h2>
+<p class="explanation">Both pointers start at the left and move right. The <strong>fast</strong> pointer (reader) scans every element; the <strong>slow</strong> pointer (writer) marks where the next element we want to <em>keep</em> should go. This is how you filter a list <strong>in place</strong> with O(1) extra space.</p>
+<div class="diagram">
+  <div class="diagram-title">REMOVE DUPLICATES FROM SORTED LIST</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> nums = [0, 0, 1, 1, 1, 2, 2, 3]
+         s  f                       nums[f] == nums[s]  → skip
+         s     f                    new value 1         → s += 1, nums[s] = 1
+ nums = [0, 1, 1, 1, 1, 2, 2, 3]
+            s           f           new value 2         → s += 1, nums[s] = 2
+ ...                                result: first s+1 = 4 slots are [0, 1, 2, 3]</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Remove Duplicates In Place</div>
+  <pre><span class="kw">def</span> <span class="fn">remove_duplicates</span>(nums):
+    <span class="str">"""Return k; nums[:k] holds the unique values (input must be sorted)."""</span>
+    <span class="kw">if</span> <span class="kw">not</span> nums:
+        <span class="kw">return</span> <span class="num">0</span>
+    slow = <span class="num">0</span>                           <span class="cm"># last position written</span>
+    <span class="kw">for</span> fast <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(nums)):   <span class="cm"># reader</span>
+        <span class="kw">if</span> nums[fast] != nums[slow]:
+            slow += <span class="num">1</span>
+            nums[slow] = nums[fast]
+    <span class="kw">return</span> slow + <span class="num">1</span>
+
+nums = [<span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>]
+k = <span class="fn">remove_duplicates</span>(nums)
+<span class="fn">print</span>(k, nums[:k])  <span class="cm"># 4 [0, 1, 2, 3]</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Move Zeroes (keep order of non-zeros)</div>
+  <pre><span class="kw">def</span> <span class="fn">move_zeroes</span>(nums):
+    write = <span class="num">0</span>
+    <span class="kw">for</span> read <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):
+        <span class="kw">if</span> nums[read] != <span class="num">0</span>:
+            nums[write], nums[read] = nums[read], nums[write]   <span class="cm"># tuple swap</span>
+            write += <span class="num">1</span>
+
+nums = [<span class="num">0</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">3</span>, <span class="num">12</span>]
+<span class="fn">move_zeroes</span>(nums)
+<span class="fn">print</span>(nums)  <span class="cm"># [1, 3, 12, 0, 0]</span></pre>
+</div>
+<div class="callout warn"><strong>Python note:</strong> “in place” means mutate the list object you were given (<code>nums[i] = ...</code>, <code>nums[:] = ...</code>). Writing <code>nums = [x for x in nums if x]</code> inside the function only rebinds the local name — the caller’s list is unchanged. The idiomatic non-in-place version is simply <code>[x for x in nums if x != 0] + [0] * nums.count(0)</code>.</div>
+<p class="explanation">The same fast/slow idea on a <strong>linked list</strong> (fast moves 2 steps, slow moves 1) finds the middle node and detects cycles (Floyd’s algorithm) — see the Linked Lists lesson.</p>
+<div class="code-block">
+  <div class="code-label">PYTHON — Fast &amp; Slow on a Linked List (middle node)</div>
+  <pre><span class="kw">class</span> <span class="cls">ListNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val, next=<span class="kw">None</span>):
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.next = next
+
+<span class="kw">def</span> <span class="fn">middle_node</span>(head):
+    slow = fast = head
+    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+        slow = slow.next          <span class="cm"># 1 step</span>
+        fast = fast.next.next     <span class="cm"># 2 steps</span>
+    <span class="kw">return</span> slow
+
+head = <span class="kw">None</span>
+<span class="kw">for</span> v <span class="kw">in</span> <span class="fn">reversed</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]):
+    head = <span class="cls">ListNode</span>(v, head)
+<span class="fn">print</span>(<span class="fn">middle_node</span>(head).val)  <span class="cm"># 3</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">PATTERN 03</div>
+  <h2 class="section-title">Fixed-Size Sliding Window</h2>
+<p class="explanation">When the problem says “every <strong>contiguous</strong> subarray / substring of length <strong>k</strong>”, keep a window of exactly k items. Sliding one step = <strong>add the element entering on the right, remove the one leaving on the left</strong>. Each step is O(1) instead of re-summing k items.</p>
+<div class="diagram">
+  <div class="diagram-title">MAX SUM OF SIZE k = 3</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> nums = [2, 1, 5, 1, 3, 2]
+        [2  1  5] 1  3  2     sum = 8
+         2 [1  5  1] 3  2     sum = 8 - 2 + 1 = 7
+         2  1 [5  1  3] 2     sum = 7 - 1 + 3 = 9   ← max
+         2  1  5 [1  3  2]    sum = 9 - 5 + 2 = 6</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Max Sum Subarray of Size k (O(n))</div>
+  <pre><span class="kw">def</span> <span class="fn">max_sum_k</span>(nums, k):
+    window = <span class="fn">sum</span>(nums[:k])          <span class="cm"># first window</span>
+    best = window
+    <span class="kw">for</span> right <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(nums)):
+        window += nums[right] - nums[right - k]   <span class="cm"># add new, drop old</span>
+        best = <span class="fn">max</span>(best, window)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">max_sum_k</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>], <span class="num">3</span>))  <span class="cm"># 9</span></pre>
+</div>
+<div class="callout warn"><strong>Trap:</strong> <code>max(sum(nums[i:i+k]) for i in range(len(nums) - k + 1))</code> reads nicely but slicing and summing is O(k) per window → O(n·k) total. The running-sum version is O(n).</div>
+<p class="explanation">The window state does not have to be a number. Here it is a <code>Counter</code> of letters — we compare the window’s letter counts with the pattern’s to find every anagram.</p>
+<div class="code-block">
+  <div class="code-label">PYTHON — Find All Anagrams (fixed window + Counter)</div>
+  <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+
+<span class="kw">def</span> <span class="fn">find_anagrams</span>(s: str, p: str):
+    k = <span class="fn">len</span>(p)
+    need = <span class="cls">Counter</span>(p)
+    window = <span class="cls">Counter</span>(s[:k])
+    result = [<span class="num">0</span>] <span class="kw">if</span> window == need <span class="kw">else</span> []
+    <span class="kw">for</span> right <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(s)):
+        window[s[right]] += <span class="num">1</span>            <span class="cm"># char entering</span>
+        left_ch = s[right - k]
+        window[left_ch] -= <span class="num">1</span>             <span class="cm"># char leaving</span>
+        <span class="kw">if</span> window[left_ch] == <span class="num">0</span>:
+            <span class="kw">del</span> window[left_ch]          <span class="cm"># keep == comparison clean</span>
+        <span class="kw">if</span> window == need:
+            result.<span class="fn">append</span>(right - k + <span class="num">1</span>)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">find_anagrams</span>(<span class="str">"cbaebabacd"</span>, <span class="str">"abc"</span>))  <span class="cm"># [0, 6]</span></pre>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">PATTERN 04</div>
+  <h2 class="section-title">Variable-Size Sliding Window</h2>
+<p class="explanation">For “<strong>longest / shortest</strong> contiguous piece such that …”, the window grows and shrinks. The loop has three beats: <strong>1. expand</strong> by moving <code>right</code> (always), <strong>2. shrink</strong> by moving <code>left</code> while the window breaks the rule (or, for “shortest”, while it still satisfies it), <strong>3. record</strong> the answer. Both pointers only move forward → O(n).</p>
+<div class="diagram">
+  <div class="diagram-title">LONGEST SUBSTRING WITHOUT REPEATS — s = "abcabcbb"</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> right=0  [a]bcabcbb        window {a}        best 1
+ right=2  [abc]abcbb        window {a,b,c}    best 3
+ right=3  a[bca]bcbb        'a' repeated → drop 'a' from the left
+ right=4  ab[cab]cbb        'b' repeated → drop 'b'
+ ...                        best stays 3 ("abc")</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Longest Substring Without Repeating Characters</div>
+  <pre><span class="kw">def</span> <span class="fn">length_of_longest_substring</span>(s: str) -&gt; int:
+    seen = <span class="fn">set</span>()          <span class="cm"># chars currently inside the window</span>
+    left = best = <span class="num">0</span>
+    <span class="kw">for</span> right, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        <span class="kw">while</span> ch <span class="kw">in</span> seen:            <span class="cm"># window invalid → shrink</span>
+            seen.<span class="fn">remove</span>(s[left])
+            left += <span class="num">1</span>
+        seen.<span class="fn">add</span>(ch)                 <span class="cm"># expand</span>
+        best = <span class="fn">max</span>(best, right - left + <span class="num">1</span>)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"abcabcbb"</span>))  <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"pwwkew"</span>))    <span class="cm"># 3</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">PYTHON — Shortest Subarray with Sum ≥ target (positive numbers)</div>
+  <pre><span class="kw">def</span> <span class="fn">min_sub_array_len</span>(target, nums):
+    left = total = <span class="num">0</span>
+    best = <span class="fn">float</span>(<span class="str">'inf'</span>)
+    <span class="kw">for</span> right, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        total += x                   <span class="cm"># expand</span>
+        <span class="kw">while</span> total &gt;= target:       <span class="cm"># valid → shrink to find the shortest</span>
+            best = <span class="fn">min</span>(best, right - left + <span class="num">1</span>)
+            total -= nums[left]
+            left += <span class="num">1</span>
+    <span class="kw">return</span> <span class="num">0</span> <span class="kw">if</span> best == <span class="fn">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> best
+
+<span class="fn">print</span>(<span class="fn">min_sub_array_len</span>(<span class="num">7</span>, [<span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>, <span class="num">3</span>]))  <span class="cm"># 2  ([4, 3])</span></pre>
+</div>
+<p class="explanation"><strong>Minimum Window Substring</strong> is the boss level: find the shortest part of <code>s</code> that contains every character of <code>t</code> (with multiplicity). Track what is still needed with a <code>Counter</code> and a single <code>missing</code> integer so the validity check is O(1).</p>
+<div class="code-block">
+  <div class="code-label">PYTHON — Minimum Window Substring (Counter + missing count)</div>
+  <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+
+<span class="kw">def</span> <span class="fn">min_window</span>(s: str, t: str) -&gt; str:
+    need = <span class="cls">Counter</span>(t)        <span class="cm"># how many of each char the window still owes</span>
+    missing = <span class="fn">len</span>(t)         <span class="cm"># total chars still owed</span>
+    left = <span class="num">0</span>
+    best = (<span class="num">0</span>, <span class="fn">float</span>(<span class="str">'inf'</span>))         <span class="cm"># (start, length)</span>
+    <span class="kw">for</span> right, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        <span class="kw">if</span> need[ch] &gt; <span class="num">0</span>:
+            missing -= <span class="num">1</span>
+        need[ch] -= <span class="num">1</span>                <span class="cm"># negative = surplus inside window</span>
+        <span class="kw">while</span> missing == <span class="num">0</span>:          <span class="cm"># valid → shrink from the left</span>
+            <span class="kw">if</span> right - left + <span class="num">1</span> &lt; best[<span class="num">1</span>]:
+                best = (left, right - left + <span class="num">1</span>)
+            need[s[left]] += <span class="num">1</span>
+            <span class="kw">if</span> need[s[left]] &gt; <span class="num">0</span>:    <span class="cm"># we just gave up a required char</span>
+                missing += <span class="num">1</span>
+            left += <span class="num">1</span>
+    start, length = best
+    <span class="kw">return</span> <span class="str">""</span> <span class="kw">if</span> length == <span class="fn">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> s[start:start + length]
+
+<span class="fn">print</span>(<span class="fn">min_window</span>(<span class="str">"ADOBECODEBANC"</span>, <span class="str">"ABC"</span>))  <span class="cm"># BANC</span></pre>
+</div>
+<div class="callout warn"><strong>Only for monotonic windows:</strong> the shrink step assumes that growing the window can only push it one way (e.g. the sum only goes up) and shrinking it can only push it back. Sum-based windows therefore need <strong>non-negative</strong> numbers. With negatives (e.g. “subarray sum equals k”) use prefix sums + a dict instead — see the Hash Maps lesson.</div>
+</section>
+
+<section class="section">
+  <div class="section-label">CONCEPT 02</div>
+  <h2 class="section-title">How to Recognise Each Pattern</h2>
+<p class="explanation">Read the problem statement for these clues before writing any code:</p>
+<div class="diagram">
+  <div class="diagram-title">CLUE → PATTERN</div>
+  <pre style="background:transparent; border:none; padding:0; color:#64748b;"> sorted input + pair / triplet with a target sum   → opposite ends
+ palindrome, reverse in place, "two walls" area    → opposite ends
+ "in place", "O(1) extra space", remove / move     → same direction (reader / writer)
+ middle of linked list, cycle detection            → fast &amp; slow (1 step vs 2 steps)
+ "every subarray / substring of length k"          → fixed window
+ "longest / shortest contiguous ... such that"     → variable window
+ "contains all chars of t", "at most k distinct"   → variable window + dict / Counter
+ subarray sum with negative numbers                → NOT a window: prefix sum + dict</pre>
+</div>
+<div class="use-cases">
+  <div class="use-case">Unsorted pair sum? Sort first (O(n log n)) or use a dict (O(n))</div>
+  <div class="use-case">Need original indices after sorting? sort indices: sorted(range(n), key=nums.__getitem__)</div>
+  <div class="use-case">k-Sum: fix k-2 outer loops, two pointers inside</div>
+  <div class="use-case">Window max/min of size k: monotonic collections.deque</div>
+  <div class="use-case">Substring problems: window state = Counter or dict of last index</div>
+  <div class="use-case">Merging two sorted lists: one pointer per list</div>
+</div>
+</section>
+
+<section class="section">
+  <div class="section-label">TEMPLATES</div>
+  <h2 class="section-title">Reusable Templates</h2>
+<p class="explanation">Memorise the skeletons — almost every problem in this family is one of these with a different condition plugged in. (These are skeletons: the <code>...</code> parts are where your problem’s logic goes.)</p>
+<div class="code-block">
+  <div class="code-label">TEMPLATE 1 — Opposite Ends</div>
+  <pre><span class="kw">def</span> <span class="fn">opposite_ends</span>(arr):
+    left, right = <span class="num">0</span>, <span class="fn">len</span>(arr) - <span class="num">1</span>
+    <span class="kw">while</span> left &lt; right:
+        <span class="kw">if</span> <span class="fn">found</span>(arr[left], arr[right]):
+            <span class="kw">return</span> left, right
+        <span class="kw">if</span> <span class="fn">need_bigger</span>(arr[left], arr[right]):
+            left += <span class="num">1</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>
+    <span class="kw">return</span> <span class="kw">None</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">TEMPLATE 2 — Reader / Writer (in place)</div>
+  <pre><span class="kw">def</span> <span class="fn">filter_in_place</span>(arr):
+    write = <span class="num">0</span>
+    <span class="kw">for</span> read <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(arr)):
+        <span class="kw">if</span> <span class="fn">keep</span>(arr[read]):
+            arr[write] = arr[read]
+            write += <span class="num">1</span>
+    <span class="kw">return</span> write            <span class="cm"># arr[:write] is the answer</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">TEMPLATE 3 — Fixed Window of size k</div>
+  <pre><span class="kw">def</span> <span class="fn">fixed_window</span>(arr, k):
+    state = <span class="fn">init</span>(arr[:k])
+    best = <span class="fn">score</span>(state)
+    <span class="kw">for</span> right <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(arr)):
+        <span class="fn">add</span>(state, arr[right])           <span class="cm"># element entering</span>
+        <span class="fn">remove</span>(state, arr[right - k])    <span class="cm"># element leaving</span>
+        best = <span class="fn">better</span>(best, <span class="fn">score</span>(state))
+    <span class="kw">return</span> best</pre>
+</div>
+<div class="code-block">
+  <div class="code-label">TEMPLATE 4 — Variable Window (longest valid)</div>
+  <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+
+<span class="kw">def</span> <span class="fn">variable_window</span>(arr):
+    window = <span class="cls">Counter</span>()
+    left = best = <span class="num">0</span>
+    <span class="kw">for</span> right, x <span class="kw">in</span> <span class="fn">enumerate</span>(arr):
+        window[x] += <span class="num">1</span>                   <span class="cm"># 1. expand</span>
+        <span class="kw">while</span> <span class="fn">is_invalid</span>(window):        <span class="cm"># 2. shrink until valid</span>
+            window[arr[left]] -= <span class="num">1</span>
+            left += <span class="num">1</span>
+        best = <span class="fn">max</span>(best, right - left + <span class="num">1</span>)   <span class="cm"># 3. record</span>
+    <span class="kw">return</span> best</pre>
+</div>
+<div class="callout"><strong>Shortest-valid variant:</strong> swap step 2 to <code>while is_valid(window):</code> and record the answer <em>inside</em> the shrink loop (see <code>min_window</code> above).</div>
+</section>
+
+<section class="section">
+  <div class="section-label">PRACTICE</div>
+  <h2 class="section-title">Problems to Solve</h2>
+<ul class="problem-list">
+  <li>Two Sum II — Input Array Is Sorted <span class="problem-tag medium">MEDIUM</span></li>
+  <li>3Sum <span class="problem-tag medium">MEDIUM</span></li>
+  <li>Container With Most Water <span class="problem-tag medium">MEDIUM</span></li>
+  <li>Longest Substring Without Repeating Characters <span class="problem-tag medium">MEDIUM</span></li>
+  <li>Minimum Window Substring <span class="problem-tag hard">HARD</span></li>
+  <li>Max Sum Subarray of Size K <span class="problem-tag easy">EASY</span></li>
+</ul>
+</section>
+
+  <div class="page-footer">
+    <a href="14-binary-search.html" class="footer-back">← Binary Search</a>
+    <a href="16-bit-manipulation.html" class="footer-next">Bit Manipulation →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Roadmap — Python Zero to Hero</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --border: #1e1e2e;
+    --accent: #00ff9d; --text: #e2e8f0; --muted: white;
+    --beginner: #00ff9d; --intermediate: #f59e0b; --advanced: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(0,255,157,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,157,0.03) 1px, transparent 1px); background-size: 40px 40px; pointer-events: none; z-index: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+  header { padding: 60px 0 40px; text-align: center; }
+  .badge { display: inline-block; background: rgba(0,255,157,0.1); border: 1px solid rgba(0,255,157,0.3); color: var(--accent); font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 3px; padding: 6px 16px; border-radius: 2px; margin-bottom: 24px; }
+  h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1; letter-spacing: -2px; margin-bottom: 16px; }
+  h1 span { color: var(--accent); display: block; }
+  .subtitle { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 12px; max-width: 520px; margin: 0 auto 48px; line-height: 1.8; }
+  .legend { display: flex; justify-content: center; gap: 24px; margin-bottom: 64px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .phase { margin-bottom: 72px; }
+  .phase-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+  .phase-num { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; }
+  .phase-title { font-size: 1.8rem; font-weight: 800; letter-spacing: -1px; }
+  .phase-line { flex: 1; height: 1px; background: var(--border); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px 24px 0;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; opacity: 0; transition: opacity 0.3s;
+  }
+  .card:hover { transform: translateY(-3px); }
+  .card:hover::before { opacity: 1; }
+
+  .card.beginner   { border-color: rgba(0,255,157,0.15); }
+  .card.intermediate { border-color: rgba(245,158,11,0.15); }
+  .card.advanced   { border-color: rgba(239,68,68,0.15); }
+  .card.beginner::before   { background: var(--beginner); }
+  .card.intermediate::before { background: var(--intermediate); }
+  .card.advanced::before   { background: var(--advanced); }
+  .card.beginner:hover   { border-color: rgba(0,255,157,0.4); }
+  .card.intermediate:hover { border-color: rgba(245,158,11,0.4); }
+  .card.advanced:hover   { border-color: rgba(239,68,68,0.4); }
+
+  .card-tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; padding: 3px 8px; border-radius: 2px; margin-bottom: 12px; display: inline-block; }
+  .beginner  .card-tag { background: rgba(0,255,157,0.1); color: var(--beginner); }
+  .intermediate .card-tag { background: rgba(245,158,11,0.1); color: var(--intermediate); }
+  .advanced  .card-tag { background: rgba(239,68,68,0.1); color: var(--advanced); }
+
+  .card-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .card-desc { font-size: 0.82rem; color: white; line-height: 1.6; margin-bottom: 14px; font-family: 'Space Mono', monospace; flex: 1; }
+  .card-topics { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; }
+  .topic-chip { font-family: 'Space Mono', monospace; font-size: 10px; padding: 3px 8px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted); }
+
+  /* ── THE DUAL BUTTON ROW ── */
+  .card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--border);
+    margin: 0 -24px; /* bleed to card edges */
+  }
+
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 14px 10px;
+    font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
+    text-decoration: none; color: var(--muted);
+    background: transparent;
+    transition: all 0.18s;
+  }
+
+  .card-actions.single { grid-template-columns: 1fr; }
+  .card.guide { border-color: rgba(96,165,250,0.15); }
+  .card.guide::before { background: #60a5fa; }
+  .card.guide:hover { border-color: rgba(96,165,250,0.4); }
+  .guide .card-tag { background: rgba(96,165,250,0.1); color: #60a5fa; }
+
+  .btn-learn { border-right: 1px solid var(--border); }
+  .btn-learn:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+
+  .btn-solutions { color: rgba(0,255,157,0.55); background: rgba(0,255,157,0.025); }
+  .btn-solutions:hover { background: rgba(0,255,157,0.1); color: var(--accent); }
+
+  footer { border-top: 1px solid var(--border); padding: 40px 0; text-align: center; margin-top: 40px; }
+  .footer-text { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); }
+  footer span { color: var(--accent); }
+  .glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(0,255,157,0.04) 0%, transparent 70%); pointer-events: none; top: -200px; left: 50%; transform: translateX(-50%); z-index: 0; }
+  @media (max-width: 600px) { .cards { grid-template-columns: 1fr; } h1 { letter-spacing: -1px; } }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="container">
+
+  <header>
+    <div class="badge">PYTHON · DATA STRUCTURES &amp; ALGORITHMS</div>
+    <h1>Master DSA<span>Python Zero to Hero</span></h1>
+    <p class="subtitle">A structured roadmap with explanations, Python code examples, and full solutions for every practice problem.</p>
+  </header>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--beginner)"></div>Beginner</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--intermediate)"></div>Intermediate</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--advanced)"></div>Advanced</div>
+  </div>
+
+  <!-- ══ PHASE 0 ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">PHASE 00</div>
+      <h2 class="phase-title">Python Warm-Up</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card beginner">
+        <div class="card-tag">BEGINNER</div>
+        <div class="card-title">Python for DSA &amp; Big-O</div>
+        <div class="card-desc">Complexity analysis, core types and their costs, references, and the idioms every solution uses.</div>
+        <div class="card-topics"><span class="topic-chip">Big-O</span><span class="topic-chip">list/dict/set</span><span class="topic-chip">mutability</span><span class="topic-chip">comprehensions</span></div>
+        <div class="card-actions">
+          <a href="00-python-basics.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-00-python-basics.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-tag">REFERENCE</div>
+        <div class="card-title">Python DSA Idioms Cheat Sheet</div>
+        <div class="card-desc">Built-in costs, collections, heapq, bisect, itertools, functools, and copy-ready templates for the classic patterns.</div>
+        <div class="card-topics"><span class="topic-chip">deque</span><span class="topic-chip">Counter</span><span class="topic-chip">heapq</span><span class="topic-chip">templates</span></div>
+        <div class="card-actions single">
+          <a href="python-cheatsheet.html" class="btn btn-solutions">⚡ OPEN CHEAT SHEET</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PHASE 1 ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">PHASE 01</div>
+      <h2 class="phase-title">Foundations</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card beginner">
+        <div class="card-tag">BEGINNER</div>
+        <div class="card-title">Arrays</div>
+        <div class="card-desc">The building block of all data structures. Start here.</div>
+        <div class="card-topics"><span class="topic-chip">indexing</span><span class="topic-chip">slicing</span><span class="topic-chip">append/pop</span><span class="topic-chip">two pointers</span><span class="topic-chip">sliding window</span></div>
+        <div class="card-actions">
+          <a href="01-arrays.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-01-arrays.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card beginner">
+        <div class="card-tag">BEGINNER</div>
+        <div class="card-title">Strings</div>
+        <div class="card-desc">Text manipulation, pattern matching, and common tricks.</div>
+        <div class="card-topics"><span class="topic-chip">reverse</span><span class="topic-chip">palindrome</span><span class="topic-chip">anagram</span><span class="topic-chip">substring</span></div>
+        <div class="card-actions">
+          <a href="02-strings.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-02-strings.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card beginner">
+        <div class="card-tag">BEGINNER</div>
+        <div class="card-title">Hash Maps &amp; Sets</div>
+        <div class="card-desc">O(1) lookups — the most useful tool in your arsenal.</div>
+        <div class="card-topics"><span class="topic-chip">dict</span><span class="topic-chip">set</span><span class="topic-chip">Counter</span><span class="topic-chip">frequency count</span><span class="topic-chip">deduplication</span></div>
+        <div class="card-actions">
+          <a href="03-hashmaps.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-03-hashmaps.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card beginner">
+        <div class="card-tag">BEGINNER</div>
+        <div class="card-title">Sorting Algorithms</div>
+        <div class="card-desc">Bubble, merge, and quick sort explained — then Python's built-in Timsort.</div>
+        <div class="card-topics"><span class="topic-chip">bubble sort</span><span class="topic-chip">merge sort</span><span class="topic-chip">quick sort</span><span class="topic-chip">Timsort</span></div>
+        <div class="card-actions">
+          <a href="04-sorting.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-04-sorting.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PHASE 2 ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">PHASE 02</div>
+      <h2 class="phase-title">Linear Structures</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Linked Lists</div>
+        <div class="card-desc">Nodes and pointers — the foundation for stacks, queues, and more.</div>
+        <div class="card-topics"><span class="topic-chip">singly linked</span><span class="topic-chip">doubly linked</span><span class="topic-chip">reversal</span><span class="topic-chip">cycle detection</span></div>
+        <div class="card-actions">
+          <a href="05-linkedlist.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-05-linkedlist.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Stacks</div>
+        <div class="card-desc">LIFO — used in undo operations, parsing, and DFS.</div>
+        <div class="card-topics"><span class="topic-chip">append/pop</span><span class="topic-chip">monotonic stack</span><span class="topic-chip">balanced parens</span></div>
+        <div class="card-actions">
+          <a href="06-stacks.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-06-stacks.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Queues</div>
+        <div class="card-desc">FIFO — essential for BFS and scheduling problems.</div>
+        <div class="card-topics"><span class="topic-chip">collections.deque</span><span class="topic-chip">level-order BFS</span><span class="topic-chip">multi-source BFS</span></div>
+        <div class="card-actions">
+          <a href="07-queues.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-queues.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PHASE 3 ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">PHASE 03</div>
+      <h2 class="phase-title">Non-Linear Structures</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Trees &amp; BST</div>
+        <div class="card-desc">Hierarchical data — binary trees, BST search, and traversals.</div>
+        <div class="card-topics"><span class="topic-chip">inorder/preorder</span><span class="topic-chip">BST insert</span><span class="topic-chip">height</span><span class="topic-chip">LCA</span></div>
+        <div class="card-actions">
+          <a href="08-trees.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-07-trees.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Heaps &amp; Priority Queues</div>
+        <div class="card-desc">Always-sorted structure — perfect for top-K problems.</div>
+        <div class="card-topics"><span class="topic-chip">heapq</span><span class="topic-chip">max-heap</span><span class="topic-chip">heapify</span><span class="topic-chip">top-K</span></div>
+        <div class="card-actions">
+          <a href="09-heaps.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-heaps.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card advanced">
+        <div class="card-tag">ADVANCED</div>
+        <div class="card-title">Graphs</div>
+        <div class="card-desc">Networks, paths, and connections — BFS, DFS, Dijkstra.</div>
+        <div class="card-topics"><span class="topic-chip">adjacency list</span><span class="topic-chip">BFS/DFS</span><span class="topic-chip">Dijkstra</span><span class="topic-chip">topo sort</span></div>
+        <div class="card-actions">
+          <a href="10-graphs.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-09-graphs.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card advanced">
+        <div class="card-tag">ADVANCED</div>
+        <div class="card-title">Tries</div>
+        <div class="card-desc">Prefix trees — powering autocomplete and word search.</div>
+        <div class="card-topics"><span class="topic-chip">insert/search</span><span class="topic-chip">prefix match</span><span class="topic-chip">autocomplete</span></div>
+        <div class="card-actions">
+          <a href="11-trie.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-trie.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PHASE 4 ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">PHASE 04</div>
+      <h2 class="phase-title">Core Algorithms</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Recursion &amp; Backtracking</div>
+        <div class="card-desc">Think in sub-problems — permutations, subsets, N-Queens.</div>
+        <div class="card-topics"><span class="topic-chip">base case</span><span class="topic-chip">call stack</span><span class="topic-chip">backtrack</span><span class="topic-chip">permutations</span></div>
+        <div class="card-actions">
+          <a href="12-recursion.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-12-recursion.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card advanced">
+        <div class="card-tag">ADVANCED</div>
+        <div class="card-title">Dynamic Programming</div>
+        <div class="card-desc">Memoization and tabulation — crack the hardest problems.</div>
+        <div class="card-topics"><span class="topic-chip">memoization</span><span class="topic-chip">tabulation</span><span class="topic-chip">knapsack</span><span class="topic-chip">LCS</span></div>
+        <div class="card-actions">
+          <a href="13-dynamic-programming.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-10-dp.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Binary Search</div>
+        <div class="card-desc">Halve your search space — classic and creative variants.</div>
+        <div class="card-topics"><span class="topic-chip">lo/hi/mid</span><span class="topic-chip">rotated array</span><span class="topic-chip">search space</span></div>
+        <div class="card-actions">
+          <a href="14-binary-search.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-11-binarysearch.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ PHASE 5 ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">PHASE 05</div>
+      <h2 class="phase-title">Interview Patterns</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Two Pointers &amp; Sliding Window</div>
+        <div class="card-desc">Turn O(n²) scans into O(n) — pairs, partitions, and windows over arrays and strings.</div>
+        <div class="card-topics"><span class="topic-chip">opposite ends</span><span class="topic-chip">fast/slow</span><span class="topic-chip">fixed window</span><span class="topic-chip">variable window</span></div>
+        <div class="card-actions">
+          <a href="15-two-pointers.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-15-two-pointers.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card advanced">
+        <div class="card-tag">ADVANCED</div>
+        <div class="card-title">Bit Manipulation</div>
+        <div class="card-desc">Think in binary — XOR tricks, masks, and subset enumeration with Python's big ints.</div>
+        <div class="card-topics"><span class="topic-chip">&amp; | ^ ~</span><span class="topic-chip">x &amp; (x-1)</span><span class="topic-chip">bitmask</span><span class="topic-chip">32-bit mask</span></div>
+        <div class="card-actions">
+          <a href="16-bit-manipulation.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-16-bit-manipulation.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Greedy Algorithms</div>
+        <div class="card-desc">Make the locally best choice — and know when that fails and you need DP.</div>
+        <div class="card-topics"><span class="topic-chip">greedy choice</span><span class="topic-chip">sort then scan</span><span class="topic-chip">jump game</span><span class="topic-chip">scheduling</span></div>
+        <div class="card-actions">
+          <a href="17-greedy.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-17-greedy.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card intermediate">
+        <div class="card-tag">INTERMEDIATE</div>
+        <div class="card-title">Intervals</div>
+        <div class="card-desc">Merge, insert, and schedule ranges — sorting, sweep lines, and heaps of end times.</div>
+        <div class="card-topics"><span class="topic-chip">merge</span><span class="topic-chip">overlap</span><span class="topic-chip">sweep line</span><span class="topic-chip">meeting rooms</span></div>
+        <div class="card-actions">
+          <a href="18-intervals.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-18-intervals.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+      <div class="card advanced">
+        <div class="card-tag">ADVANCED</div>
+        <div class="card-title">Union-Find (DSU)</div>
+        <div class="card-desc">Track connected groups in near O(1) — components, cycles, and Kruskal's MST.</div>
+        <div class="card-topics"><span class="topic-chip">path compression</span><span class="topic-chip">union by rank</span><span class="topic-chip">components</span><span class="topic-chip">Kruskal</span></div>
+        <div class="card-actions">
+          <a href="19-union-find.html" class="btn btn-learn">📖 LEARN</a>
+          <a href="sol-19-union-find.html" class="btn btn-solutions">✓ SOLUTIONS</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ STUDY PLANS &amp; GUIDES ══ -->
+  <section class="phase">
+    <div class="phase-header">
+      <div class="phase-num">GUIDES</div>
+      <h2 class="phase-title">Study Plans &amp; Interview Prep</h2>
+      <div class="phase-line"></div>
+    </div>
+    <div class="cards">
+
+      <div class="card guide">
+        <div class="card-tag">30-DAY PLAN</div>
+        <div class="card-title">DSA Mastery in Python</div>
+        <div class="card-desc">The 30-day war plan — every problem solved brute force first, then optimized.</div>
+        <div class="card-topics"><span class="topic-chip">4 weeks</span><span class="topic-chip">layered solutions</span></div>
+        <div class="card-actions single">
+          <a href="dsa-mastery-python.html" class="btn btn-solutions">🗓 OPEN PLAN</a>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-tag">WEEK 1</div>
+        <div class="card-title">Foundation</div>
+        <div class="card-desc">Python memory model, hash maps, two pointers, sliding window, and binary search — day by day.</div>
+        <div class="card-topics"><span class="topic-chip">memory model</span><span class="topic-chip">hashing</span><span class="topic-chip">two pointers</span><span class="topic-chip">binary search</span></div>
+        <div class="card-actions single">
+          <a href="week1-foundation.html" class="btn btn-solutions">→ START WEEK 1</a>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-tag">WEEK 2</div>
+        <div class="card-title">Core Patterns</div>
+        <div class="card-desc">Stacks, linked lists, prefix sums, intervals, and priority queues.</div>
+        <div class="card-topics"><span class="topic-chip">monotonic stack</span><span class="topic-chip">prefix sum</span><span class="topic-chip">heapq</span></div>
+        <div class="card-actions single">
+          <a href="week2-core-patterns.html" class="btn btn-solutions">→ START WEEK 2</a>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-tag">WEEK 3</div>
+        <div class="card-title">Trees &amp; Graphs</div>
+        <div class="card-desc">Tree DFS/BFS, BST properties, graph traversal, topological sort, and backtracking.</div>
+        <div class="card-topics"><span class="topic-chip">trees</span><span class="topic-chip">graphs</span><span class="topic-chip">topo sort</span><span class="topic-chip">backtracking</span></div>
+        <div class="card-actions single">
+          <a href="week3-trees-graphs.html" class="btn btn-solutions">→ START WEEK 3</a>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-tag">WEEK 4</div>
+        <div class="card-title">DP &amp; Synthesis</div>
+        <div class="card-desc">1D/2D DP and knapsack, a pattern-recognition sprint, and timed mock sessions.</div>
+        <div class="card-topics"><span class="topic-chip">DP</span><span class="topic-chip">knapsack</span><span class="topic-chip">mock interviews</span></div>
+        <div class="card-actions single">
+          <a href="week4-dp-synthesis.html" class="btn btn-solutions">→ START WEEK 4</a>
+        </div>
+      </div>
+
+      <div class="card guide">
+        <div class="card-tag">INTERVIEW GUIDE</div>
+        <div class="card-title">The Pattern Notebook</div>
+        <div class="card-desc">Cracking DSA interviews in Python — patterns, problem bank, progress tracking, and quizzes.</div>
+        <div class="card-topics"><span class="topic-chip">patterns</span><span class="topic-chip">problem bank</span><span class="topic-chip">quiz</span></div>
+        <div class="card-actions single">
+          <a href="dsa-interview-guide.html" class="btn btn-solutions">📓 OPEN NOTEBOOK</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="container">
+    <p class="footer-text">DSA Roadmap · Python Zero to Hero · Built for <span>learners who mean business</span></p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursion Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="12-recursion.html" class="back-link">← Recursion</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 12</div>
+    <h1 class="page-title">Recursion <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Every backtracking solution follows: Choose → Recurse → Unchoose. In Python: <code>path.append(x)</code> → recurse → <code>path.pop()</code>, and save <code>path[:]</code>.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Subsets</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Return all possible subsets (power set) of an array.<br><br>
+        <strong>Think:</strong> Build each subset by picking elements in increasing index order. Backtrack with a start index: record the current path (every path is a subset), then try extending it with each later element. Only moving forward (<code>i + 1</code>) means each of the 2^n subsets is generated exactly once, with no duplicates.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>At each step, add the current subset to results (every partial path is a valid subset).</div></div>
+      <div class="step"><div class="step-num">2</div><div>Try adding each remaining element to the subset.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Recurse, then remove that element (backtrack).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n · 2^n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span> recursion depth</div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> itertools <span class="kw">import</span> combinations
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">subsets</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start: int, path: <span class="cls">List</span>[int]) -&gt; <span class="kw">None</span>:
+        result.<span class="fn">append</span>(path[:])            <span class="cm"># every state is a valid subset (save a copy!)</span>
+
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(nums)):
+            path.<span class="fn">append</span>(nums[i])          <span class="cm"># choose</span>
+            <span class="fn">backtrack</span>(i + <span class="num">1</span>, path)        <span class="cm"># recurse (i+1 avoids reuse)</span>
+            path.<span class="fn">pop</span>()                    <span class="cm"># unchoose</span>
+
+    <span class="fn">backtrack</span>(<span class="num">0</span>, [])
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">subsets</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))
+<span class="cm"># [[], [1], [1, 2], [1, 2, 3], [1, 3], [2], [2, 3], [3]]</span>
+
+<span class="cm"># Cross-check with itertools (different order, same subsets)</span>
+expected = [<span class="fn">list</span>(c) <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(<span class="num">4</span>) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">combinations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], k)]
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">subsets</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])) == <span class="fn">sorted</span>(expected))  <span class="cm"># True</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Combination Sum</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Find all combinations that sum to target. Each number can be used multiple times.<br><br>
+        <strong>Think:</strong> Backtracking. At each step, try adding each candidate (can reuse — so don't increment start). Stop when remaining hits 0 (found solution) or goes below 0 (prune).
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">combination_sum</span>(candidates: <span class="cls">List</span>[int], target: int) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(start: int, path: <span class="cls">List</span>[int], remaining: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> remaining == <span class="num">0</span>:
+            result.<span class="fn">append</span>(path[:])  <span class="cm"># found valid combination!</span>
+            <span class="kw">return</span>
+        <span class="kw">if</span> remaining &lt; <span class="num">0</span>:
+            <span class="kw">return</span>                  <span class="cm"># overshot — prune this branch</span>
+
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(start, <span class="fn">len</span>(candidates)):
+            path.<span class="fn">append</span>(candidates[i])
+            <span class="fn">backtrack</span>(i, path, remaining - candidates[i])  <span class="cm"># i not i+1! (can reuse)</span>
+            path.<span class="fn">pop</span>()              <span class="cm"># backtrack</span>
+
+    <span class="fn">backtrack</span>(<span class="num">0</span>, [], target)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">combination_sum</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">6</span>, <span class="num">7</span>], <span class="num">7</span>))
+<span class="cm"># [[2, 2, 3], [7]]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Word Search</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> DFS from every cell that matches the first letter. From each cell, explore all 4 directions. Mark cells as visited (temporarily) to avoid reusing them in a single path. Unmark on backtrack.
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">exist</span>(board: <span class="cls">List</span>[<span class="cls">List</span>[str]], word: str) -&gt; bool:
+    rows, cols = <span class="fn">len</span>(board), <span class="fn">len</span>(board[<span class="num">0</span>])
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(r: int, c: int, idx: int) -&gt; bool:
+        <span class="kw">if</span> idx == <span class="fn">len</span>(word):
+            <span class="kw">return</span> <span class="kw">True</span>                      <span class="cm"># found whole word!</span>
+        <span class="kw">if</span> r &lt; <span class="num">0</span> <span class="kw">or</span> r &gt;= rows <span class="kw">or</span> c &lt; <span class="num">0</span> <span class="kw">or</span> c &gt;= cols:
+            <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">if</span> board[r][c] != word[idx]:
+            <span class="kw">return</span> <span class="kw">False</span>                     <span class="cm"># wrong char</span>
+
+        temp = board[r][c]
+        board[r][c] = <span class="str">"#"</span>                    <span class="cm"># mark as visited</span>
+
+        found = (<span class="fn">dfs</span>(r + <span class="num">1</span>, c, idx + <span class="num">1</span>) <span class="kw">or</span> <span class="fn">dfs</span>(r - <span class="num">1</span>, c, idx + <span class="num">1</span>) <span class="kw">or</span>
+                 <span class="fn">dfs</span>(r, c + <span class="num">1</span>, idx + <span class="num">1</span>) <span class="kw">or</span> <span class="fn">dfs</span>(r, c - <span class="num">1</span>, idx + <span class="num">1</span>))  <span class="cm"># `or` short-circuits</span>
+
+        board[r][c] = temp                   <span class="cm"># restore (backtrack)</span>
+        <span class="kw">return</span> found
+
+    <span class="kw">return</span> <span class="fn">any</span>(<span class="fn">dfs</span>(r, c, <span class="num">0</span>) <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols))
+
+board = [
+    [<span class="str">"A"</span>, <span class="str">"B"</span>, <span class="str">"C"</span>, <span class="str">"E"</span>],
+    [<span class="str">"S"</span>, <span class="str">"F"</span>, <span class="str">"C"</span>, <span class="str">"S"</span>],
+    [<span class="str">"A"</span>, <span class="str">"D"</span>, <span class="str">"E"</span>, <span class="str">"E"</span>],
+]
+<span class="fn">print</span>(<span class="fn">exist</span>(board, <span class="str">"ABCCED"</span>))  <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">exist</span>(board, <span class="str">"SEE"</span>))     <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">exist</span>(board, <span class="str">"ABCB"</span>))    <span class="cm"># False (can't reuse B)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">N-Queens</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Place one queen per row. For each row, try every column. A position is valid if no other queen is in the same column, diagonal, or anti-diagonal. Track all three with sets (<code>row - col</code> is constant along a diagonal, <code>row + col</code> along an anti-diagonal). Backtrack when stuck.
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">solve_n_queens</span>(n: int) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[str]]:
+    result = []
+    cols, diag1, diag2 = <span class="fn">set</span>(), <span class="fn">set</span>(), <span class="fn">set</span>()
+    board = [[<span class="str">"."</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n)]   <span class="cm"># list comprehension → independent rows</span>
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(row: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> row == n:
+            result.<span class="fn">append</span>([<span class="str">""</span>.<span class="fn">join</span>(r) <span class="kw">for</span> r <span class="kw">in</span> board])  <span class="cm"># save board state</span>
+            <span class="kw">return</span>
+
+        <span class="kw">for</span> col <span class="kw">in</span> <span class="fn">range</span>(n):
+            <span class="kw">if</span> col <span class="kw">in</span> cols <span class="kw">or</span> (row - col) <span class="kw">in</span> diag1 <span class="kw">or</span> (row + col) <span class="kw">in</span> diag2:
+                <span class="kw">continue</span>
+
+            <span class="cm"># Place queen</span>
+            board[row][col] = <span class="str">"Q"</span>
+            cols.<span class="fn">add</span>(col); diag1.<span class="fn">add</span>(row - col); diag2.<span class="fn">add</span>(row + col)
+
+            <span class="fn">backtrack</span>(row + <span class="num">1</span>)
+
+            <span class="cm"># Remove queen (backtrack)</span>
+            board[row][col] = <span class="str">"."</span>
+            cols.<span class="fn">remove</span>(col); diag1.<span class="fn">remove</span>(row - col); diag2.<span class="fn">remove</span>(row + col)
+
+    <span class="fn">backtrack</span>(<span class="num">0</span>)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">solve_n_queens</span>(<span class="num">4</span>))
+<span class="cm"># [['.Q..', '...Q', 'Q...', '..Q.'], ['..Q.', 'Q...', '...Q', '.Q..']]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">solve_n_queens</span>(<span class="num">8</span>)))  <span class="cm"># 92</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Permutations</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Return every ordering of a list of distinct numbers.<br><br>
+        <strong>Think:</strong> Build the answer one position at a time. At each level, try every element not yet used, recurse, then undo. Track used <strong>indices</strong> in a set for O(1) checks. When the path is full, save <code>path[:]</code> — a copy, because <code>path</code> itself keeps changing as we backtrack.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>If len(path) == len(nums) → append a copy to the result.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Otherwise, for each unused index i: choose (add to used, append to path).</div></div>
+      <div class="step"><div class="step-num">3</div><div>Recurse, then un-choose (pop from path, remove from used).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n · n!)</span></div>
+        <div class="ci-item">Space: <span>O(n) + output</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Backtracking with a used set</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">permute</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    result = []
+    path = []
+    used = <span class="fn">set</span>()   <span class="cm"># indices already placed in path</span>
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>() -&gt; <span class="kw">None</span>:
+        <span class="kw">if</span> <span class="fn">len</span>(path) == <span class="fn">len</span>(nums):
+            result.<span class="fn">append</span>(path[:])   <span class="cm"># copy! path will keep changing</span>
+            <span class="kw">return</span>
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums)):
+            <span class="kw">if</span> i <span class="kw">in</span> used:
+                <span class="kw">continue</span>
+            used.<span class="fn">add</span>(i); path.<span class="fn">append</span>(nums[i])   <span class="cm"># choose</span>
+            <span class="fn">backtrack</span>()                          <span class="cm"># explore</span>
+            path.<span class="fn">pop</span>(); used.<span class="fn">remove</span>(i)           <span class="cm"># un-choose</span>
+
+    <span class="fn">backtrack</span>()
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">permute</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))
+<span class="cm"># [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]</span>
+<span class="fn">print</span>(<span class="fn">permute</span>([<span class="num">0</span>, <span class="num">1</span>]))            <span class="cm"># [[0, 1], [1, 0]]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">permute</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>])))  <span class="cm"># 24  (4!)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Sudoku Solver</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Fill a 9×9 board (empty cells are ".") so every row, column and 3×3 box contains 1–9 exactly once. Modify the board in place.<br><br>
+        <strong>Think:</strong> Same pattern as N-Queens. Keep a set of used digits for each row, column and box — box index is <code>(r // 3) * 3 + c // 3</code>. Walk the list of empty cells; for each, try digits that aren't in any of its three sets, recurse, and undo if the recursion fails. Return True as soon as the last cell is filled so the solved board isn't undone.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Scan the board once: fill the row/col/box sets and collect the empty cells.</div></div>
+      <div class="step"><div class="step-num">2</div><div>backtrack(i): if i == number of empty cells → solved, return True.</div></div>
+      <div class="step"><div class="step-num">3</div><div>For each digit not in row/col/box: place it, add to the sets, recurse. If that returns True, stop.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Otherwise un-place the digit and remove it from the sets. No digit fits → return False.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(9^m) worst, m = empty cells</span></div>
+        <div class="ci-item">Space: <span>O(m)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Backtracking with row/col/box sets</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">solve_sudoku</span>(board: <span class="cls">List</span>[<span class="cls">List</span>[str]]) -&gt; bool:
+    <span class="str">"""Fills board in place. Returns False if the puzzle has no solution."""</span>
+    rows = [<span class="fn">set</span>() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">9</span>)]
+    cols = [<span class="fn">set</span>() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">9</span>)]
+    boxes = [<span class="fn">set</span>() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">9</span>)]
+    empty = []
+
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="num">9</span>):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="num">9</span>):
+            d = board[r][c]
+            <span class="kw">if</span> d == <span class="str">"."</span>:
+                empty.<span class="fn">append</span>((r, c))
+            <span class="kw">else</span>:
+                rows[r].<span class="fn">add</span>(d); cols[c].<span class="fn">add</span>(d); boxes[(r // <span class="num">3</span>) * <span class="num">3</span> + c // <span class="num">3</span>].<span class="fn">add</span>(d)
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(i: int) -&gt; bool:
+        <span class="kw">if</span> i == <span class="fn">len</span>(empty):
+            <span class="kw">return</span> <span class="kw">True</span>                <span class="cm"># every empty cell is filled</span>
+        r, c = empty[i]
+        b = (r // <span class="num">3</span>) * <span class="num">3</span> + c // <span class="num">3</span>
+        <span class="kw">for</span> d <span class="kw">in</span> <span class="str">"123456789"</span>:
+            <span class="kw">if</span> d <span class="kw">in</span> rows[r] <span class="kw">or</span> d <span class="kw">in</span> cols[c] <span class="kw">or</span> d <span class="kw">in</span> boxes[b]:
+                <span class="kw">continue</span>
+            board[r][c] = d                                       <span class="cm"># choose</span>
+            rows[r].<span class="fn">add</span>(d); cols[c].<span class="fn">add</span>(d); boxes[b].<span class="fn">add</span>(d)
+            <span class="kw">if</span> <span class="fn">backtrack</span>(i + <span class="num">1</span>):
+                <span class="kw">return</span> <span class="kw">True</span>                                   <span class="cm"># solved — keep the board</span>
+            board[r][c] = <span class="str">"."</span>                                     <span class="cm"># un-choose</span>
+            rows[r].<span class="fn">remove</span>(d); cols[c].<span class="fn">remove</span>(d); boxes[b].<span class="fn">remove</span>(d)
+        <span class="kw">return</span> <span class="kw">False</span>                   <span class="cm"># no digit fits here → backtrack</span>
+
+    <span class="kw">return</span> <span class="fn">backtrack</span>(<span class="num">0</span>)
+
+puzzle = [
+    <span class="str">"53..7...."</span>,
+    <span class="str">"6..195..."</span>,
+    <span class="str">".98....6."</span>,
+    <span class="str">"8...6...3"</span>,
+    <span class="str">"4..8.3..1"</span>,
+    <span class="str">"7...2...6"</span>,
+    <span class="str">".6....28."</span>,
+    <span class="str">"...419..5"</span>,
+    <span class="str">"....8..79"</span>,
+]
+board = [<span class="fn">list</span>(row) <span class="kw">for</span> row <span class="kw">in</span> puzzle]   <span class="cm"># mutable list of lists</span>
+<span class="fn">print</span>(<span class="fn">solve_sudoku</span>(board))   <span class="cm"># True</span>
+<span class="kw">for</span> row <span class="kw">in</span> board:
+    <span class="fn">print</span>(<span class="str">""</span>.<span class="fn">join</span>(row))
+<span class="cm"># 534678912</span>
+<span class="cm"># 672195348</span>
+<span class="cm"># 198342567</span>
+<span class="cm"># 859761423</span>
+<span class="cm"># 426853791</span>
+<span class="cm"># 713924856</span>
+<span class="cm"># 961537284</span>
+<span class="cm"># 287419635</span>
+<span class="cm"># 345286179</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-trie.html" class="footer-back">← Trie Solutions</a>
+    <a href="sol-10-dp.html" class="footer-next">DP Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

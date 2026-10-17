@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Pointers Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="15-two-pointers.html" class="back-link">← Two Pointers</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 15</div>
+    <h1 class="page-title">Two Pointers <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Converging pointers, reader/writer and sliding windows — every practice problem solved in Python.</p>
+  </div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Two Sum II — Input Array Is Sorted</span><span class="problem-tag medium">MEDIUM</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> The list is sorted, so the sum of the two ends tells us which way to go: too small → the left value is useless, move it right; too big → the right value is useless, move it left. LeetCode wants 1-based indices.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Put <code>left = 0</code>, <code>right = len(numbers) - 1</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Compare <code>numbers[left] + numbers[right]</code> with the target.</div></div>
+<div class="step"><div class="step-num">3</div><div>Equal → return <code>[left + 1, right + 1]</code>; smaller → <code>left += 1</code>; bigger → <code>right -= 1</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Opposite Ends</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">two_sum_ii</span>(numbers: <span class="cls">List</span>[int], target: int) -&gt; <span class="cls">List</span>[int]:
+    left, right = <span class="num">0</span>, <span class="fn">len</span>(numbers) - <span class="num">1</span>
+    <span class="kw">while</span> left &lt; right:
+        total = numbers[left] + numbers[right]
+        <span class="kw">if</span> total == target:
+            <span class="kw">return</span> [left + <span class="num">1</span>, right + <span class="num">1</span>]     <span class="cm"># 1-indexed</span>
+        <span class="kw">if</span> total &lt; target:
+            left += <span class="num">1</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>
+    <span class="kw">return</span> []                                <span class="cm"># problem guarantees an answer</span>
+
+<span class="fn">print</span>(<span class="fn">two_sum_ii</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">11</span>, <span class="num">15</span>], <span class="num">9</span>))  <span class="cm"># [1, 2]</span>
+<span class="fn">print</span>(<span class="fn">two_sum_ii</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>], <span class="num">6</span>))       <span class="cm"># [1, 3]</span>
+<span class="fn">print</span>(<span class="fn">two_sum_ii</span>([-<span class="num">1</span>, <span class="num">0</span>], -<span class="num">1</span>))        <span class="cm"># [1, 2]</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">3Sum</span><span class="problem-tag medium">MEDIUM</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Sort, then fix one number <code>nums[i]</code> and solve Two Sum II on the rest for target <code>-nums[i]</code>. Duplicates are the hard part: skip a fixed value equal to the previous one, and after a hit skip equal neighbours of <code>lo</code>. Sorting also lets us stop early once <code>nums[i] &gt; 0</code>.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Sort a copy: <code>nums = sorted(nums)</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>For each <code>i</code>: break if <code>nums[i] &gt; 0</code>; skip if <code>i &gt; 0</code> and <code>nums[i] == nums[i - 1]</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Two pointers <code>lo = i + 1</code>, <code>hi = n - 1</code>; move by comparing the triple sum with 0.</div></div>
+<div class="step"><div class="step-num">4</div><div>On a hit, record it, move both pointers, and skip duplicate <code>lo</code> values.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n²)</span></div>
+      <div class="ci-item">Space: <span>O(n) for the sorted copy (output not counted)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Sort + Two Pointers</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">three_sum</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    nums = <span class="fn">sorted</span>(nums)
+    n = <span class="fn">len</span>(nums)
+    result = []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n - <span class="num">2</span>):
+        <span class="kw">if</span> nums[i] &gt; <span class="num">0</span>:
+            <span class="kw">break</span>                            <span class="cm"># smallest is positive → no zero sum</span>
+        <span class="kw">if</span> i &gt; <span class="num">0</span> <span class="kw">and</span> nums[i] == nums[i - <span class="num">1</span>]:
+            <span class="kw">continue</span>                         <span class="cm"># same fixed value → same triples</span>
+        lo, hi = i + <span class="num">1</span>, n - <span class="num">1</span>
+        <span class="kw">while</span> lo &lt; hi:
+            total = nums[i] + nums[lo] + nums[hi]
+            <span class="kw">if</span> total &lt; <span class="num">0</span>:
+                lo += <span class="num">1</span>
+            <span class="kw">elif</span> total &gt; <span class="num">0</span>:
+                hi -= <span class="num">1</span>
+            <span class="kw">else</span>:
+                result.<span class="fn">append</span>([nums[i], nums[lo], nums[hi]])
+                lo += <span class="num">1</span>
+                hi -= <span class="num">1</span>
+                <span class="kw">while</span> lo &lt; hi <span class="kw">and</span> nums[lo] == nums[lo - <span class="num">1</span>]:
+                    lo += <span class="num">1</span>                  <span class="cm"># skip duplicate second numbers</span>
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">three_sum</span>([-<span class="num">1</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">2</span>, -<span class="num">1</span>, -<span class="num">4</span>]))  <span class="cm"># [[-1, -1, 2], [-1, 0, 1]]</span>
+<span class="fn">print</span>(<span class="fn">three_sum</span>([<span class="num">0</span>, <span class="num">1</span>, <span class="num">1</span>]))              <span class="cm"># []</span>
+<span class="fn">print</span>(<span class="fn">three_sum</span>([<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>]))              <span class="cm"># [[0, 0, 0]]</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Container With Most Water</span><span class="problem-tag medium">MEDIUM</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Start with the widest container (both ends). The water level is limited by the shorter wall, so moving the taller wall can only lose width without gaining height. Move the shorter wall and keep the best area seen.
+    </div>
+<div class="step"><div class="step-num">1</div><div><code>left, right = 0, len(height) - 1</code>, <code>best = 0</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Area = <code>min(height[left], height[right]) * (right - left)</code>; update <code>best</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Move whichever pointer has the shorter wall; stop when they meet.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Greedy Two Pointers</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">max_area</span>(height: <span class="cls">List</span>[int]) -&gt; int:
+    left, right = <span class="num">0</span>, <span class="fn">len</span>(height) - <span class="num">1</span>
+    best = <span class="num">0</span>
+    <span class="kw">while</span> left &lt; right:
+        h = <span class="fn">min</span>(height[left], height[right])
+        best = <span class="fn">max</span>(best, h * (right - left))
+        <span class="kw">if</span> height[left] &lt; height[right]:
+            left += <span class="num">1</span>
+        <span class="kw">else</span>:
+            right -= <span class="num">1</span>
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">max_area</span>([<span class="num">1</span>, <span class="num">8</span>, <span class="num">6</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">4</span>, <span class="num">8</span>, <span class="num">3</span>, <span class="num">7</span>]))  <span class="cm"># 49</span>
+<span class="fn">print</span>(<span class="fn">max_area</span>([<span class="num">1</span>, <span class="num">1</span>]))                       <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">max_area</span>([<span class="num">4</span>, <span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">4</span>]))              <span class="cm"># 16</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Longest Substring Without Repeating Characters</span><span class="problem-tag medium">MEDIUM</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Variable window. Instead of shrinking one char at a time with a set, remember the <strong>last index</strong> of every char in a dict. When <code>ch</code> repeats inside the window, jump <code>left</code> straight past its previous position. Guard with <code>&gt;= left</code> so an old occurrence outside the window is ignored.
+    </div>
+<div class="step"><div class="step-num">1</div><div><code>last_seen = {}</code>, <code>left = best = 0</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>For each <code>right, ch</code>: if <code>ch</code> was seen at index ≥ <code>left</code>, set <code>left = last_seen[ch] + 1</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Store <code>last_seen[ch] = right</code> and update <code>best = max(best, right - left + 1)</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(min(n, alphabet))</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Sliding Window with dict of last index</div>
+  <pre><span class="kw">def</span> <span class="fn">length_of_longest_substring</span>(s: str) -&gt; int:
+    last_seen = {}
+    left = best = <span class="num">0</span>
+    <span class="kw">for</span> right, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        <span class="kw">if</span> last_seen.<span class="fn">get</span>(ch, -<span class="num">1</span>) &gt;= left:
+            left = last_seen[ch] + <span class="num">1</span>     <span class="cm"># jump past the previous copy</span>
+        last_seen[ch] = right
+        best = <span class="fn">max</span>(best, right - left + <span class="num">1</span>)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"abcabcbb"</span>))  <span class="cm"># 3  ("abc")</span>
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"bbbbb"</span>))     <span class="cm"># 1  ("b")</span>
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"pwwkew"</span>))    <span class="cm"># 3  ("wke")</span>
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">""</span>))          <span class="cm"># 0</span>
+<span class="fn">print</span>(<span class="fn">length_of_longest_substring</span>(<span class="str">"abba"</span>))      <span class="cm"># 2  (guard needed here)</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Minimum Window Substring</span><span class="problem-tag hard">HARD</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Expand <code>right</code> until the window contains all of <code>t</code>; then shrink <code>left</code> as far as possible while it stays valid, recording the smallest window. A <code>Counter</code> stores how many of each char the window still owes (negative = surplus) and one integer <code>missing</code> makes “is it valid?” O(1).
+    </div>
+<div class="step"><div class="step-num">1</div><div><code>need = Counter(t)</code>, <code>missing = len(t)</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Expand: if <code>need[ch] &gt; 0</code> it was a required char → <code>missing -= 1</code>; always <code>need[ch] -= 1</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>While <code>missing == 0</code>: record the window, give back <code>s[left]</code> (<code>need[...] += 1</code>); if that makes it positive, <code>missing += 1</code>; <code>left += 1</code>.</div></div>
+<div class="step"><div class="step-num">4</div><div>Return the best slice, or <code>""</code> if the window was never valid.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(|s| + |t|)</span></div>
+      <div class="ci-item">Space: <span>O(alphabet)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Variable Window + Counter</div>
+  <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>
+
+<span class="kw">def</span> <span class="fn">min_window</span>(s: str, t: str) -&gt; str:
+    <span class="kw">if</span> <span class="kw">not</span> s <span class="kw">or</span> <span class="kw">not</span> t:
+        <span class="kw">return</span> <span class="str">""</span>
+    need = <span class="cls">Counter</span>(t)
+    missing = <span class="fn">len</span>(t)
+    left = <span class="num">0</span>
+    best_start, best_len = <span class="num">0</span>, <span class="fn">float</span>(<span class="str">'inf'</span>)
+    <span class="kw">for</span> right, ch <span class="kw">in</span> <span class="fn">enumerate</span>(s):
+        <span class="kw">if</span> need[ch] &gt; <span class="num">0</span>:
+            missing -= <span class="num">1</span>
+        need[ch] -= <span class="num">1</span>
+        <span class="kw">while</span> missing == <span class="num">0</span>:
+            <span class="kw">if</span> right - left + <span class="num">1</span> &lt; best_len:
+                best_start, best_len = left, right - left + <span class="num">1</span>
+            need[s[left]] += <span class="num">1</span>
+            <span class="kw">if</span> need[s[left]] &gt; <span class="num">0</span>:
+                missing += <span class="num">1</span>
+            left += <span class="num">1</span>
+    <span class="kw">if</span> best_len == <span class="fn">float</span>(<span class="str">'inf'</span>):
+        <span class="kw">return</span> <span class="str">""</span>
+    <span class="kw">return</span> s[best_start:best_start + best_len]
+
+<span class="fn">print</span>(<span class="fn">repr</span>(<span class="fn">min_window</span>(<span class="str">"ADOBECODEBANC"</span>, <span class="str">"ABC"</span>)))  <span class="cm"># 'BANC'</span>
+<span class="fn">print</span>(<span class="fn">repr</span>(<span class="fn">min_window</span>(<span class="str">"a"</span>, <span class="str">"a"</span>)))                <span class="cm"># 'a'</span>
+<span class="fn">print</span>(<span class="fn">repr</span>(<span class="fn">min_window</span>(<span class="str">"a"</span>, <span class="str">"aa"</span>)))               <span class="cm"># ''  (need two a's)</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Max Sum Subarray of Size K</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Fixed window. Sum the first k numbers once; then each slide adds the number entering on the right and subtracts the one leaving on the left. No need to re-sum — O(1) per step.
+    </div>
+<div class="step"><div class="step-num">1</div><div><code>window = sum(nums[:k])</code>, <code>best = window</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>For <code>right</code> in <code>range(k, len(nums))</code>: <code>window += nums[right] - nums[right - k]</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Track <code>best = max(best, window)</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Fixed Sliding Window</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">max_sum_subarray</span>(nums: <span class="cls">List</span>[int], k: int) -&gt; int:
+    <span class="kw">if</span> k &gt; <span class="fn">len</span>(nums):
+        <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"k is larger than the list"</span>)
+    window = <span class="fn">sum</span>(nums[:k])
+    best = window
+    <span class="kw">for</span> right <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(nums)):
+        window += nums[right] - nums[right - k]
+        best = <span class="fn">max</span>(best, window)
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">max_sum_subarray</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>], <span class="num">3</span>))  <span class="cm"># 9  ([5, 1, 3])</span>
+<span class="fn">print</span>(<span class="fn">max_sum_subarray</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">5</span>], <span class="num">2</span>))     <span class="cm"># 7  ([3, 4])</span>
+<span class="fn">print</span>(<span class="fn">max_sum_subarray</span>([-<span class="num">1</span>, -<span class="num">2</span>, -<span class="num">3</span>], <span class="num">1</span>))        <span class="cm"># -1</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">BONUS — Same idea with itertools (also O(n))</div>
+  <pre><span class="kw">from</span> itertools <span class="kw">import</span> accumulate
+
+<span class="kw">def</span> <span class="fn">max_sum_subarray_prefix</span>(nums, k):
+    prefix = [<span class="num">0</span>] + <span class="fn">list</span>(<span class="fn">accumulate</span>(nums))        <span class="cm"># prefix[i] = sum(nums[:i])</span>
+    <span class="kw">return</span> <span class="fn">max</span>(prefix[i + k] - prefix[i] <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums) - k + <span class="num">1</span>))
+
+<span class="fn">print</span>(<span class="fn">max_sum_subarray_prefix</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>], <span class="num">3</span>))  <span class="cm"># 9</span></pre>
+</div>
+  </div>
+</div>
+
+  <div class="page-footer">
+    <a href="sol-11-binarysearch.html" class="footer-back">← Binary Search Solutions</a>
+    <a href="sol-16-bit-manipulation.html" class="footer-next">Bit Manipulation Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

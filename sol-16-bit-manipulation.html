@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bit Manipulation Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="16-bit-manipulation.html" class="back-link">← Bit Manipulation</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 16</div>
+    <h1 class="page-title">Bit Manipulation <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">XOR folds, Kernighan counts, 32-bit masking and bitmask subsets — every practice problem solved in Python.</p>
+  </div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Single Number</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Every number appears twice except one. Since <code>a ^ a == 0</code> and <code>a ^ 0 == a</code>, XOR-ing the whole list cancels all the pairs and leaves the single number — O(1) space, unlike a <code>set</code> or <code>Counter</code>.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Start with <code>result = 0</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>XOR every number into <code>result</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Return <code>result</code> (or one line: <code>reduce(xor, nums)</code>).</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — XOR Fold</div>
+  <pre><span class="kw">from</span> functools <span class="kw">import</span> reduce
+<span class="kw">from</span> operator <span class="kw">import</span> xor
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">single_number</span>(nums: <span class="cls">List</span>[int]) -&gt; int:
+    result = <span class="num">0</span>
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        result ^= x
+    <span class="kw">return</span> result
+
+<span class="kw">def</span> <span class="fn">single_number_oneliner</span>(nums: <span class="cls">List</span>[int]) -&gt; int:
+    <span class="kw">return</span> <span class="fn">reduce</span>(xor, nums, <span class="num">0</span>)
+
+<span class="fn">print</span>(<span class="fn">single_number</span>([<span class="num">2</span>, <span class="num">2</span>, <span class="num">1</span>]))              <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">single_number</span>([<span class="num">4</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">2</span>]))        <span class="cm"># 4</span>
+<span class="fn">print</span>(<span class="fn">single_number_oneliner</span>([-<span class="num">3</span>, <span class="num">7</span>, -<span class="num">3</span>]))   <span class="cm"># 7</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Number of 1 Bits</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Count set bits. Brian Kernighan: <code>n &amp;= n - 1</code> deletes the lowest set bit, so the loop runs once per 1-bit. In Python, a negative input must first be masked to 32 bits or the loop never terminates.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Mask: <code>n &amp;= 0xFFFFFFFF</code> (no-op for normal non-negative input).</div></div>
+<div class="step"><div class="step-num">2</div><div>While <code>n</code>: <code>n &amp;= n - 1</code>, <code>count += 1</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Return <code>count</code>. Pythonic alternative: <code>bin(n).count('1')</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(set bits) ≤ O(32)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Brian Kernighan</div>
+  <pre><span class="kw">def</span> <span class="fn">hamming_weight</span>(n: int) -&gt; int:
+    n &amp;= <span class="num">0xFFFFFFFF</span>            <span class="cm"># treat as unsigned 32-bit</span>
+    count = <span class="num">0</span>
+    <span class="kw">while</span> n:
+        n &amp;= n - <span class="num">1</span>             <span class="cm"># remove lowest set bit</span>
+        count += <span class="num">1</span>
+    <span class="kw">return</span> count
+
+<span class="fn">print</span>(<span class="fn">hamming_weight</span>(<span class="num">11</span>))           <span class="cm"># 3   (1011)</span>
+<span class="fn">print</span>(<span class="fn">hamming_weight</span>(<span class="num">128</span>))          <span class="cm"># 1   (10000000)</span>
+<span class="fn">print</span>(<span class="fn">hamming_weight</span>(<span class="num">2147483645</span>))   <span class="cm"># 30</span>
+<span class="fn">print</span>(<span class="fn">hamming_weight</span>(-<span class="num">1</span>))           <span class="cm"># 32  (all 32 bits set)</span>
+<span class="fn">print</span>(<span class="fn">bin</span>(<span class="num">11</span>).<span class="fn">count</span>(<span class="str">'1'</span>))           <span class="cm"># 3   (built-in shortcut)</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Counting Bits</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Return the popcount of every number 0..n in O(n). Reuse earlier answers (DP): <code>i &gt;&gt; 1</code> is <code>i</code> with its last bit dropped and is smaller than <code>i</code>, so <code>bits[i] = bits[i &gt;&gt; 1] + (i &amp; 1)</code>.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Create <code>bits = [0] * (n + 1)</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>For <code>i</code> from 1 to n: <code>bits[i] = bits[i &gt;&gt; 1] + (i &amp; 1)</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Alternative recurrence: <code>bits[i] = bits[i &amp; (i - 1)] + 1</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(n) for the output</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — DP on Bits</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">count_bits</span>(n: int) -&gt; <span class="cls">List</span>[int]:
+    bits = [<span class="num">0</span>] * (n + <span class="num">1</span>)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+        bits[i] = bits[i &gt;&gt; <span class="num">1</span>] + (i &amp; <span class="num">1</span>)
+    <span class="kw">return</span> bits
+
+<span class="kw">def</span> <span class="fn">count_bits_kernighan</span>(n: int) -&gt; <span class="cls">List</span>[int]:
+    bits = [<span class="num">0</span>] * (n + <span class="num">1</span>)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+        bits[i] = bits[i &amp; (i - <span class="num">1</span>)] + <span class="num">1</span>
+    <span class="kw">return</span> bits
+
+<span class="fn">print</span>(<span class="fn">count_bits</span>(<span class="num">2</span>))              <span class="cm"># [0, 1, 1]</span>
+<span class="fn">print</span>(<span class="fn">count_bits</span>(<span class="num">5</span>))              <span class="cm"># [0, 1, 1, 2, 1, 2]</span>
+<span class="fn">print</span>(<span class="fn">count_bits_kernighan</span>(<span class="num">5</span>))    <span class="cm"># [0, 1, 1, 2, 1, 2]</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Power of Two</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> A power of two has exactly one set bit (1, 10, 100, ...). <code>n &amp; (n - 1)</code> clears the lowest set bit, so the result is 0 only when there was a single bit. Guard against 0 and negatives with <code>n &gt; 0</code>.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Return <code>False</code> if <code>n &lt;= 0</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Return <code>(n &amp; (n - 1)) == 0</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(1)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Single Set Bit</div>
+  <pre><span class="kw">def</span> <span class="fn">is_power_of_two</span>(n: int) -&gt; bool:
+    <span class="kw">return</span> n &gt; <span class="num">0</span> <span class="kw">and</span> (n &amp; (n - <span class="num">1</span>)) == <span class="num">0</span>
+
+<span class="kw">def</span> <span class="fn">is_power_of_two_alt</span>(n: int) -&gt; bool:
+    <span class="kw">return</span> n &gt; <span class="num">0</span> <span class="kw">and</span> <span class="fn">bin</span>(n).<span class="fn">count</span>(<span class="str">'1'</span>) == <span class="num">1</span>
+
+<span class="fn">print</span>(<span class="fn">is_power_of_two</span>(<span class="num">1</span>))      <span class="cm"># True   (2 ** 0)</span>
+<span class="fn">print</span>(<span class="fn">is_power_of_two</span>(<span class="num">16</span>))     <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">is_power_of_two</span>(<span class="num">3</span>))      <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">is_power_of_two</span>(<span class="num">0</span>))      <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">is_power_of_two</span>(-<span class="num">16</span>))    <span class="cm"># False</span>
+<span class="fn">print</span>(<span class="fn">is_power_of_two_alt</span>(<span class="num">1024</span>))   <span class="cm"># True</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Missing Number</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> The list holds n distinct numbers from 0..n with one missing. XOR every index 0..n with every value: present numbers appear twice and cancel, the missing one survives. (The sum formula <code>n*(n+1)//2 - sum(nums)</code> also works and is safe in Python because ints never overflow.)
+    </div>
+<div class="step"><div class="step-num">1</div><div>Start <code>missing = len(nums)</code> (covers the index n, which has no slot).</div></div>
+<div class="step"><div class="step-num">2</div><div>For each <code>i, x</code> in <code>enumerate(nums)</code>: <code>missing ^= i ^ x</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Return <code>missing</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(n)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — XOR Indices with Values</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">missing_number</span>(nums: <span class="cls">List</span>[int]) -&gt; int:
+    missing = <span class="fn">len</span>(nums)
+    <span class="kw">for</span> i, x <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        missing ^= i ^ x
+    <span class="kw">return</span> missing
+
+<span class="kw">def</span> <span class="fn">missing_number_sum</span>(nums: <span class="cls">List</span>[int]) -&gt; int:
+    n = <span class="fn">len</span>(nums)
+    <span class="kw">return</span> n * (n + <span class="num">1</span>) // <span class="num">2</span> - <span class="fn">sum</span>(nums)
+
+<span class="fn">print</span>(<span class="fn">missing_number</span>([<span class="num">3</span>, <span class="num">0</span>, <span class="num">1</span>]))                     <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">missing_number</span>([<span class="num">0</span>, <span class="num">1</span>]))                        <span class="cm"># 2</span>
+<span class="fn">print</span>(<span class="fn">missing_number</span>([<span class="num">9</span>, <span class="num">6</span>, <span class="num">4</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>]))   <span class="cm"># 8</span>
+<span class="fn">print</span>(<span class="fn">missing_number_sum</span>([<span class="num">9</span>, <span class="num">6</span>, <span class="num">4</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">5</span>, <span class="num">7</span>, <span class="num">0</span>, <span class="num">1</span>]))   <span class="cm"># 8</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Reverse Bits</span><span class="problem-tag easy">EASY</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> Reverse the 32-bit pattern of an unsigned integer. Pop the lowest bit of <code>n</code> and push it onto the low end of <code>result</code>, 32 times. Because the count is fixed at 32, leading zeros are handled automatically. The string version (<code>format(n, '032b')[::-1]</code>) is a neat Python alternative.
+    </div>
+<div class="step"><div class="step-num">1</div><div><code>result = 0</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Repeat 32 times: <code>result = (result &lt;&lt; 1) | (n &amp; 1)</code>, then <code>n &gt;&gt;= 1</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Return <code>result</code>.</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(32) = O(1)</span></div>
+      <div class="ci-item">Space: <span>O(1)</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Bit by Bit (and a string one-liner)</div>
+  <pre><span class="kw">def</span> <span class="fn">reverse_bits</span>(n: int) -&gt; int:
+    result = <span class="num">0</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">32</span>):
+        result = (result &lt;&lt; <span class="num">1</span>) | (n &amp; <span class="num">1</span>)   <span class="cm"># append n's lowest bit</span>
+        n &gt;&gt;= <span class="num">1</span>
+    <span class="kw">return</span> result
+
+<span class="kw">def</span> <span class="fn">reverse_bits_str</span>(n: int) -&gt; int:
+    <span class="kw">return</span> <span class="fn">int</span>(<span class="fn">format</span>(n, <span class="str">'032b'</span>)[::-<span class="num">1</span>], <span class="num">2</span>)
+
+<span class="fn">print</span>(<span class="fn">reverse_bits</span>(<span class="num">43261596</span>))        <span class="cm"># 964176192</span>
+<span class="fn">print</span>(<span class="fn">reverse_bits</span>(<span class="num">4294967293</span>))      <span class="cm"># 3221225471</span>
+<span class="fn">print</span>(<span class="fn">reverse_bits_str</span>(<span class="num">43261596</span>))    <span class="cm"># 964176192</span>
+<span class="fn">print</span>(<span class="fn">format</span>(<span class="num">43261596</span>, <span class="str">'032b'</span>))      <span class="cm"># 00000010100101000001111010011100</span>
+<span class="fn">print</span>(<span class="fn">format</span>(<span class="num">964176192</span>, <span class="str">'032b'</span>))     <span class="cm"># 00111001011110000010100101000000</span></pre>
+</div>
+  </div>
+</div>
+
+<div class="solution-card">
+  <div class="solution-header"><span class="solution-num">07</span><span class="solution-title">Subsets (via bitmask)</span><span class="problem-tag medium">MEDIUM</span></div>
+  <div class="solution-body">
+    <div class="think-box">
+      <strong>Think:</strong> n items → 2ⁿ subsets → the integers <code>0 .. 2ⁿ - 1</code>. Bit i of <code>mask</code> decides whether <code>nums[i]</code> is in the subset. No recursion needed; the output order is the binary counting order.
+    </div>
+<div class="step"><div class="step-num">1</div><div>Loop <code>mask</code> over <code>range(1 &lt;&lt; n)</code>.</div></div>
+<div class="step"><div class="step-num">2</div><div>Build <code>[nums[i] for i in range(n) if mask &gt;&gt; i &amp; 1]</code>.</div></div>
+<div class="step"><div class="step-num">3</div><div>Collect every subset (2ⁿ of them, each up to n long).</div></div>
+    <div class="complexity-inline">
+      <div class="ci-item">Time: <span>O(2ⁿ · n)</span></div>
+      <div class="ci-item">Space: <span>O(2ⁿ · n) for the output</span></div>
+    </div>
+<div class="code-block">
+  <div class="code-label">SOLUTION — Bitmask Enumeration</div>
+  <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">subsets</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    n = <span class="fn">len</span>(nums)
+    result = []
+    <span class="kw">for</span> mask <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span> &lt;&lt; n):
+        result.<span class="fn">append</span>([nums[i] <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n) <span class="kw">if</span> (mask &gt;&gt; i) &amp; <span class="num">1</span>])
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">subsets</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))
+<span class="cm"># [[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]</span>
+<span class="fn">print</span>(<span class="fn">subsets</span>([<span class="num">0</span>]))         <span class="cm"># [[], [0]]</span>
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">subsets</span>(<span class="fn">list</span>(<span class="fn">range</span>(<span class="num">10</span>)))))   <span class="cm"># 1024</span></pre>
+</div>
+<div class="code-block">
+  <div class="code-label">CHECK — same set of subsets as itertools</div>
+  <pre><span class="kw">from</span> itertools <span class="kw">import</span> combinations
+
+<span class="kw">def</span> <span class="fn">subsets</span>(nums):
+    n = <span class="fn">len</span>(nums)
+    <span class="kw">return</span> [[nums[i] <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n) <span class="kw">if</span> (mask &gt;&gt; i) &amp; <span class="num">1</span>] <span class="kw">for</span> mask <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span> &lt;&lt; n)]
+
+nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+via_itertools = [<span class="fn">list</span>(c) <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums) + <span class="num">1</span>) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">combinations</span>(nums, k)]
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">subsets</span>(nums)) == <span class="fn">sorted</span>(via_itertools))   <span class="cm"># True</span></pre>
+</div>
+  </div>
+</div>
+
+  <div class="page-footer">
+    <a href="sol-15-two-pointers.html" class="footer-back">← Two Pointers Solutions</a>
+    <a href="sol-17-greedy.html" class="footer-next">Greedy Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

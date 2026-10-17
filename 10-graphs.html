@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphs — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Graphs</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">10 / 19</div>
+    <h1 class="page-title">Graphs <span class="highlight">BFS</span><br><span style="font-size:0.6em;letter-spacing:-1px">DFS · Dijkstra · Topo Sort</span></h1>
+    <p class="page-subtitle">The most powerful and flexible data structure — networks, maps, social connections. Difficult but mastering graphs unlocks the hardest problems.</p>
+  </div>
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">BFS/DFS</div><div class="complexity-value">O(V+E)</div></div>
+    <div class="complexity-item"><div class="complexity-label">DIJKSTRA</div><div class="complexity-value">O(E log V)</div></div>
+    <div class="complexity-item"><div class="complexity-label">TOPO SORT</div><div class="complexity-value">O(V+E)</div></div>
+  </div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">Graph Representation</h2>
+    <p class="explanation">A graph is a set of <strong>vertices (nodes) and edges (connections)</strong>. Most interview problems use an <strong>adjacency list</strong> — a <code>dict</code> where each key is a node and its value is a list of neighbors. In Python, <code>collections.defaultdict(list)</code> is the idiomatic way to build one: a missing key automatically starts as an empty list.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Adjacency List</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>
+
+<span class="cm"># Graph:  0 — 1 — 3</span>
+<span class="cm">#          \  |</span>
+<span class="cm">#           \ 2</span>
+
+graph = {
+    <span class="num">0</span>: [<span class="num">1</span>, <span class="num">2</span>],
+    <span class="num">1</span>: [<span class="num">0</span>, <span class="num">2</span>, <span class="num">3</span>],
+    <span class="num">2</span>: [<span class="num">0</span>, <span class="num">1</span>],
+    <span class="num">3</span>: [<span class="num">1</span>],
+}
+
+<span class="cm"># Build from edge list dynamically</span>
+<span class="kw">def</span> <span class="fn">build_graph</span>(n: int, edges: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">Dict</span>[int, <span class="cls">List</span>[int]]:
+    adj = {i: [] <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n)}   <span class="cm"># dict comprehension: every node starts empty</span>
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:                <span class="cm"># tuple unpacking</span>
+        adj[u].<span class="fn">append</span>(v)
+        adj[v].<span class="fn">append</span>(u)              <span class="cm"># remove for directed graph</span>
+    <span class="kw">return</span> adj
+
+<span class="cm"># Same thing with defaultdict — no need to pre-create keys</span>
+<span class="kw">def</span> <span class="fn">build_graph_dd</span>(edges: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">Dict</span>[int, <span class="cls">List</span>[int]]:
+    adj = <span class="fn">defaultdict</span>(list)
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:
+        adj[u].<span class="fn">append</span>(v)
+        adj[v].<span class="fn">append</span>(u)
+    <span class="kw">return</span> adj
+
+edges = [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">3</span>]]
+<span class="fn">print</span>(<span class="fn">build_graph</span>(<span class="num">4</span>, edges))      <span class="cm"># {0: [1, 2], 1: [0, 2, 3], 2: [0, 1], 3: [1]}</span>
+<span class="fn">print</span>(<span class="fn">dict</span>(<span class="fn">build_graph_dd</span>(edges)))  <span class="cm"># {0: [1, 2], 1: [0, 2, 3], 2: [0, 1], 3: [1]}</span></pre>
+    </div>
+    <div class="callout"><strong>defaultdict gotcha:</strong> merely <em>reading</em> <code>adj[x]</code> for a missing node inserts an empty list. Use <code>adj.get(x, [])</code> or <code>x in adj</code> when you only want to look. Also note that isolated nodes with no edges never appear in a <code>defaultdict</code> built from edges — use the <code>range(n)</code> version when you need all <code>n</code> nodes.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">DFS & BFS on Graphs</h2>
+    <p class="explanation">Always track <strong>visited nodes</strong> (a <code>set</code>, O(1) membership) to avoid infinite loops in cyclic graphs. DFS goes deep (uses recursion or a stack — a plain list with <code>append</code>/<code>pop</code>), BFS goes wide (uses a queue — <code>collections.deque</code> with <code>popleft</code>).</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — DFS & BFS</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+graph = {<span class="num">0</span>: [<span class="num">1</span>, <span class="num">2</span>], <span class="num">1</span>: [<span class="num">0</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>: [<span class="num">0</span>, <span class="num">1</span>], <span class="num">3</span>: [<span class="num">1</span>]}
+
+<span class="cm"># DFS — recursive</span>
+<span class="kw">def</span> <span class="fn">dfs</span>(graph, node, visited=<span class="kw">None</span>):
+    <span class="kw">if</span> visited <span class="kw">is</span> <span class="kw">None</span>:          <span class="cm"># never use a mutable default like visited=set()!</span>
+        visited = <span class="fn">set</span>()
+    <span class="kw">if</span> node <span class="kw">in</span> visited:
+        <span class="kw">return</span>
+    visited.<span class="fn">add</span>(node)
+    <span class="fn">print</span>(node, end=<span class="str">" "</span>)
+
+    <span class="kw">for</span> neighbor <span class="kw">in</span> graph[node]:
+        <span class="fn">dfs</span>(graph, neighbor, visited)
+
+<span class="cm"># DFS — iterative with an explicit stack (no recursion-limit worries)</span>
+<span class="kw">def</span> <span class="fn">dfs_iterative</span>(graph, start):
+    visited, stack = <span class="fn">set</span>(), [start]
+    <span class="kw">while</span> stack:
+        node = stack.<span class="fn">pop</span>()       <span class="cm"># list.pop() from the end is O(1)</span>
+        <span class="kw">if</span> node <span class="kw">in</span> visited:
+            <span class="kw">continue</span>
+        visited.<span class="fn">add</span>(node)
+        <span class="fn">print</span>(node, end=<span class="str">" "</span>)
+        <span class="kw">for</span> neighbor <span class="kw">in</span> <span class="fn">reversed</span>(graph[node]):   <span class="cm"># reversed → same order as recursive</span>
+            <span class="kw">if</span> neighbor <span class="kw">not</span> <span class="kw">in</span> visited:
+                stack.<span class="fn">append</span>(neighbor)
+
+<span class="cm"># BFS — iterative with a deque</span>
+<span class="kw">def</span> <span class="fn">bfs</span>(graph, start):
+    visited = {start}
+    queue = <span class="fn">deque</span>([start])
+
+    <span class="kw">while</span> queue:
+        node = queue.<span class="fn">popleft</span>()   <span class="cm"># O(1) — list.pop(0) would be O(n)</span>
+        <span class="fn">print</span>(node, end=<span class="str">" "</span>)
+
+        <span class="kw">for</span> neighbor <span class="kw">in</span> graph[node]:
+            <span class="kw">if</span> neighbor <span class="kw">not</span> <span class="kw">in</span> visited:
+                visited.<span class="fn">add</span>(neighbor)   <span class="cm"># mark when enqueued, not when dequeued</span>
+                queue.<span class="fn">append</span>(neighbor)
+
+<span class="fn">dfs</span>(graph, <span class="num">0</span>); <span class="fn">print</span>()            <span class="cm"># 0 1 2 3</span>
+<span class="fn">dfs_iterative</span>(graph, <span class="num">0</span>); <span class="fn">print</span>()  <span class="cm"># 0 1 2 3</span>
+<span class="fn">bfs</span>(graph, <span class="num">0</span>); <span class="fn">print</span>()            <span class="cm"># 0 1 2 3</span></pre>
+    </div>
+    <div class="callout warn"><strong>Python pitfalls:</strong> <code>list.pop(0)</code> shifts every element — O(n) per dequeue, so BFS on a list degrades to O(V²). Always use <code>deque.popleft()</code>. And never write <code>def dfs(..., visited=set())</code>: default arguments are evaluated <em>once</em>, so the same set would be shared across every call to the function.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Number of Islands (Grid DFS)</h2>
+    <p class="explanation">Most graph interview problems use a <strong>2D grid</strong> instead of explicit edges. Treat each cell as a node; its neighbors are the 4 adjacent cells. Classic: count connected components.</p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Number of Islands</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">num_islands</span>(grid: <span class="cls">List</span>[<span class="cls">List</span>[str]]) -&gt; int:
+    rows, cols = <span class="fn">len</span>(grid), <span class="fn">len</span>(grid[<span class="num">0</span>])
+    count = <span class="num">0</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(r, c):
+        <span class="cm"># Out of bounds or water or already visited</span>
+        <span class="kw">if</span> r &lt; <span class="num">0</span> <span class="kw">or</span> c &lt; <span class="num">0</span> <span class="kw">or</span> r &gt;= rows <span class="kw">or</span> c &gt;= cols <span class="kw">or</span> grid[r][c] != <span class="str">"1"</span>:
+            <span class="kw">return</span>
+        grid[r][c] = <span class="str">"0"</span>  <span class="cm"># mark visited by sinking the island</span>
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):  <span class="cm"># 4 directions</span>
+            <span class="fn">dfs</span>(r + dr, c + dc)
+
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+            <span class="kw">if</span> grid[r][c] == <span class="str">"1"</span>:
+                <span class="fn">dfs</span>(r, c)  <span class="cm"># flood fill the entire island</span>
+                count += <span class="num">1</span>
+
+    <span class="kw">return</span> count
+
+grid = [
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"1"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"1"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>],
+    [<span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"0"</span>, <span class="str">"1"</span>, <span class="str">"1"</span>],
+]
+<span class="fn">print</span>(<span class="fn">num_islands</span>(grid))  <span class="cm"># 3</span></pre>
+    </div>
+    <div class="callout"><strong>Recursion limit:</strong> CPython stops recursion at about 1000 frames by default. A 100×100 grid that is all land can need 10,000 nested <code>dfs</code> calls and raise <code>RecursionError</code>. <code>sys.setrecursionlimit(...)</code> raises the guard, but very deep recursion can still overflow the C stack and crash the interpreter — the robust fix for big grids is to do the flood fill with BFS (a <code>deque</code>) or an explicit stack.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">Dijkstra's Shortest Path</h2>
+    <p class="explanation">Find shortest path from a source to all nodes in a <strong>weighted graph</strong> (non-negative weights). Greedily pick the unvisited node with the smallest known distance, then relax its neighbors. Python's <code>heapq</code> is a min-heap on a plain list, so pushing <code>(distance, node)</code> tuples always pops the closest node first — that is what gives O(E log V).</p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Dijkstra with heapq</div>
+      <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>, <span class="cls">Tuple</span>
+
+<span class="kw">def</span> <span class="fn">dijkstra</span>(graph: <span class="cls">Dict</span>[str, <span class="cls">List</span>[<span class="cls">Tuple</span>[str, int]]], start: str) -&gt; <span class="cls">Dict</span>[str, float]:
+    <span class="cm"># Initialize all distances to infinity</span>
+    dist = {node: <span class="fn">float</span>(<span class="str">"inf"</span>) <span class="kw">for</span> node <span class="kw">in</span> graph}
+    dist[start] = <span class="num">0</span>
+    heap = [(<span class="num">0</span>, start)]                  <span class="cm"># (distance, node) — tuples compare by first item</span>
+
+    <span class="kw">while</span> heap:
+        d, u = heapq.<span class="fn">heappop</span>(heap)       <span class="cm"># closest unfinished node</span>
+        <span class="kw">if</span> d &gt; dist[u]:
+            <span class="kw">continue</span>                     <span class="cm"># stale entry — we already found a shorter path</span>
+
+        <span class="cm"># Relax neighbors</span>
+        <span class="kw">for</span> neighbor, weight <span class="kw">in</span> graph[u]:
+            new_dist = d + weight
+            <span class="kw">if</span> new_dist &lt; dist[neighbor]:
+                dist[neighbor] = new_dist
+                heapq.<span class="fn">heappush</span>(heap, (new_dist, neighbor))
+
+    <span class="kw">return</span> dist
+
+<span class="cm"># graph format: {"A": [("B", 4), ("C", 2)], ...}</span>
+graph = {
+    <span class="str">"A"</span>: [(<span class="str">"B"</span>, <span class="num">4</span>), (<span class="str">"C"</span>, <span class="num">2</span>)],
+    <span class="str">"B"</span>: [(<span class="str">"D"</span>, <span class="num">5</span>)],
+    <span class="str">"C"</span>: [(<span class="str">"B"</span>, <span class="num">1</span>), (<span class="str">"D"</span>, <span class="num">8</span>)],
+    <span class="str">"D"</span>: [],
+}
+<span class="fn">print</span>(<span class="fn">dijkstra</span>(graph, <span class="str">"A"</span>))  <span class="cm"># {'A': 0, 'B': 3, 'C': 2, 'D': 8}</span></pre>
+    </div>
+    <div class="callout"><strong>Why "lazy deletion"?</strong> <code>heapq</code> has no decrease-key operation. Instead we push a new, smaller entry and skip the outdated one when it is popped (<code>if d &gt; dist[u]: continue</code>). The heap can hold up to E entries, which is still O(E log V).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 04</div>
+    <h2 class="section-title">Topological Sort (Kahn's Algorithm)</h2>
+    <p class="explanation">For a <strong>directed acyclic graph</strong> (tasks with prerequisites), a topological order lists every node before the nodes that depend on it. Kahn's algorithm: count incoming edges (in-degree), start a <code>deque</code> with all nodes of in-degree 0, and repeatedly pop a node and "remove" its outgoing edges. If not every node gets popped, the graph has a cycle.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Kahn's Algorithm</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">topo_sort</span>(n: int, edges: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">List</span>[int]:
+    adj = <span class="fn">defaultdict</span>(list)
+    indegree = [<span class="num">0</span>] * n
+    <span class="kw">for</span> u, v <span class="kw">in</span> edges:            <span class="cm"># edge u → v means "u before v"</span>
+        adj[u].<span class="fn">append</span>(v)
+        indegree[v] += <span class="num">1</span>
+
+    queue = <span class="fn">deque</span>(i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n) <span class="kw">if</span> indegree[i] == <span class="num">0</span>)
+    order = []
+    <span class="kw">while</span> queue:
+        node = queue.<span class="fn">popleft</span>()
+        order.<span class="fn">append</span>(node)
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[node]:
+            indegree[nxt] -= <span class="num">1</span>
+            <span class="kw">if</span> indegree[nxt] == <span class="num">0</span>:   <span class="cm"># all prerequisites done</span>
+                queue.<span class="fn">append</span>(nxt)
+
+    <span class="kw">return</span> order <span class="kw">if</span> <span class="fn">len</span>(order) == n <span class="kw">else</span> []   <span class="cm"># [] → cycle detected</span>
+
+<span class="fn">print</span>(<span class="fn">topo_sort</span>(<span class="num">4</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">0</span>, <span class="num">2</span>], [<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">3</span>]]))  <span class="cm"># [0, 1, 2, 3]</span>
+<span class="fn">print</span>(<span class="fn">topo_sort</span>(<span class="num">2</span>, [[<span class="num">0</span>, <span class="num">1</span>], [<span class="num">1</span>, <span class="num">0</span>]]))                  <span class="cm"># [] (cycle)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Number of Islands <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Clone Graph <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Course Schedule (Topo Sort) <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Pacific Atlantic Water Flow <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Word Ladder <span class="problem-tag hard">HARD</span></li>
+      <li>Alien Dictionary <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="09-heaps.html" class="footer-back">← Heaps</a>
+    <a href="11-trie.html" class="footer-next">Tries →</a>
+  </div>
+</div>
+</body>
+</html>

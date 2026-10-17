@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tree Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="08-trees.html" class="back-link">← Trees</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 08</div>
+    <h1 class="page-title">Tree <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Think recursively — every tree problem is: do something at current node, recurse left, recurse right.</p>
+  </div>
+
+  <div class="callout"><strong>Shared setup:</strong> every solution below uses this <code>TreeNode</code> class (the same one LeetCode's Python template uses).</div>
+  <div class="code-block">
+      <div class="code-label">PYTHON — TreeNode</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="kw">class</span> <span class="cls">TreeNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val=<span class="num">0</span>, left=<span class="kw">None</span>, right=<span class="kw">None</span>):
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.left = left
+        <span class="kw">self</span>.right = right</pre>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Invert Binary Tree</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> At each node, swap left and right children. Then do the same recursively for both subtrees. Base case: <code>None</code> node → do nothing.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(h)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">invert_tree</span>(root: Optional[TreeNode]) -&gt; Optional[TreeNode]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="kw">None</span>  <span class="cm"># base case</span>
+
+    <span class="cm"># Swap left and right children (tuple unpacking — no temp variable)</span>
+    root.left, root.right = root.right, root.left
+
+    <span class="cm"># Recursively invert both subtrees</span>
+    <span class="fn">invert_tree</span>(root.left)
+    <span class="fn">invert_tree</span>(root.right)
+
+    <span class="kw">return</span> root
+<span class="cm">#     4              4</span>
+<span class="cm">#    / \    →       / \</span>
+<span class="cm">#   2   7          7   2</span>
+<span class="cm">#  / \ / \        / \ / \</span>
+<span class="cm"># 1  3 6  9      9  6 3  1</span>
+
+t = <span class="cls">TreeNode</span>(<span class="num">4</span>, <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">1</span>), <span class="cls">TreeNode</span>(<span class="num">3</span>)),
+                <span class="cls">TreeNode</span>(<span class="num">7</span>, <span class="cls">TreeNode</span>(<span class="num">6</span>), <span class="cls">TreeNode</span>(<span class="num">9</span>)))
+t = <span class="fn">invert_tree</span>(t)
+<span class="fn">print</span>(t.val, t.left.val, t.right.val, t.left.left.val)  <span class="cm"># 4 7 2 9</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Symmetric Tree</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> A tree is symmetric if its left and right subtrees are mirror images. Compare left.left with right.right, and left.right with right.left simultaneously. A nested <code>def</code> keeps the helper private to the function.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(h)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">is_symmetric</span>(root: Optional[TreeNode]) -&gt; bool:
+    <span class="kw">def</span> <span class="fn">is_mirror</span>(left: Optional[TreeNode], right: Optional[TreeNode]) -&gt; bool:
+        <span class="kw">if</span> <span class="kw">not</span> left <span class="kw">and</span> <span class="kw">not</span> right:
+            <span class="kw">return</span> <span class="kw">True</span>   <span class="cm"># both None → symmetric</span>
+        <span class="kw">if</span> <span class="kw">not</span> left <span class="kw">or</span> <span class="kw">not</span> right:
+            <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># one None → not symmetric</span>
+
+        <span class="kw">return</span> (
+            left.val == right.val                <span class="cm"># values match</span>
+            <span class="kw">and</span> <span class="fn">is_mirror</span>(left.left, right.right)  <span class="cm"># outer pair matches</span>
+            <span class="kw">and</span> <span class="fn">is_mirror</span>(left.right, right.left)  <span class="cm"># inner pair matches</span>
+        )
+
+    <span class="kw">return</span> root <span class="kw">is</span> <span class="kw">None</span> <span class="kw">or</span> <span class="fn">is_mirror</span>(root.left, root.right)
+
+sym = <span class="cls">TreeNode</span>(<span class="num">1</span>, <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">3</span>), <span class="cls">TreeNode</span>(<span class="num">4</span>)),
+                  <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">4</span>), <span class="cls">TreeNode</span>(<span class="num">3</span>)))
+<span class="fn">print</span>(<span class="fn">is_symmetric</span>(sym))                                <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">is_symmetric</span>(<span class="cls">TreeNode</span>(<span class="num">1</span>, <span class="cls">TreeNode</span>(<span class="num">2</span>), <span class="cls">TreeNode</span>(<span class="num">3</span>))))  <span class="cm"># False</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Validate BST</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> At every node, there's a valid range [low, high] it must fall within. The root can be anything (-∞ to +∞, i.e. <code>float('-inf')</code> to <code>float('inf')</code>). Going left tightens the upper bound; going right tightens the lower bound. Pass these bounds down through recursion.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(h)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">is_valid_bst</span>(root: Optional[TreeNode],
+                 low: float = <span class="fn">float</span>(<span class="str">'-inf'</span>),
+                 high: float = <span class="fn">float</span>(<span class="str">'inf'</span>)) -&gt; bool:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="kw">True</span>  <span class="cm"># empty tree is valid</span>
+
+    <span class="cm"># Current node must be strictly between low and high (chained comparison!)</span>
+    <span class="kw">if</span> <span class="kw">not</span> (low &lt; root.val &lt; high):
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="cm"># Left subtree: all values must be &lt; root.val (new high)</span>
+    <span class="cm"># Right subtree: all values must be &gt; root.val (new low)</span>
+    <span class="kw">return</span> (<span class="fn">is_valid_bst</span>(root.left, low, root.val) <span class="kw">and</span>
+            <span class="fn">is_valid_bst</span>(root.right, root.val, high))
+
+<span class="cm"># Example: tree [2,1,3]</span>
+<span class="cm">#     2</span>
+<span class="cm">#    / \   → is_valid_bst(2, -∞, +∞)</span>
+<span class="cm">#   1   3     → is_valid_bst(1, -∞, 2) ✓  (1 &lt; 2)</span>
+<span class="cm">#              → is_valid_bst(3, 2, +∞) ✓  (3 &gt; 2)</span>
+<span class="cm"># Result: True</span>
+<span class="fn">print</span>(<span class="fn">is_valid_bst</span>(<span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">1</span>), <span class="cls">TreeNode</span>(<span class="num">3</span>))))  <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">is_valid_bst</span>(<span class="cls">TreeNode</span>(<span class="num">5</span>, <span class="cls">TreeNode</span>(<span class="num">1</span>),
+                            <span class="cls">TreeNode</span>(<span class="num">4</span>, <span class="cls">TreeNode</span>(<span class="num">3</span>), <span class="cls">TreeNode</span>(<span class="num">6</span>)))))  <span class="cm"># False</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Lowest Common Ancestor of a BST</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> In a BST, the LCA is the first node where p and q go in DIFFERENT directions (or one of them IS the node). If both are smaller → go left. If both are larger → go right. Otherwise, we're at the LCA.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(h)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — BST version</div>
+        <pre><span class="kw">def</span> <span class="fn">lowest_common_ancestor</span>(root: Optional[TreeNode],
+                           p: TreeNode, q: TreeNode) -&gt; Optional[TreeNode]:
+    <span class="kw">while</span> root:
+        <span class="kw">if</span> p.val &lt; root.val <span class="kw">and</span> q.val &lt; root.val:
+            root = root.left   <span class="cm"># both in left subtree</span>
+        <span class="kw">elif</span> p.val &gt; root.val <span class="kw">and</span> q.val &gt; root.val:
+            root = root.right  <span class="cm"># both in right subtree</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> root        <span class="cm"># they split here → this is the LCA!</span>
+    <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="cm">#        6</span>
+<span class="cm">#      /   \</span>
+<span class="cm">#     2     8</span>
+<span class="cm">#    / \   / \</span>
+<span class="cm">#   0   4 7   9</span>
+n2, n8 = <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">0</span>), <span class="cls">TreeNode</span>(<span class="num">4</span>)), <span class="cls">TreeNode</span>(<span class="num">8</span>, <span class="cls">TreeNode</span>(<span class="num">7</span>), <span class="cls">TreeNode</span>(<span class="num">9</span>))
+bst = <span class="cls">TreeNode</span>(<span class="num">6</span>, n2, n8)
+<span class="fn">print</span>(<span class="fn">lowest_common_ancestor</span>(bst, n2, n8).val)        <span class="cm"># 6</span>
+<span class="fn">print</span>(<span class="fn">lowest_common_ancestor</span>(bst, n2, n2.right).val)  <span class="cm"># 2</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Binary Tree Right Side View</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Level-order traversal (BFS) with a <code>collections.deque</code>. At each level, the LAST node dequeued is what you'd see from the right side. Collect those.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(w)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">right_side_view</span>(root: Optional[TreeNode]) -&gt; List[int]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> []
+    result = []
+    queue = deque([root])
+
+    <span class="kw">while</span> queue:
+        level_size = <span class="fn">len</span>(queue)
+
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(level_size):
+            node = queue.popleft()  <span class="cm"># O(1) — list.pop(0) would be O(n)</span>
+
+            <span class="cm"># Last node of this level is what we see from right</span>
+            <span class="kw">if</span> i == level_size - <span class="num">1</span>:
+                result.append(node.val)
+
+            <span class="kw">if</span> node.left:
+                queue.append(node.left)
+            <span class="kw">if</span> node.right:
+                queue.append(node.right)
+
+    <span class="kw">return</span> result
+
+<span class="cm">#     1</span>
+<span class="cm">#    / \</span>
+<span class="cm">#   2   3</span>
+<span class="cm">#    \   \</span>
+<span class="cm">#     5   4</span>
+tree = <span class="cls">TreeNode</span>(<span class="num">1</span>, <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="kw">None</span>, <span class="cls">TreeNode</span>(<span class="num">5</span>)), <span class="cls">TreeNode</span>(<span class="num">3</span>, <span class="kw">None</span>, <span class="cls">TreeNode</span>(<span class="num">4</span>)))
+<span class="fn">print</span>(<span class="fn">right_side_view</span>(tree))  <span class="cm"># [1, 3, 4]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Maximum Depth of Binary Tree</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> The recursive one-liner <code>1 + max(depth(left), depth(right))</code> is shown on the <a href="08-trees.html">Trees</a> page. Here is the iterative alternative: a level-order BFS where every completed level adds 1 to the depth. It never touches the recursion limit, even on a degenerate tree.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(w)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — BFS, count the levels</div>
+        <pre><span class="kw">def</span> <span class="fn">max_depth</span>(root: Optional[TreeNode]) -&gt; int:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> <span class="num">0</span>
+    depth = <span class="num">0</span>
+    queue = deque([root])
+    <span class="kw">while</span> queue:
+        depth += <span class="num">1</span>                       <span class="cm"># one more level</span>
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(queue)):
+            node = queue.popleft()
+            <span class="kw">if</span> node.left:
+                queue.append(node.left)
+            <span class="kw">if</span> node.right:
+                queue.append(node.right)
+    <span class="kw">return</span> depth
+
+<span class="fn">print</span>(<span class="fn">max_depth</span>(tree))   <span class="cm"># 3  (tree from the previous solution)</span>
+<span class="fn">print</span>(<span class="fn">max_depth</span>(<span class="kw">None</span>))   <span class="cm"># 0</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">07</span><span class="solution-title">Serialize and Deserialize Binary Tree</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> A preorder traversal that also writes a marker (<code>#</code>) for every missing child describes the tree uniquely. To rebuild, read the tokens back in the same preorder: each token is either <code>#</code> (return <code>None</code>) or a value whose left and right subtrees follow immediately. An iterator over the tokens remembers the position between recursive calls.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Preorder with "#" markers for None</div>
+        <pre><span class="kw">class</span> <span class="cls">Codec</span>:
+    <span class="kw">def</span> <span class="fn">serialize</span>(<span class="kw">self</span>, root: Optional[TreeNode]) -&gt; str:
+        out = []
+
+        <span class="kw">def</span> <span class="fn">dfs</span>(node: Optional[TreeNode]) -&gt; <span class="kw">None</span>:
+            <span class="kw">if</span> <span class="kw">not</span> node:
+                out.append(<span class="str">"#"</span>)      <span class="cm"># marker for a missing child</span>
+                <span class="kw">return</span>
+            out.append(<span class="fn">str</span>(node.val))
+            <span class="fn">dfs</span>(node.left)
+            <span class="fn">dfs</span>(node.right)
+
+        <span class="fn">dfs</span>(root)
+        <span class="kw">return</span> <span class="str">","</span>.join(out)
+
+    <span class="kw">def</span> <span class="fn">deserialize</span>(<span class="kw">self</span>, data: str) -&gt; Optional[TreeNode]:
+        tokens = <span class="fn">iter</span>(data.split(<span class="str">","</span>))
+
+        <span class="kw">def</span> <span class="fn">build</span>() -&gt; Optional[TreeNode]:
+            tok = <span class="fn">next</span>(tokens)
+            <span class="kw">if</span> tok == <span class="str">"#"</span>:
+                <span class="kw">return</span> <span class="kw">None</span>
+            node = <span class="cls">TreeNode</span>(<span class="fn">int</span>(tok))
+            node.left = <span class="fn">build</span>()        <span class="cm"># same order as serialize</span>
+            node.right = <span class="fn">build</span>()
+            <span class="kw">return</span> node
+
+        <span class="kw">return</span> <span class="fn">build</span>()
+
+codec = <span class="cls">Codec</span>()
+s = codec.serialize(tree)
+<span class="fn">print</span>(s)                                       <span class="cm"># 1,2,#,5,#,#,3,#,4,#,#</span>
+<span class="fn">print</span>(codec.serialize(codec.deserialize(s)) == s)  <span class="cm"># True (round trip)</span>
+<span class="fn">print</span>(<span class="fn">right_side_view</span>(codec.deserialize(s)))   <span class="cm"># [1, 3, 4]</span></pre>
+      </div>
+      <div class="callout"><strong>Python tip:</strong> <code>next(tokens)</code> on a shared iterator replaces a manual index counter — no <code>nonlocal i</code> needed. For very deep trees, swap the recursion for an explicit stack (see the recursion-limit note on the Trees page).</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-queues.html" class="footer-back">← Queue Solutions</a>
+    <a href="sol-heaps.html" class="footer-next">Heap Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

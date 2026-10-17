@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Queues — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Queues</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">07 / 19</div>
+    <h1 class="page-title">Queues <span class="highlight">FIFO</span></h1>
+    <p class="page-subtitle">First In, First Out — like a line at a coffee shop. The backbone of BFS, task scheduling, and event processing.</p>
+  </div>
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">ENQUEUE</div><div class="complexity-value">O(1)</div></div>
+    <div class="complexity-item"><div class="complexity-label">DEQUEUE</div><div class="complexity-value">O(1)*</div></div>
+    <div class="complexity-item"><div class="complexity-label">PEEK</div><div class="complexity-value">O(1)</div></div>
+  </div>
+  <div class="callout warn"><strong>Note:</strong> <code>list.pop(0)</code> is O(n) — every remaining element shifts left by one. *Dequeue is O(1) only with <code>collections.deque</code>, which is a doubly-linked block list with O(1) appends and pops at <em>both</em> ends. Always use <code>deque</code> for queues.</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">Queue in Python</h2>
+    <p class="explanation">Add to the <strong>back</strong> (enqueue), remove from the <strong>front</strong> (dequeue). In Python, use <code>collections.deque</code>: <code>append()</code> to enqueue and <code>popleft()</code> to dequeue — both O(1). A plain list with <code>pop(0)</code> works but is O(n) per dequeue, turning a BFS into O(n²).</p>
+    <div class="diagram">
+      <div class="diagram-title">QUEUE: FIRST IN, FIRST OUT</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  popleft() ←  [  A  ] [  B  ] [  C  ]  ← append()
+               front                back
+  popleft() removes A first (it got in first)</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — collections.deque</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+q = deque()
+q.append(<span class="str">"A"</span>)        <span class="cm"># enqueue → deque(['A'])</span>
+q.append(<span class="str">"B"</span>)
+q.append(<span class="str">"C"</span>)        <span class="cm"># deque(['A', 'B', 'C'])</span>
+<span class="fn">print</span>(q.popleft())   <span class="cm"># dequeue → A   (O(1))</span>
+<span class="fn">print</span>(q[<span class="num">0</span>])          <span class="cm"># peek front → B</span>
+<span class="fn">print</span>(<span class="fn">len</span>(q))        <span class="cm"># 2</span>
+
+<span class="cm"># Bonus deque features</span>
+q.appendleft(<span class="str">"Z"</span>)    <span class="cm"># push to front → deque(['Z', 'B', 'C'])</span>
+q.rotate(<span class="num">1</span>)          <span class="cm"># rotate right → deque(['C', 'Z', 'B'])</span>
+<span class="fn">print</span>(q)
+
+recent = deque(maxlen=<span class="num">3</span>)   <span class="cm"># bounded: oldest item auto-drops</span>
+<span class="kw">for</span> x <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):
+    recent.append(x)
+<span class="fn">print</span>(recent)        <span class="cm"># deque([2, 3, 4], maxlen=3)</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Queue Class</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> Any
+
+<span class="kw">class</span> <span class="cls">Queue</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.items = deque()
+
+    <span class="kw">def</span> <span class="fn">enqueue</span>(<span class="kw">self</span>, val: Any) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.items.append(val)
+
+    <span class="kw">def</span> <span class="fn">dequeue</span>(<span class="kw">self</span>) -&gt; Any:
+        <span class="kw">return</span> <span class="kw">self</span>.items.popleft()   <span class="cm"># O(1); list.pop(0) would be O(n)</span>
+
+    <span class="kw">def</span> <span class="fn">front</span>(<span class="kw">self</span>) -&gt; Any:
+        <span class="kw">return</span> <span class="kw">self</span>.items[<span class="num">0</span>]
+
+    <span class="kw">def</span> <span class="fn">is_empty</span>(<span class="kw">self</span>) -&gt; bool:
+        <span class="kw">return</span> <span class="kw">not</span> <span class="kw">self</span>.items
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(<span class="kw">self</span>) -&gt; int:
+        <span class="kw">return</span> <span class="fn">len</span>(<span class="kw">self</span>.items)
+
+qu = <span class="cls">Queue</span>()
+qu.enqueue(<span class="num">1</span>); qu.enqueue(<span class="num">2</span>)
+<span class="fn">print</span>(qu.dequeue(), qu.front(), <span class="fn">len</span>(qu))  <span class="cm"># 1 2 1</span></pre>
+    </div>
+    <div class="callout"><strong>queue.Queue is not for DSA:</strong> the standard library's <code>queue.Queue</code> is a thread-safe queue for producer/consumer code between threads. Its locking makes it much slower, and it has no indexing or iteration. For algorithms (BFS, sliding windows, scheduling simulations) use <code>collections.deque</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">BFS with a Queue</h2>
+    <p class="explanation">Breadth-First Search explores nodes <strong>level by level</strong> — all neighbors first, then their neighbors. A queue is the natural tool: enqueue neighbors, process in order. Because nodes are reached in order of distance, BFS finds shortest paths in unweighted graphs and grids.</p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — BFS on a Binary Tree (Level Order)</div>
+      <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="kw">class</span> <span class="cls">TreeNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val=<span class="num">0</span>, left=<span class="kw">None</span>, right=<span class="kw">None</span>):
+        <span class="kw">self</span>.val, <span class="kw">self</span>.left, <span class="kw">self</span>.right = val, left, right
+
+<span class="kw">def</span> <span class="fn">level_order</span>(root: Optional[TreeNode]) -&gt; List[List[int]]:
+    <span class="kw">if</span> <span class="kw">not</span> root:
+        <span class="kw">return</span> []
+    result = []
+    queue = deque([root])
+
+    <span class="kw">while</span> queue:
+        level = []
+        <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(queue)):  <span class="cm"># nodes at current level</span>
+            node = queue.popleft()       <span class="cm"># dequeue — O(1)</span>
+            level.append(node.val)
+
+            <span class="kw">if</span> node.left:
+                queue.append(node.left)
+            <span class="kw">if</span> node.right:
+                queue.append(node.right)
+
+        result.append(level)
+
+    <span class="kw">return</span> result
+
+root = <span class="cls">TreeNode</span>(<span class="num">1</span>,
+                <span class="cls">TreeNode</span>(<span class="num">2</span>, <span class="cls">TreeNode</span>(<span class="num">4</span>), <span class="cls">TreeNode</span>(<span class="num">5</span>)),
+                <span class="cls">TreeNode</span>(<span class="num">3</span>, <span class="cls">TreeNode</span>(<span class="num">6</span>), <span class="cls">TreeNode</span>(<span class="num">7</span>)))
+<span class="fn">print</span>(<span class="fn">level_order</span>(root))  <span class="cm"># [[1], [2, 3], [4, 5, 6, 7]]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Number of Islands (BFS) <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Binary Tree Level Order Traversal <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Rotting Oranges <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Walls and Gates <span class="problem-tag medium">MEDIUM</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="06-stacks.html" class="footer-back">← Stacks</a>
+    <a href="08-trees.html" class="footer-next">Trees →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursion — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Recursion & Backtracking</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">12 / 19</div>
+    <h1 class="page-title">Recursion <span class="highlight">&</span><br>Backtracking</h1>
+    <p class="page-subtitle">Break every big problem into identical smaller problems. Backtracking explores all possibilities and abandons dead ends early.</p>
+  </div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">The Three Laws of Recursion</h2>
+    <p class="explanation">Every recursive function must have: <strong>1)</strong> A base case (stop condition), <strong>2)</strong> A recursive call on a smaller/simpler problem, <strong>3)</strong> Move toward the base case each call.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Fibonacci (naive → memoized)</div>
+      <pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+<span class="cm"># Naive recursion — O(2^n) — recomputes same values</span>
+<span class="kw">def</span> <span class="fn">fib</span>(n: int) -&gt; int:
+    <span class="kw">if</span> n &lt;= <span class="num">1</span>:
+        <span class="kw">return</span> n                        <span class="cm"># ← base case</span>
+    <span class="kw">return</span> <span class="fn">fib</span>(n - <span class="num">1</span>) + <span class="fn">fib</span>(n - <span class="num">2</span>)      <span class="cm"># ← recursive call</span>
+
+<span class="cm"># Memoized recursion — O(n) — cache results in a dict</span>
+<span class="kw">def</span> <span class="fn">fib_memo</span>(n: int, memo=<span class="kw">None</span>) -&gt; int:
+    <span class="kw">if</span> memo <span class="kw">is</span> <span class="kw">None</span>:                    <span class="cm"># fresh dict per top-level call</span>
+        memo = {}
+    <span class="kw">if</span> n &lt;= <span class="num">1</span>:
+        <span class="kw">return</span> n
+    <span class="kw">if</span> n <span class="kw">in</span> memo:
+        <span class="kw">return</span> memo[n]                  <span class="cm"># cache hit!</span>
+    memo[n] = <span class="fn">fib_memo</span>(n - <span class="num">1</span>, memo) + <span class="fn">fib_memo</span>(n - <span class="num">2</span>, memo)
+    <span class="kw">return</span> memo[n]
+
+<span class="cm"># The Pythonic way — let the standard library memoize for you</span>
+@<span class="fn">lru_cache</span>(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">fib_cached</span>(n: int) -&gt; int:
+    <span class="kw">return</span> n <span class="kw">if</span> n &lt;= <span class="num">1</span> <span class="kw">else</span> <span class="fn">fib_cached</span>(n - <span class="num">1</span>) + <span class="fn">fib_cached</span>(n - <span class="num">2</span>)
+
+<span class="fn">print</span>(<span class="fn">fib</span>(<span class="num">10</span>))         <span class="cm"># 55</span>
+<span class="fn">print</span>(<span class="fn">fib_memo</span>(<span class="num">50</span>))    <span class="cm"># 12586269025</span>
+<span class="fn">print</span>(<span class="fn">fib_cached</span>(<span class="num">50</span>))  <span class="cm"># 12586269025</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">The Recursion Call Stack</h2>
+    <div class="diagram">
+      <div class="diagram-title">fib(4) CALL TREE</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+                fib(4)
+               /       \
+           fib(3)      fib(2)
+           /    \      /    \
+       fib(2) fib(1) fib(1) fib(0)
+       /    \
+    fib(1) fib(0)
+
+  Without memo: fib(2) computed TWICE, fib(1) THREE times!</pre>
+    </div>
+    <p class="explanation">Every call that hasn't returned yet occupies a <strong>stack frame</strong>. CPython caps the depth at about <strong>1000 frames</strong> by default and raises <code>RecursionError</code> beyond that — Python does <em>not</em> do tail-call optimisation, so even a "tail-recursive" function uses one frame per call.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Recursion Limit</div>
+      <pre><span class="kw">import</span> sys
+
+<span class="kw">def</span> <span class="fn">depth</span>(n: int) -&gt; int:
+    <span class="kw">return</span> <span class="num">0</span> <span class="kw">if</span> n == <span class="num">0</span> <span class="kw">else</span> <span class="num">1</span> + <span class="fn">depth</span>(n - <span class="num">1</span>)
+
+<span class="fn">print</span>(sys.<span class="fn">getrecursionlimit</span>())   <span class="cm"># 1000 (default)</span>
+
+<span class="kw">try</span>:
+    <span class="fn">depth</span>(<span class="num">5000</span>)
+<span class="kw">except</span> <span class="cls">RecursionError</span> <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="str">"RecursionError:"</span>, e)  <span class="cm"># RecursionError: maximum recursion depth exceeded ...</span>
+
+sys.<span class="fn">setrecursionlimit</span>(<span class="num">10000</span>)     <span class="cm"># raise it for deep DFS / memoized recursion</span>
+<span class="fn">print</span>(<span class="fn">depth</span>(<span class="num">2000</span>))               <span class="cm"># 2000</span>
+
+<span class="cm"># For very deep inputs, prefer an iterative version with an explicit stack/loop.</span></pre>
+    </div>
+    <div class="callout warn"><strong>Careful:</strong> <code>sys.setrecursionlimit</code> only raises Python's own guard. Set it absurdly high and a very deep recursion can overflow the real C stack and crash the interpreter outright (no exception, just a dead process — on Windows with Python 3.7 this can happen at only a few thousand frames). On competitive-programming judges <code>sys.setrecursionlimit(10**6)</code> is common; in production code, convert deep recursion to iteration.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Backtracking Template</h2>
+    <p class="explanation">Backtracking = recursion + <strong>undoing your choice</strong> after each recursive call. Think: try an option, recurse, undo the option (backtrack), try the next. Used for permutations, subsets, Sudoku, etc. In Python the choose/unchoose pair is <code>path.append(x)</code> / <code>path.pop()</code>, and you save a <strong>copy</strong> with <code>path[:]</code> (or <code>list(path)</code>).</p>
+    <div class="code-block">
+      <div class="code-label">TEMPLATE — Backtracking</div>
+      <pre><span class="kw">def</span> <span class="fn">backtrack</span>(path, options):
+    <span class="cm"># Base case: did we reach a valid complete solution?</span>
+    <span class="kw">if</span> <span class="fn">is_complete</span>(path):
+        results.<span class="fn">append</span>(path[:])   <span class="cm"># save a COPY!</span>
+        <span class="kw">return</span>
+
+    <span class="kw">for</span> choice <span class="kw">in</span> options:
+        <span class="kw">if</span> <span class="fn">is_valid</span>(choice, path):
+            path.<span class="fn">append</span>(choice)       <span class="cm"># CHOOSE</span>
+            <span class="fn">backtrack</span>(path, options)  <span class="cm"># RECURSE</span>
+            path.<span class="fn">pop</span>()                <span class="cm"># UNCHOOSE (backtrack)</span></pre>
+    </div>
+    <div class="callout"><strong>Why <code>path[:]</code>?</strong> Python passes references to objects, not copies. <code>results.append(path)</code> stores the <em>same</em> list object every time — after all the <code>pop()</code> calls finish, every saved "result" is the same empty list. Slicing (<code>path[:]</code>) makes a shallow copy frozen at that moment.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Generate All Permutations</h2>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Permutations of [1,2,3]</div>
+      <pre><span class="kw">from</span> itertools <span class="kw">import</span> permutations <span class="kw">as</span> it_permutations
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">permutations</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    result = []
+
+    <span class="kw">def</span> <span class="fn">backtrack</span>(path, remaining):
+        <span class="kw">if</span> <span class="kw">not</span> remaining:
+            result.<span class="fn">append</span>(path[:])
+            <span class="kw">return</span>
+
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(remaining)):
+            path.<span class="fn">append</span>(remaining[i])
+
+            <span class="cm"># remaining without the chosen element</span>
+            <span class="fn">backtrack</span>(path, remaining[:i] + remaining[i + <span class="num">1</span>:])
+
+            path.<span class="fn">pop</span>()  <span class="cm"># backtrack</span>
+
+    <span class="fn">backtrack</span>([], nums)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))
+<span class="cm"># [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]</span>
+
+<span class="cm"># Cross-check with the standard library (yields tuples, same order)</span>
+<span class="fn">print</span>([<span class="fn">list</span>(p) <span class="kw">for</span> p <span class="kw">in</span> <span class="fn">it_permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])] == <span class="fn">permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))  <span class="cm"># True</span></pre>
+    </div>
+    <p class="explanation">Python's <code>itertools</code> module ships the classic generators — perfect for checking your own backtracking code or when an interviewer allows library use:</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — itertools Cross-check</div>
+      <pre><span class="kw">from</span> itertools <span class="kw">import</span> combinations, permutations, product
+
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">permutations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>)))   <span class="cm"># [(1, 2), (1, 3), (2, 1), (2, 3), (3, 1), (3, 2)]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">combinations</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">2</span>)))   <span class="cm"># [(1, 2), (1, 3), (2, 3)]</span>
+
+<span class="cm"># All subsets (power set) = combinations of every size</span>
+nums = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+<span class="fn">print</span>([<span class="fn">list</span>(c) <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(nums) + <span class="num">1</span>) <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">combinations</span>(nums, k)])
+<span class="cm"># [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]]</span>
+
+<span class="fn">print</span>(<span class="fn">len</span>(<span class="fn">list</span>(<span class="fn">product</span>(<span class="str">"ab"</span>, repeat=<span class="num">3</span>))))  <span class="cm"># 8 — every 3-letter string over {a, b}</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Climbing Stairs <span class="problem-tag easy">EASY</span></li>
+      <li>Subsets <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Permutations <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Combination Sum <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Word Search <span class="problem-tag medium">MEDIUM</span></li>
+      <li>N-Queens <span class="problem-tag hard">HARD</span></li>
+      <li>Sudoku Solver <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="11-trie.html" class="footer-back">← Tries</a>
+    <a href="13-dynamic-programming.html" class="footer-next">Dynamic Programming →</a>
+  </div>
+</div>
+</body>
+</html>

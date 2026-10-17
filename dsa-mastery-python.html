@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DSA Mastery in Python — 30-Day War Plan</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=DM+Serif+Display&display=swap');
+
+  :root {
+    --bg: #0b0c10;
+    --surface: #12141a;
+    --surface2: #1a1d26;
+    --border: #222531;
+    --accent: #6c63ff;
+    --accent2: #00d4aa;
+    --accent3: #ff6b6b;
+    --warn: #ffc947;
+    --text: #e8eaf0;
+    --muted: #7a7f99;
+    --dim: #3a3f52;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 80px 24px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(108,99,255,0.13) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 80%, rgba(0,212,170,0.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 28px;
+    opacity: 0.85;
+  }
+
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    max-width: 820px;
+    margin-bottom: 28px;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 520px;
+    margin-bottom: 48px;
+  }
+
+  .hero-tags {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .tag {
+    padding: 6px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .tag.active { border-color: var(--accent); color: var(--accent); }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    animation: bounce 2s infinite;
+  }
+
+  .scroll-hint svg { opacity: 0.4; }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* SECTIONS */
+  section {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    margin-bottom: 40px;
+    letter-spacing: -0.01em;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* THE MINDSET SHIFT */
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 8px;
+  }
+
+  .insight-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .insight-card:hover { border-color: var(--accent); }
+
+  .insight-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .insight-card.purple::before { background: var(--accent); }
+  .insight-card.teal::before { background: var(--accent2); }
+  .insight-card.red::before { background: var(--accent3); }
+  .insight-card.yellow::before { background: var(--warn); }
+
+  .insight-card h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 0.01em;
+  }
+
+  .insight-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  /* MISTAKES */
+  .mistake-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .mistake {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: 20px;
+    align-items: start;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mistake:last-child { border-bottom: none; }
+
+  .mistake-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    color: var(--dim);
+    line-height: 1;
+    margin-top: 2px;
+  }
+
+  .mistake-body h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--accent3);
+    margin-bottom: 6px;
+  }
+
+  .mistake-body p {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .fix-pill {
+    display: inline-block;
+    background: rgba(0,212,170,0.08);
+    border: 1px solid rgba(0,212,170,0.2);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    color: var(--accent2);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* STRATEGY */
+  .strategy-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .strategy-header {
+    padding: 20px 28px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .strategy-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .strategy-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .strategy-header span {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-left: auto;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .strategy-body {
+    padding: 24px 28px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.75;
+  }
+
+  .strategy-body strong { color: var(--text); }
+
+  /* 30-DAY PLAN */
+  .plan-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .week-btn {
+    padding: 8px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+
+  .week-btn:hover,
+  #week-tab-0:checked ~ .plan-nav label[for="week-tab-0"],
+  #week-tab-1:checked ~ .plan-nav label[for="week-tab-1"],
+  #week-tab-2:checked ~ .plan-nav label[for="week-tab-2"],
+  #week-tab-3:checked ~ .plan-nav label[for="week-tab-3"] {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(108,99,255,0.08);
+  }
+  .week-radio { position: absolute; opacity: 0; pointer-events: none; }
+  #week-tab-0:focus-visible ~ .plan-nav label[for="week-tab-0"],
+  #week-tab-1:focus-visible ~ .plan-nav label[for="week-tab-1"],
+  #week-tab-2:focus-visible ~ .plan-nav label[for="week-tab-2"],
+  #week-tab-3:focus-visible ~ .plan-nav label[for="week-tab-3"] { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Pure-CSS tabs: the checked radio decides which week panel is visible */
+  .week-panel { display: none; }
+  #week-tab-0:checked ~ #week-0,
+  #week-tab-1:checked ~ #week-1,
+  #week-tab-2:checked ~ #week-2,
+  #week-tab-3:checked ~ #week-3 { display: block; }
+
+  .week-intro {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    padding: 18px 22px;
+    border-radius: 0 10px 10px 0;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .week-intro strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 1rem; }
+
+  .day-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    align-items: start;
+    gap: 16px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .day-row:last-child { border-bottom: none; }
+
+  .day-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--dim);
+    padding-top: 3px;
+  }
+
+  .day-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .day-content p {
+    font-size: 0.83rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .day-content code {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+
+  .day-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--accent2);
+    white-space: nowrap;
+    padding-top: 3px;
+  }
+
+  /* DAILY RITUAL */
+  .ritual-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+  }
+
+  .ritual-slot {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .ritual-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .ritual-slot h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .ritual-slot p {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* CONCEPTS TABLE */
+  .concept-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .concept-table th {
+    text-align: left;
+    padding: 12px 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .concept-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    vertical-align: top;
+  }
+
+  .concept-table tr:last-child td { border-bottom: none; }
+
+  .concept-table td:first-child {
+    color: var(--text);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .priority {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .priority.must { background: rgba(255,107,107,0.12); color: var(--accent3); border: 1px solid rgba(255,107,107,0.2); }
+  .priority.high { background: rgba(255,201,71,0.1); color: var(--warn); border: 1px solid rgba(255,201,71,0.2); }
+  .priority.low { background: rgba(122,127,153,0.1); color: var(--muted); border: 1px solid var(--border); }
+
+  /* CODE BLOCK */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 24px 0;
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .code-dots { display: flex; gap: 6px; }
+  .code-dots span { width: 10px; height: 10px; border-radius: 50%; }
+  .d1 { background: #ff5f57; }
+  .d2 { background: #ffbd2e; }
+  .d3 { background: #28c940; }
+
+  pre {
+    padding: 24px;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--text);
+  }
+
+  .kw { color: #c792ea; }
+  .fn { color: #82aaff; }
+  .str { color: #c3e88d; }
+  .num { color: #f78c6c; }
+  .cmt { color: var(--dim); font-style: italic; }
+
+  /* QUOTE */
+  .pull-quote {
+    border-left: 3px solid var(--accent);
+    padding: 24px 32px;
+    margin: 40px 0;
+    background: var(--surface);
+    border-radius: 0 12px 12px 0;
+  }
+
+  .pull-quote p {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    line-height: 1.5;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  .pull-quote cite {
+    display: block;
+    margin-top: 12px;
+    font-size: 0.8rem;
+    font-family: 'Space Mono', monospace;
+    color: var(--muted);
+    font-style: normal;
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 60px 24px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem;
+    color: var(--dim);
+    font-family: 'Space Mono', monospace;
+  }
+
+  @media (max-width: 600px) {
+    .day-row { grid-template-columns: 1fr; gap: 4px; }
+    .day-time { display: none; }
+    .concept-table { font-size: 0.78rem; }
+    .concept-table th, .concept-table td { padding: 10px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Your profile: Inconsistent DSA · Deep Understanding · 1–2 hrs/day</div>
+  <h1>Stop grinding.<br>Start <em>understanding</em>.</h1>
+  <p class="hero-sub">The unconventional strategy to master DSA with Python — built for depth, not speed-running LeetCode problems you'll forget.</p>
+  <div class="hero-tags">
+    <span class="tag active">Python</span>
+    <span class="tag">30-Day Plan</span>
+    <span class="tag">Top 1% Strategy</span>
+    <span class="tag">Pattern Recognition</span>
+    <span class="tag">Mental Models</span>
+  </div>
+  <div class="scroll-hint">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 9l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    SCROLL
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- THE REAL PROBLEM -->
+<section>
+  <div class="section-label">The Diagnosis</div>
+  <h2>Why you're inconsistent<br>(and it's not motivation)</h2>
+  <div class="insight-grid">
+    <div class="insight-card purple">
+      <h3>You're solving, not learning</h3>
+      <p>Each problem feels like a one-off. You solve it, move on, and the pattern never crystallizes into something reusable. You're collecting stamps, not building a map.</p>
+    </div>
+    <div class="insight-card teal">
+      <h3>No forcing function for retrieval</h3>
+      <p>Passive re-reading feels productive. It isn't. Without forced recall — blank-page reconstruction, spaced repetition — nothing sticks past 72 hours.</p>
+    </div>
+    <div class="insight-card red">
+      <h3>Wrong abstraction level</h3>
+      <p>You oscillate between too abstract ("I know what a graph is") and too concrete ("I solved #133 Clone Graph"). The middle — pattern templates — is where mastery lives.</p>
+    </div>
+    <div class="insight-card yellow">
+      <h3>No mental model inventory</h3>
+      <p>Experts have a library of ~15 core patterns. Every new problem gets matched to one. Beginners start from zero each time. You need the inventory, not more problems.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MISTAKES -->
+<section>
+  <div class="section-label">Time Killers</div>
+  <h2>7 mistakes that waste<br>80% of beginners' time</h2>
+  <div class="mistake-list">
+
+    <div class="mistake">
+      <div class="mistake-num">1</div>
+      <div class="mistake-body">
+        <h3>Reading solutions before truly struggling</h3>
+        <p>25 minutes of confusion is where the learning is. The moment you peek at a solution, you rob yourself of the productive struggle that builds real intuition. Discomfort = growth signal.</p>
+        <span class="fix-pill">→ Hard 25-min timer before looking at any hint</span>
+      </div>
+    </div>
+
+    <div class="mistake">
+      <div class="mistake-num">2</div>
+      <div class="mistake-body">
+        <h3>Solving problems in order of difficulty</h3>
+        <p>Easy → Medium → Hard is how platforms are organized, not how understanding is built. You need to cluster by pattern, not by difficulty. Solve 10 sliding window problems back to back.</p>
+        <span class="fix-pill">→ Theme weeks: one pattern per week, all difficulties</span>
+      </div>
+    </div>
+
+    <div class="mistake">
+      <div class="mistake-num">3</div>
+      <div class="mistake-body">
+        <h3>Skipping complexity analysis on your own code</h3>
+        <p>If you can't instantly state the time and space complexity of every solution you write, you don't actually understand it. This is the single biggest gap between intermediate and advanced.</p>
+        <span class="fix-pill">→ Write Big-O as a comment before running any solution</span>
+      </div>
+    </div>
+
+    <div class="mistake">
+      <div class="mistake-num">4</div>
+      <div class="mistake-body">
+        <h3>Not writing solutions from memory the next day</h3>
+        <p>You solve a problem tonight. You feel good. Tomorrow, close everything and rewrite it from scratch. If you can't, you didn't learn it — you watched someone else learn it.</p>
+        <span class="fix-pill">→ "Day After" rule: every solved problem gets a blind rewrite</span>
+      </div>
+    </div>
+
+    <div class="mistake">
+      <div class="mistake-num">5</div>
+      <div class="mistake-body">
+        <h3>Ignoring Python-specific gotchas</h3>
+        <p>Python has quirks that bite DSA learners: names are references to objects (so <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">[[0] * n] * m</code> shares one row m times), <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">list.pop(0)</code> is O(n) (use <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">collections.deque</code>), mutable default arguments persist between calls, <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">is</code> vs <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">==</code>, and the default recursion limit of ~1000. Ignoring these creates bugs you can't explain.</p>
+        <span class="fix-pill">→ Study Python's object/reference model before Week 1</span>
+      </div>
+    </div>
+
+    <div class="mistake">
+      <div class="mistake-num">6</div>
+      <div class="mistake-body">
+        <h3>Building data structures without using built-ins first</h3>
+        <p>Building a linked list from scratch before you've mastered dict, set, list, and the <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">collections</code> / <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">heapq</code> / <code style="font-family: 'Space Mono', monospace; font-size: 0.82em; color: var(--accent)">bisect</code> modules is backwards. Understand what Python gives you, then understand what it doesn't — that gap tells you when to build your own.</p>
+        <span class="fix-pill">→ Master dict/set/list + collections, heapq, bisect week one, implement later</span>
+      </div>
+    </div>
+
+    <div class="mistake">
+      <div class="mistake-num">7</div>
+      <div class="mistake-body">
+        <h3>No "explanation test"</h3>
+        <p>If you can't explain your solution out loud to an imaginary 10-year-old in under 2 minutes, you don't understand it. Most people mistake familiarity for understanding. They are not the same thing.</p>
+        <span class="fix-pill">→ Rubber-duck every solution before marking it done</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE 1% STRATEGY -->
+<section>
+  <div class="section-label">The Unconventional Strategy</div>
+  <h2>What the top 1%<br>actually do differently</h2>
+
+  <div class="pull-quote">
+    <p>"Don't learn algorithms. Learn the 15 thought patterns that produce all algorithms."</p>
+    <cite>— The mental model approach</cite>
+  </div>
+
+  <div class="strategy-block">
+    <div class="strategy-header">
+      <div class="strategy-icon" style="background: rgba(108,99,255,0.15);">🧠</div>
+      <h3>Pattern-First, Problem-Second</h3>
+      <span>Week 1–2 focus</span>
+    </div>
+    <div class="strategy-body">
+      Instead of solving problem → learning pattern, reverse it. <strong>Study the pattern template first</strong>, understand WHY it works, then solve 5 problems that use it. You're training pattern recognition, not problem memorization. The goal: when you see a new problem, a pattern lights up automatically.
+    </div>
+  </div>
+
+  <div class="strategy-block">
+    <div class="strategy-header">
+      <div class="strategy-icon" style="background: rgba(0,212,170,0.12);">📝</div>
+      <h3>The "3-Layer" Method for Every Problem</h3>
+      <span>Core practice loop</span>
+    </div>
+    <div class="strategy-body">
+      <strong>Layer 1 — Brute force:</strong> Write the naive O(n²) or O(n³) solution first. Always. This proves you understand the problem.<br><br>
+      <strong>Layer 2 — Optimize:</strong> Identify the bottleneck. Which loop is wasteful? What data structure removes it?<br><br>
+      <strong>Layer 3 — Internalize:</strong> What pattern made this optimization possible? Name it. Add it to your pattern inventory. Connect it to 2 problems you've already solved.
+    </div>
+  </div>
+
+  <div class="strategy-block">
+    <div class="strategy-header">
+      <div class="strategy-icon" style="background: rgba(255,107,107,0.12);">🔁</div>
+      <h3>Spaced Repetition for Code (not flashcards)</h3>
+      <span>Long-term retention</span>
+    </div>
+    <div class="strategy-body">
+      Don't use Anki. Use a <strong>Problem Journal</strong> — a plain text file. When you solve a problem: write the pattern name, the key insight in one sentence, and a 3-line pseudocode sketch. Review entries from 3 days ago, 7 days ago, 21 days ago. Rewrite the solution from memory. This is spaced retrieval without the overhead.
+    </div>
+  </div>
+
+  <div class="strategy-block">
+    <div class="strategy-header">
+      <div class="strategy-icon" style="background: rgba(255,201,71,0.12);">⚡</div>
+      <h3>The "Teach It" Compression Test</h3>
+      <span>Understanding verification</span>
+    </div>
+    <div class="strategy-body">
+      After every session, open a blank file and write: <strong>the problem in one sentence, the pattern it uses, the key trade-off, and the Python implementation in under 20 lines</strong>. If any of the four fails, you don't understand it yet. This takes 10 minutes and is more valuable than solving 3 more problems.
+    </div>
+  </div>
+
+  <div class="strategy-block">
+    <div class="strategy-header">
+      <div class="strategy-icon" style="background: rgba(108,99,255,0.12);">🗺️</div>
+      <h3>Build a Decision Tree, Not a Solution List</h3>
+      <span>The real expert skill</span>
+    </div>
+    <div class="strategy-body">
+      Experts don't remember solutions — they have a <strong>decision tree in their head</strong>: "Input is a string with a window constraint → Sliding Window. Need fast lookup → dict (insertion-ordered since 3.7). Need deduplication → set. Need counts → Counter. Recursive problem with overlapping subproblems → Memoization." After every pattern you learn, update your personal decision tree. By day 30, you have a map, not a list.
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PATTERN PRIORITY TABLE -->
+<section>
+  <div class="section-label">The Core Inventory</div>
+  <h2>15 patterns that cover<br>~90% of problems</h2>
+  <div style="overflow-x: auto; border: 1px solid var(--border); border-radius: 12px;">
+    <table class="concept-table">
+      <thead>
+        <tr>
+          <th>Pattern</th>
+          <th>When to use it</th>
+          <th>Key Python tool</th>
+          <th>Priority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Sliding Window</td><td>Subarrays/substrings with a constraint</td><td>Two pointers + Counter / dict</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>Two Pointers</td><td>Sorted array, palindromes, pairs</td><td>Left/right indices</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>Fast &amp; Slow Pointers</td><td>Cycle detection, midpoint finding</td><td>Two pointer speeds</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>Hash Map Frequency</td><td>Count, find duplicates, anagrams</td><td>dict, Counter, defaultdict</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>BFS (level-order)</td><td>Shortest path, tree levels, graph spread</td><td>collections.deque</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>DFS (recursive)</td><td>Tree traversal, path finding, backtracking</td><td>Recursion (mind the ~1000 limit)</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>Binary Search</td><td>Sorted input, "find the boundary" problems</td><td>lo/hi/mid indices, bisect</td><td><span class="priority must">MUST</span></td></tr>
+        <tr><td>Merge Intervals</td><td>Overlapping ranges, scheduling</td><td>sorted(key=...) + scan</td><td><span class="priority high">HIGH</span></td></tr>
+        <tr><td>Monotonic Stack</td><td>Next greater/smaller element</td><td>list as stack (append/pop)</td><td><span class="priority high">HIGH</span></td></tr>
+        <tr><td>Top-K Elements</td><td>Kth largest, frequent elements</td><td>heapq (min-heap)*</td><td><span class="priority high">HIGH</span></td></tr>
+        <tr><td>Prefix Sum</td><td>Range sum queries, subarray sums</td><td>itertools.accumulate</td><td><span class="priority high">HIGH</span></td></tr>
+        <tr><td>Backtracking</td><td>Permutations, combinations, Sudoku</td><td>DFS + undo step (itertools to check)</td><td><span class="priority high">HIGH</span></td></tr>
+        <tr><td>Dynamic Programming</td><td>Overlapping subproblems, optimal substructure</td><td>@functools.lru_cache, list tables</td><td><span class="priority high">HIGH</span></td></tr>
+        <tr><td>Union-Find</td><td>Connected components, grouping</td><td>Parent list</td><td><span class="priority low">LATER</span></td></tr>
+        <tr><td>Trie</td><td>Prefix matching, autocomplete</td><td>Nested dicts / defaultdict</td><td><span class="priority low">LATER</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size: 0.78rem; color: var(--dim); margin-top: 12px; font-family: 'Space Mono', monospace;">* heapq is a min-heap only — push negated values (-x) for a max-heap; heapq.nlargest / nsmallest cover quick Top-K. Read the hand-rolled MinHeap on Week 2 · Day 13, then write your own from scratch to understand it.</p>
+</section>
+
+<div class="divider"></div>
+
+<!-- THE TEMPLATE -->
+<section>
+  <div class="section-label">Live Example</div>
+  <h2>What the 3-Layer Method<br>looks like in practice</h2>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">sliding_window_example.py — "Max sum subarray of size k"</span>
+    </div>
+    <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="cmt"># LAYER 1: Brute Force — O(n·k) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">max_sum_brute</span>(arr: List[int], k: int) -&gt; int:
+    best = <span class="fn">float</span>(<span class="str">'-inf'</span>)
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(arr) - k + <span class="num">1</span>):
+        total = <span class="num">0</span>
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i, i + k):
+            total += arr[j]
+        best = <span class="fn">max</span>(best, total)
+    <span class="kw">return</span> best
+    <span class="cmt"># (sum(arr[i:i+k]) is shorter, but slicing copies k items — still O(n·k))</span>
+
+<span class="cmt"># BOTTLENECK: inner loop recalculates overlapping sums
+# KEY INSIGHT: slide a fixed window — add right, remove left</span>
+
+<span class="cmt"># LAYER 2: Sliding Window — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">max_sum_sliding</span>(arr: List[int], k: int) -&gt; int:
+    window_sum = <span class="fn">sum</span>(arr[:k])
+    best = window_sum
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(k, <span class="fn">len</span>(arr)):
+        window_sum += arr[i] - arr[i - k]  <span class="cmt"># slide: add new, remove old</span>
+        best = <span class="fn">max</span>(best, window_sum)
+    <span class="kw">return</span> best
+
+nums = [<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>]
+<span class="fn">print</span>(<span class="fn">max_sum_brute</span>(nums, <span class="num">3</span>))    <span class="cmt"># 9  (5 + 1 + 3)</span>
+<span class="fn">print</span>(<span class="fn">max_sum_sliding</span>(nums, <span class="num">3</span>))  <span class="cmt"># 9</span>
+
+<span class="cmt"># Measure it, don't guess:
+#   python -m timeit -s "from sliding_window_example import max_sum_sliding; a = list(range(10**4))" "max_sum_sliding(a, 500)"</span>
+
+<span class="cmt"># LAYER 3: Pattern Journal Entry
+# Pattern: Fixed Sliding Window
+# Trigger: "subarray/substring of size k" + sum/max/min
+# Key trade-off: O(n) vs O(n·k) by reusing partial computation
+# Related: Variable Sliding Window (two pointers + condition)</span></pre>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 30-DAY PLAN -->
+<section>
+  <div class="section-label">The War Plan</div>
+  <h2>30-day aggressive schedule<br>for 1–2 hrs/day</h2>
+
+  <input type="radio" name="week" id="week-tab-0" class="week-radio" checked>
+  <input type="radio" name="week" id="week-tab-1" class="week-radio">
+  <input type="radio" name="week" id="week-tab-2" class="week-radio">
+  <input type="radio" name="week" id="week-tab-3" class="week-radio">
+
+  <div class="plan-nav">
+    <label class="week-btn" for="week-tab-0">Week 1 — Foundation</label>
+    <label class="week-btn" for="week-tab-1">Week 2 — Core Patterns</label>
+    <label class="week-btn" for="week-tab-2">Week 3 — Trees &amp; Graphs</label>
+    <label class="week-btn" for="week-tab-3">Week 4 — DP &amp; Synthesis</label>
+  </div>
+
+  <!-- WEEK 1 -->
+  <div class="week-panel" id="week-0">
+    <div class="week-intro">
+      <strong>Week 1: Rewire the foundation</strong>
+      You already know some DSA — the goal this week isn't to learn new things, it's to fix the cracks. Python internals, complexity thinking, and your first two patterns. Do not skip days 1–2.
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 1</div>
+      <div class="day-content">
+        <h4>Python Memory Model + Complexity Mindset</h4>
+        <p>Study how Python handles names, references and mutability: lists/dicts are passed by object reference, slicing copies, <code>is</code> vs <code>==</code>, shallow vs deep copy. Map every built-in list/dict/set operation to its Big-O (<code>x in list</code> is O(n), <code>x in set</code> is O(1), <code>list.pop(0)</code> is O(n)). Poke at it live in the REPL (<code>python -i</code>) and confirm with <code>timeit</code>. This is the foundation everything else rests on.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 2</div>
+      <div class="day-content">
+        <h4>Hash Map Pattern — Theory + 3 Problems</h4>
+        <p>Master Two Sum (easy), Group Anagrams (medium), Top K Frequent (medium). Use the 3-Layer method on each — first with a plain dict, then with <code>collections.Counter</code> / <code>defaultdict(list)</code>. Write pattern journal entry.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 3</div>
+      <div class="day-content">
+        <h4>Two Pointers — Theory + 3 Problems</h4>
+        <p>Valid Palindrome, 3Sum, Container With Most Water. Understand WHY two pointers eliminate the inner loop. Journal entry.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 4</div>
+      <div class="day-content">
+        <h4>Sliding Window — Theory + 3 Problems</h4>
+        <p>Max Sum Subarray of Size K, Longest Substring Without Repeating, Minimum Window Substring. Fix vs variable window distinction is critical.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 5</div>
+      <div class="day-content">
+        <h4>Blind Rewrite Day</h4>
+        <p>Close all tabs. Rewrite the best solution from Days 2, 3, and 4 from memory. Grade yourself: syntax errors are fine, wrong approach is not. Fix gaps.</p>
+      </div>
+      <div class="day-time">60 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 6</div>
+      <div class="day-content">
+        <h4>Binary Search — Theory + 3 Problems</h4>
+        <p>Binary Search (basic), Search in Rotated Sorted Array, Find Minimum in Rotated Array. Master the lo/hi/mid template and boundary conditions by hand, then check your answers against <code>bisect.bisect_left</code> / <code>bisect_right</code>.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 7</div>
+      <div class="day-content">
+        <h4>Week 1 Review + Decision Tree Update</h4>
+        <p>Write a one-page decision tree for your 4 learned patterns. When do you reach for each? What are the trigger words in a problem? Teach it back to yourself out loud.</p>
+      </div>
+      <div class="day-time">60 min</div>
+    </div>
+  </div>
+
+  <!-- WEEK 2 -->
+  <div class="week-panel" id="week-1">
+    <div class="week-intro">
+      <strong>Week 2: Stack, Linked Lists, Prefix Sums</strong>
+      These three are underrated. Most people skip to trees too fast. Stack and prefix sum patterns show up in 30%+ of medium problems disguised as something else.
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 8</div>
+      <div class="day-content">
+        <h4>Stack + Monotonic Stack</h4>
+        <p>Valid Parentheses, Daily Temperatures, Largest Rectangle in Histogram. The monotonic stack is one of the most underlearned patterns — master it now.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 9</div>
+      <div class="day-content">
+        <h4>Linked Lists from scratch in Python</h4>
+        <p>Build a <code>ListNode</code> class (<code>__init__(self, val, next=None)</code>), implement Reverse Linked List, Merge Two Sorted Lists, Linked List Cycle (Fast &amp; Slow Pointers). Python has no built-in singly linked list (<code>deque</code> is a different beast) — building it is the lesson.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 10</div>
+      <div class="day-content">
+        <h4>Prefix Sum + Intervals</h4>
+        <p>Range Sum Query, Subarray Sum Equals K, Merge Intervals. Prefix sum is criminally underrated for deep understanding. The "running total trick" unlocks huge problem classes — write it by hand, then with <code>itertools.accumulate</code>.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 11</div>
+      <div class="day-content">
+        <h4>Blind Rewrite Day + Pattern Connections</h4>
+        <p>Rewrite 3 problems from days 8–10. Then: find connections between patterns. Where does sliding window + hash map combine? Stack + binary search? Document these fusions.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 12</div>
+      <div class="day-content">
+        <h4>Mixed Problem Day (no hints)</h4>
+        <p>Solve 3 medium problems you've never seen — without knowing the pattern going in. Identify the pattern before coding. This is the real skill. LeetCode 560, 739, 238.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 13</div>
+      <div class="day-content">
+        <h4>Queues + Priority Queue (heapq)</h4>
+        <p>Implement a queue with <code>collections.deque</code> (know why <code>list.pop(0)</code> is O(n) — <code>timeit</code> both!). Read a hand-rolled MinHeap, then use <code>heapq</code> as a min-heap (negate values for a max-heap). K Closest Points to Origin three ways: sort, a size-k heap, and <code>heapq.nsmallest</code>.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 14</div>
+      <div class="day-content">
+        <h4>Week 2 Review + Journal Audit</h4>
+        <p>Re-read your entire problem journal. Identify the 2 patterns you understand least deeply. Spend the session going deeper on those two specifically.</p>
+      </div>
+      <div class="day-time">60 min</div>
+    </div>
+  </div>
+
+  <!-- WEEK 3 -->
+  <div class="week-panel" id="week-2">
+    <div class="week-intro">
+      <strong>Week 3: Trees &amp; Graphs</strong>
+      This is where most people stall. Trees are just recursive problems with a fancy name. Graphs are trees with cycles. Once you truly see that, everything clicks.
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 15</div>
+      <div class="day-content">
+        <h4>Binary Trees — DFS recursive</h4>
+        <p>Max Depth, Invert Binary Tree, Path Sum (extra practice: Same Tree). Build the TreeNode class yourself (<code>val</code>, <code>left</code>, <code>right</code>). Know <code>sys.setrecursionlimit</code> exists for deep trees. Focus on the recursive pattern: "what do I need from my children to return to my parent?"</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 16</div>
+      <div class="day-content">
+        <h4>Binary Trees — BFS level-order</h4>
+        <p>Level Order Traversal, Right Side View (extra practice: Zigzag Level Order). Master the <code>deque</code>-based BFS template in Python (snapshot <code>level_size = len(queue)</code>, then <code>for _ in range(level_size)</code> per level). This template solves 80% of tree BFS problems unchanged.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 17</div>
+      <div class="day-content">
+        <h4>Binary Search Tree properties</h4>
+        <p>Validate BST, Kth Smallest in BST (iterative inorder, then a lazy generator). Extra practice: BST to Greater Sum Tree. The key insight: inorder traversal of BST gives sorted array. Once you see that, BST problems are array problems.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 18</div>
+      <div class="day-content">
+        <h4>Graphs — DFS + BFS on adjacency list</h4>
+        <p>Build graph from edges with <code>defaultdict(list)</code>, graph BFS, Number of Islands (grid DFS). Extra practice: Clone Graph. The visited <code>set</code> is the most important piece — learn exactly when and where to mark nodes visited.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 19</div>
+      <div class="day-content">
+        <h4>Graphs — Cycle detection + Topological sort</h4>
+        <p>Course Schedule I &amp; II. These two problems teach directed graph thinking completely. Topological sort via Kahn's algorithm (BFS on in-degrees); for extra practice, re-solve with DFS cycle detection and compare.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 20</div>
+      <div class="day-content">
+        <h4>Backtracking deep dive</h4>
+        <p>Subsets, Permutations, Combination Sum. This is DFS + undo. The template: choose → explore → unchoose (<code>current.append</code> → recurse → <code>current.pop()</code>; append <code>current[:]</code>, not <code>current</code>). Internalize the template before touching any specific problem, then verify outputs against <code>itertools.permutations</code>.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 21</div>
+      <div class="day-content">
+        <h4>Blind Rewrite + Teach-Back session</h4>
+        <p>Rewrite Number of Islands, Course Schedule (Kahn's) and Combination Sum from memory. Then: open a blank doc and write a full explanation of each as if teaching a junior developer. No hand-waving.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+  </div>
+
+  <!-- WEEK 4 -->
+  <div class="week-panel" id="week-3">
+    <div class="week-intro">
+      <strong>Week 4: Dynamic Programming + Full Synthesis</strong>
+      DP is not a data structure — it's a thinking mode. The last week connects everything and builds the decision tree you'll use for the rest of your life.
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 22</div>
+      <div class="day-content">
+        <h4>DP — 1D problems + memoization</h4>
+        <p>Climbing Stairs, House Robber, Coin Change. Every DP problem: define state → find recurrence → base case → code. Top-down (memoization with <code>@functools.lru_cache(maxsize=None)</code>) first, bottom-up list table after.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 23</div>
+      <div class="day-content">
+        <h4>DP — 2D problems</h4>
+        <p>Unique Paths, Longest Common Subsequence, Edit Distance. 2D DP is just 1D DP with one more dimension of state. Draw the table first, always. Build it as <code>[[0] * cols for _ in range(rows)]</code> — never <code>[[0] * cols] * rows</code>.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 24</div>
+      <div class="day-content">
+        <h4>DP — Knapsack variants</h4>
+        <p>0/1 Knapsack, Partition Equal Subset Sum, Target Sum. These are the "choose or don't choose" DP problems. Recognize the pattern in the problem statement.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 25</div>
+      <div class="day-content">
+        <h4>Pattern Recognition Sprint</h4>
+        <p>Take 6 unseen problems, set 5-min timer each — don't solve, just identify the pattern and explain why. This trains the diagnostic muscle, which is the real expert skill.</p>
+      </div>
+      <div class="day-time">60 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 26–27</div>
+      <div class="day-content">
+        <h4>Weak Pattern Deep Dive</h4>
+        <p>Review your journal. Find the 2 patterns you've gotten wrong most. Spend both days entirely on those. Solve 5 problems each. No other patterns. Ruthless focus.</p>
+      </div>
+      <div class="day-time">90 min/day</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 28</div>
+      <div class="day-content">
+        <h4>Build Your Complete Decision Tree</h4>
+        <p>Write a personal reference document: every pattern from the course, trigger conditions, Python template code (plus the stdlib shortcut for each), 2 example problems each. This document is your external brain. Keep it forever.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 29</div>
+      <div class="day-content">
+        <h4>Timed Mock Session</h4>
+        <p>Set a 90-minute timer. Solve 3 random medium problems under exam conditions: no hints, no docs. Grade on: correct pattern ID, working solution, correct complexity analysis.</p>
+      </div>
+      <div class="day-time">90 min</div>
+    </div>
+    <div class="day-row">
+      <div class="day-label">Day 30</div>
+      <div class="day-content">
+        <h4>The "What I Now Know" Document</h4>
+        <p>Write a 500-word honest assessment: which patterns are solid, which need work, what your biggest insight was, and what your next 30 days look like. This closes the loop and anchors your growth.</p>
+      </div>
+      <div class="day-time">60 min</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DAILY RITUAL -->
+<section>
+  <div class="section-label">The Habit</div>
+  <h2>Daily ritual for<br>1–2 hour sessions</h2>
+  <div class="ritual-grid">
+    <div class="ritual-slot">
+      <div class="ritual-time">MIN 0–10</div>
+      <h4>Recall Warm-Up</h4>
+      <p>Rewrite yesterday's key solution from memory. No peeking. This takes 10 minutes and doubles retention.</p>
+    </div>
+    <div class="ritual-slot">
+      <div class="ritual-time">MIN 10–70</div>
+      <h4>Deep Work Block</h4>
+      <p>One pattern, 2–3 problems. Use the 3-Layer method. Set a 25-min timer per problem. Phone off.</p>
+    </div>
+    <div class="ritual-slot">
+      <div class="ritual-time">MIN 70–85</div>
+      <h4>Journal Entry</h4>
+      <p>Pattern name, key insight (1 sentence), 3-line pseudocode, complexity. This is not optional. Skip it and forget it.</p>
+    </div>
+    <div class="ritual-slot">
+      <div class="ritual-time">MIN 85–90</div>
+      <h4>Decision Tree Update</h4>
+      <p>Where does today's pattern fit in your mental map? Connect it to something you already know. 5 minutes, done.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MANTRAS -->
+<section style="padding-bottom: 40px;">
+  <div class="section-label">Keep These</div>
+  <h2>The principles that<br>don't change</h2>
+  <div class="insight-grid">
+    <div class="insight-card purple">
+      <h3>"Struggle is the curriculum"</h3>
+      <p>25 minutes of confusion is worth more than 25 minutes of reading solutions. The discomfort is not a sign you're failing — it's the learning happening.</p>
+    </div>
+    <div class="insight-card teal">
+      <h3>"Solve fewer problems, deeper"</h3>
+      <p>300 shallow solutions beats 50 deep ones only for quantity. For understanding — which is your goal — 50 problems with 3-layer analysis beats 300 solved and forgotten.</p>
+    </div>
+    <div class="insight-card red">
+      <h3>"Complexity first, always"</h3>
+      <p>State the Big-O before you run anything. This forces you to think rather than guess. If you can't state it, you don't understand the solution yet.</p>
+    </div>
+    <div class="insight-card yellow">
+      <h3>"Recognition > Memorization"</h3>
+      <p>The goal is never to memorize solutions. It's to get so familiar with patterns that recognition becomes automatic. That's what mastery actually feels like.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built for: Know some DSA · Deep Understanding · 1–2 hrs/day &nbsp;·&nbsp; Python &nbsp;·&nbsp; 30 Days
+</footer>
+
+
+</body>
+</html>

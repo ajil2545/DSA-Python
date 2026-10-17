@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>String Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="02-strings.html" class="back-link">← Strings</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 02</div>
+    <h1 class="page-title">String <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">String problems explained step by step.</p>
+  </div>
+
+  <!-- Q1 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">01</span>
+      <span class="solution-title">Reverse a String</span>
+      <span class="problem-tag easy">EASY</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Strings are immutable in Python — <code>s[0] = "x"</code> raises TypeError, so you can't swap characters directly. Convert to a list with <code>list(s)</code>, swap from both ends inward, then <code>"".join()</code>. Two-pointer approach. (In real code, <code>s[::-1]</code> does it in one step.)
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">reverse_string</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">str</span>:
+    chars = list(s)  <span class="cm"># mutable copy of the characters</span>
+    left, right = <span class="num">0</span>, len(chars) - <span class="num">1</span>
+
+    <span class="kw">while</span> left &lt; right:
+        <span class="cm"># Swap characters at both ends (tuple unpacking)</span>
+        chars[left], chars[right] = chars[right], chars[left]
+        left += <span class="num">1</span>
+        right -= <span class="num">1</span>
+
+    <span class="kw">return</span> <span class="str">""</span>.join(chars)
+
+<span class="cm"># LeetCode variant modifies in-place (list of chars input), returns None:</span>
+<span class="kw">def</span> <span class="fn">reverse_string_in_place</span>(s: <span class="cls">List</span>[<span class="cls">str</span>]) -&gt; <span class="kw">None</span>:
+    left, right = <span class="num">0</span>, len(s) - <span class="num">1</span>
+    <span class="kw">while</span> left &lt; right:
+        s[left], s[right] = s[right], s[left]
+        left, right = left + <span class="num">1</span>, right - <span class="num">1</span>
+
+print(<span class="fn">reverse_string</span>(<span class="str">"hello"</span>))  <span class="cm"># olleh</span>
+
+chars = list(<span class="str">"hello"</span>)
+<span class="fn">reverse_string_in_place</span>(chars)
+print(chars)                    <span class="cm"># ['o', 'l', 'l', 'e', 'h']</span>
+print(<span class="str">"hello"</span>[::-<span class="num">1</span>])            <span class="cm"># olleh  (Pythonic one-liner)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">02</span>
+      <span class="solution-title">Valid Palindrome</span>
+      <span class="problem-tag easy">EASY</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Clean the string first (keep only characters where <code>c.isalnum()</code>, then <code>.lower()</code>). Then two pointers from both ends — if ANY mismatch, it's not a palindrome.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">is_palindrome</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">bool</span>:
+    <span class="cm"># Step 1: Keep only letters and digits, lowercase everything</span>
+    clean = <span class="str">""</span>.join(c.lower() <span class="kw">for</span> c <span class="kw">in</span> s <span class="kw">if</span> c.isalnum())
+
+    <span class="cm"># Step 2: Two pointers — compare from both ends</span>
+    left, right = <span class="num">0</span>, len(clean) - <span class="num">1</span>
+
+    <span class="kw">while</span> left &lt; right:
+        <span class="kw">if</span> clean[left] != clean[right]:
+            <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># mismatch!</span>
+        left += <span class="num">1</span>
+        right -= <span class="num">1</span>
+
+    <span class="kw">return</span> <span class="kw">True</span>  <span class="cm"># all matched</span>
+
+print(<span class="fn">is_palindrome</span>(<span class="str">"A man, a plan, a canal: Panama"</span>))  <span class="cm"># True</span>
+print(<span class="fn">is_palindrome</span>(<span class="str">"race a car"</span>))                      <span class="cm"># False</span>
+
+<span class="cm"># Interview one-liner once cleaned: return clean == clean[::-1]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">03</span>
+      <span class="solution-title">Valid Anagram</span>
+      <span class="problem-tag easy">EASY</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Two strings are anagrams if they have the exact same character counts. Count chars in first string (+1), subtract chars from second string (-1). If any count goes below 0, they don't match. In Python, <code>collections.Counter</code> does the counting in one call, and for lowercase-only input a fixed 26-slot list indexed by <code>ord(c) - ord("a")</code> works too.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span> (fixed alphabet, e.g. 26 letters)</div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>, <span class="cls">defaultdict</span>
+
+<span class="kw">def</span> <span class="fn">is_anagram</span>(s: <span class="cls">str</span>, t: <span class="cls">str</span>) -&gt; <span class="cls">bool</span>:
+    <span class="kw">if</span> len(s) != len(t):
+        <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># quick fail</span>
+
+    count = <span class="cls">defaultdict</span>(<span class="cls">int</span>)  <span class="cm"># missing keys start at 0</span>
+
+    <span class="cm"># Count up for s</span>
+    <span class="kw">for</span> c <span class="kw">in</span> s:
+        count[c] += <span class="num">1</span>
+
+    <span class="cm"># Count down for t</span>
+    <span class="kw">for</span> c <span class="kw">in</span> t:
+        <span class="kw">if</span> count[c] == <span class="num">0</span>:
+            <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># char not in s, or used too many times</span>
+        count[c] -= <span class="num">1</span>
+
+    <span class="kw">return</span> <span class="kw">True</span>
+
+<span class="cm"># Pythonic version — Counter is a dict subclass that counts for you</span>
+<span class="kw">def</span> <span class="fn">is_anagram_counter</span>(s: <span class="cls">str</span>, t: <span class="cls">str</span>) -&gt; <span class="cls">bool</span>:
+    <span class="kw">return</span> <span class="cls">Counter</span>(s) == <span class="cls">Counter</span>(t)
+
+<span class="cm"># Fixed-size version (lowercase a-z only) — truly O(1) space</span>
+<span class="kw">def</span> <span class="fn">is_anagram_26</span>(s: <span class="cls">str</span>, t: <span class="cls">str</span>) -&gt; <span class="cls">bool</span>:
+    <span class="kw">if</span> len(s) != len(t):
+        <span class="kw">return</span> <span class="kw">False</span>
+    counts = [<span class="num">0</span>] * <span class="num">26</span>
+    <span class="kw">for</span> a, b <span class="kw">in</span> zip(s, t):
+        counts[ord(a) - ord(<span class="str">"a"</span>)] += <span class="num">1</span>
+        counts[ord(b) - ord(<span class="str">"a"</span>)] -= <span class="num">1</span>
+    <span class="kw">return</span> all(c == <span class="num">0</span> <span class="kw">for</span> c <span class="kw">in</span> counts)
+
+print(<span class="fn">is_anagram</span>(<span class="str">"anagram"</span>, <span class="str">"nagaram"</span>))          <span class="cm"># True</span>
+print(<span class="fn">is_anagram</span>(<span class="str">"rat"</span>, <span class="str">"car"</span>))                  <span class="cm"># False</span>
+print(<span class="fn">is_anagram_counter</span>(<span class="str">"anagram"</span>, <span class="str">"nagaram"</span>))  <span class="cm"># True</span>
+print(<span class="fn">is_anagram_26</span>(<span class="str">"rat"</span>, <span class="str">"car"</span>))               <span class="cm"># False</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">04</span>
+      <span class="solution-title">Longest Substring Without Repeating Characters</span>
+      <span class="problem-tag medium">MEDIUM</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Sliding window. Expand the right side one char at a time. If right side char is already in window (duplicate), shrink from the left until it's gone. Track max window size.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Use a set to track characters currently in the window.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Expand right (enumerate gives index + char). If char already in the set → shrink from left until it's removed.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Update max length after each expansion.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(min(n,m))</span> m=charset size</div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">length_of_longest_substring</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">int</span>:
+    seen = <span class="cls">set</span>()
+    left = max_len = <span class="num">0</span>
+
+    <span class="kw">for</span> right, ch <span class="kw">in</span> enumerate(s):
+        <span class="cm"># Shrink window until no duplicate</span>
+        <span class="kw">while</span> ch <span class="kw">in</span> seen:
+            seen.remove(s[left])  <span class="cm"># remove leftmost char</span>
+            left += <span class="num">1</span>
+
+        seen.add(ch)
+        max_len = max(max_len, right - left + <span class="num">1</span>)
+
+    <span class="kw">return</span> max_len
+
+<span class="cm"># "abcabcbb" → window moves like:</span>
+<span class="cm"># [a] [ab] [abc] [bca] [cab] [abc] [cb] [b]</span>
+<span class="cm">#  1    2    3    3     3     3    2   1  → max=3</span>
+
+print(<span class="fn">length_of_longest_substring</span>(<span class="str">"abcabcbb"</span>))  <span class="cm"># 3</span>
+print(<span class="fn">length_of_longest_substring</span>(<span class="str">"pwwkew"</span>))    <span class="cm"># 3 ("wke")</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">05</span>
+      <span class="solution-title">Group Anagrams</span>
+      <span class="problem-tag medium">MEDIUM</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Anagrams have the same characters. If we sort each word, anagrams will produce the same sorted string ("eat"→"aet", "tea"→"aet"). Use the sorted string as a dict key to group them — <code>"".join(sorted(word))</code>, because <code>sorted()</code> on a string returns a list of chars. A <code>defaultdict(list)</code> removes the "create the list if missing" boilerplate.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n·m log m)</span> m=word length</div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">defaultdict</span>
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">group_anagrams</span>(strs: <span class="cls">List</span>[<span class="cls">str</span>]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[<span class="cls">str</span>]]:
+    groups = <span class="cls">defaultdict</span>(<span class="cls">list</span>)  <span class="cm"># sorted_word → [words]</span>
+
+    <span class="kw">for</span> word <span class="kw">in</span> strs:
+        <span class="cm"># Sort the word to create a canonical "anagram key"</span>
+        key = <span class="str">""</span>.join(sorted(word))  <span class="cm"># "eat" → ['a','e','t'] → "aet"</span>
+        groups[key].append(word)
+
+    <span class="kw">return</span> list(groups.values())
+
+print(<span class="fn">group_anagrams</span>([<span class="str">"eat"</span>, <span class="str">"tea"</span>, <span class="str">"tan"</span>, <span class="str">"ate"</span>, <span class="str">"nat"</span>, <span class="str">"bat"</span>]))
+<span class="cm"># [['eat', 'tea', 'ate'], ['tan', 'nat'], ['bat']]</span>
+
+<span class="cm"># O(n·m) alternative: key = tuple of 26 letter counts (lists aren't hashable, tuples are)</span>
+<span class="kw">def</span> <span class="fn">count_key</span>(word: <span class="cls">str</span>) -&gt; <span class="cls">tuple</span>:
+    counts = [<span class="num">0</span>] * <span class="num">26</span>
+    <span class="kw">for</span> c <span class="kw">in</span> word:
+        counts[ord(c) - ord(<span class="str">"a"</span>)] += <span class="num">1</span>
+    <span class="kw">return</span> tuple(counts)
+
+print(<span class="fn">count_key</span>(<span class="str">"eat"</span>) == <span class="fn">count_key</span>(<span class="str">"tea"</span>))  <span class="cm"># True</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Q6 Longest Palindromic Substring -->
+  <div class="solution-card">
+    <div class="solution-header">
+      <span class="solution-num">06</span>
+      <span class="solution-title">Longest Palindromic Substring</span>
+      <span class="problem-tag medium">MEDIUM</span>
+    </div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Expand Around Center. Every palindrome has a center. Try expanding from every possible center (single char for odd-length, gap between two chars for even-length). Track the longest expansion found. The helper returns the palindrome's bounds, so we don't need to mutate outer variables (if you did, a nested function would need <code>nonlocal</code>).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n²)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Expand Around Center</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Tuple</span>
+
+<span class="kw">def</span> <span class="fn">longest_palindrome</span>(s: <span class="cls">str</span>) -&gt; <span class="cls">str</span>:
+    <span class="kw">def</span> <span class="fn">expand</span>(left: <span class="cls">int</span>, right: <span class="cls">int</span>) -&gt; <span class="cls">Tuple</span>[<span class="cls">int</span>, <span class="cls">int</span>]:
+        <span class="cm"># Expand as long as chars match; return bounds of the palindrome found</span>
+        <span class="kw">while</span> left &gt;= <span class="num">0</span> <span class="kw">and</span> right &lt; len(s) <span class="kw">and</span> s[left] == s[right]:
+            left -= <span class="num">1</span>
+            right += <span class="num">1</span>
+        <span class="kw">return</span> left + <span class="num">1</span>, right  <span class="cm"># s[left+1:right] is the palindrome</span>
+
+    start, end = <span class="num">0</span>, <span class="num">1</span> <span class="kw">if</span> s <span class="kw">else</span> <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> range(len(s)):
+        <span class="kw">for</span> lo, hi <span class="kw">in</span> (<span class="fn">expand</span>(i, i),       <span class="cm"># odd-length palindromes (center = i)</span>
+                       <span class="fn">expand</span>(i, i + <span class="num">1</span>)):  <span class="cm"># even-length palindromes (center = gap)</span>
+            <span class="kw">if</span> hi - lo &gt; end - start:
+                start, end = lo, hi
+
+    <span class="kw">return</span> s[start:end]  <span class="cm"># slicing: end index is exclusive</span>
+
+print(<span class="fn">longest_palindrome</span>(<span class="str">"babad"</span>))  <span class="cm"># bab  ("aba" is also valid)</span>
+print(<span class="fn">longest_palindrome</span>(<span class="str">"cbbd"</span>))   <span class="cm"># bb</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-01-arrays.html" class="footer-back">← Array Solutions</a>
+    <a href="sol-03-hashmaps.html" class="footer-next">HashMap Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

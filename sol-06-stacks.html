@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="06-stacks.html" class="back-link">← Stacks</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 06</div>
+    <h1 class="page-title">Stack <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">LIFO problems — when order and "most recent" matters.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Min Stack</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Design a stack that supports push, pop, top, and get_min — all in O(1).<br><br>
+        <strong>Think:</strong> The trick is knowing the minimum AT EACH STATE of the stack. Use a second stack (min_stack) that tracks the current minimum alongside the main stack. When you push, also push the new minimum.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Main stack = normal Python list used as a stack.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Min stack = at each position, stores the minimum of everything below AND including that position.</div></div>
+      <div class="step"><div class="step-num">3</div><div>When pushing x: append <code>min(x, current_min)</code> to min_stack.</div></div>
+      <div class="step"><div class="step-num">4</div><div><code>get_min()</code> just peeks <code>min_stack[-1]</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(1) per op</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">class</span> <span class="cls">MinStack</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.stack = []
+        <span class="kw">self</span>.min_stack = []  <span class="cm"># parallel stack tracking running minimum</span>
+
+    <span class="kw">def</span> <span class="fn">push</span>(<span class="kw">self</span>, val: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.stack.append(val)
+        <span class="cm"># New minimum is the smaller of: val vs current top of min_stack</span>
+        current_min = <span class="kw">self</span>.min_stack[-<span class="num">1</span>] <span class="kw">if</span> <span class="kw">self</span>.min_stack <span class="kw">else</span> <span class="fn">float</span>(<span class="str">'inf'</span>)
+        <span class="kw">self</span>.min_stack.append(<span class="fn">min</span>(val, current_min))
+
+    <span class="kw">def</span> <span class="fn">pop</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.stack.pop()
+        <span class="kw">self</span>.min_stack.pop()  <span class="cm"># pop both in sync</span>
+
+    <span class="kw">def</span> <span class="fn">top</span>(<span class="kw">self</span>) -&gt; int:
+        <span class="kw">return</span> <span class="kw">self</span>.stack[-<span class="num">1</span>]
+
+    <span class="kw">def</span> <span class="fn">get_min</span>(<span class="kw">self</span>) -&gt; int:
+        <span class="kw">return</span> <span class="kw">self</span>.min_stack[-<span class="num">1</span>]
+
+ms = <span class="cls">MinStack</span>()
+<span class="kw">for</span> x <span class="kw">in</span> (<span class="num">5</span>, <span class="num">3</span>, <span class="num">7</span>, <span class="num">2</span>):
+    ms.push(x)
+<span class="cm"># stack:     [5, 3, 7, 2]</span>
+<span class="cm"># min_stack: [5, 3, 3, 2]</span>
+<span class="fn">print</span>(ms.get_min())  <span class="cm"># 2</span>
+ms.pop()
+<span class="fn">print</span>(ms.get_min())  <span class="cm"># 3 (instantly, from min_stack top)</span>
+<span class="fn">print</span>(ms.top())      <span class="cm"># 7</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Daily Temperatures</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> For each day, find how many days until a warmer temperature. Return a list of wait days.<br><br>
+        <strong>Think:</strong> Monotonic decreasing stack of indices. When we find a warmer day, pop everything cooler and record the distance. Any index still in the stack at the end never gets a warmer day (answer = 0).
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Stack holds indices of days we haven't found a warmer day for yet.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each day, while stack top has a COOLER temperature than today → pop and record distance.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Push current day's index onto stack.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">daily_temperatures</span>(temps: List[int]) -&gt; List[int]:
+    result = [<span class="num">0</span>] * <span class="fn">len</span>(temps)
+    stack = []  <span class="cm"># stores indices of "waiting" days</span>
+
+    <span class="kw">for</span> i, t <span class="kw">in</span> <span class="fn">enumerate</span>(temps):
+        <span class="cm"># Today is warmer than days still waiting in stack?</span>
+        <span class="kw">while</span> stack <span class="kw">and</span> t &gt; temps[stack[-<span class="num">1</span>]]:
+            waiting_day = stack.pop()
+            result[waiting_day] = i - waiting_day  <span class="cm"># days waited</span>
+        stack.append(i)  <span class="cm"># add today to waiting list</span>
+
+    <span class="kw">return</span> result  <span class="cm"># remaining in stack stay 0 (never warmer)</span>
+
+<span class="fn">print</span>(<span class="fn">daily_temperatures</span>([<span class="num">73</span>, <span class="num">74</span>, <span class="num">75</span>, <span class="num">71</span>, <span class="num">69</span>, <span class="num">72</span>, <span class="num">76</span>, <span class="num">73</span>]))
+<span class="cm"># [1, 1, 4, 2, 1, 1, 0, 0]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Largest Rectangle in Histogram</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Find largest rectangle that fits within a histogram.<br><br>
+        <strong>Think:</strong> For each bar, the rectangle it anchors extends left and right as long as bars are taller. Use a monotonic increasing stack — when we hit a shorter bar, pop taller bars and calculate their max rectangles.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Stack stores indices of bars in increasing height order.</div></div>
+      <div class="step"><div class="step-num">2</div><div>When current bar is shorter than stack top → pop the top, calculate its max rectangle width.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Width = current index - new stack top - 1 (how far the popped bar can extend).</div></div>
+      <div class="step"><div class="step-num">4</div><div>Add a 0-height sentinel bar at the end to flush the stack. In Python, <code>heights + [0]</code> builds a new list, so the caller's list is never mutated.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">largest_rectangle_area</span>(heights: List[int]) -&gt; int:
+    stack = [-<span class="num">1</span>]          <span class="cm"># -1 as a base sentinel</span>
+    bars = heights + [<span class="num">0</span>]  <span class="cm"># sentinel to flush stack at end (new list — input untouched)</span>
+    max_area = <span class="num">0</span>
+
+    <span class="kw">for</span> i, height <span class="kw">in</span> <span class="fn">enumerate</span>(bars):
+        <span class="kw">while</span> stack[-<span class="num">1</span>] != -<span class="num">1</span> <span class="kw">and</span> height &lt; bars[stack[-<span class="num">1</span>]]:
+            h = bars[stack.pop()]     <span class="cm"># height of popped bar</span>
+            w = i - stack[-<span class="num">1</span>] - <span class="num">1</span>      <span class="cm"># width it can span</span>
+            max_area = <span class="fn">max</span>(max_area, h * w)
+        stack.append(i)
+
+    <span class="kw">return</span> max_area
+
+<span class="fn">print</span>(<span class="fn">largest_rectangle_area</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">2</span>, <span class="num">3</span>]))  <span class="cm"># 10</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-05-linkedlist.html" class="footer-back">← Linked List Solutions</a>
+    <a href="sol-queues.html" class="footer-next">Queue Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

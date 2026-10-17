@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4 — DP &amp; Synthesis | DSA Mastery in Python</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=DM+Serif+Display&display=swap');
+  :root{--bg:#0b0c10;--surface:#12141a;--surface2:#1a1d26;--border:#222531;--accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--warn:#ffc947;--text:#e8eaf0;--muted:#7a7f99;--dim:#3a3f52}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:1.7}
+  .container{max-width:880px;margin:0 auto;padding:0 24px}
+  .topnav{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .topnav a{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;color:var(--muted);text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:100px;transition:0.18s}
+  .topnav a:hover,.topnav a.active{border-color:var(--accent);color:var(--accent)}
+  .topnav .brand{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);border:none;padding:0;margin-right:auto}
+  .week-hero{padding:80px 0 60px;position:relative}
+  .week-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 40% 10%,rgba(108,99,255,0.1) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 80% 80%,rgba(255,201,71,0.06) 0%,transparent 60%);pointer-events:none}
+  .week-num{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+  .week-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,5vw,3.5rem);line-height:1.1;margin-bottom:20px}
+  .week-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+  .day-section{padding:60px 0;border-top:1px solid var(--border)}
+  .day-label{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .day-section h2{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);line-height:1.15;margin-bottom:16px}
+  .day-section>p,.topic-block p{color:var(--muted);font-size:0.92rem;line-height:1.75;margin-bottom:16px}
+  .day-section>p strong,.topic-block p strong{color:var(--text)}
+  .topic-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin:24px 0;position:relative;overflow:hidden}
+  .topic-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+  .topic-block h3{font-size:1.05rem;font-weight:600;margin-bottom:12px}
+  .topic-block.teal::before{background:var(--accent2)}.topic-block.red::before{background:var(--accent3)}.topic-block.yellow::before{background:var(--warn)}
+  .code-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:20px 0}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
+  .code-title{font-family:'Space Mono',monospace;font-size:0.73rem;color:var(--muted)}
+  .code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%}
+  .d1{background:#ff5f57}.d2{background:#ffbd2e}.d3{background:#28c940}
+  pre{padding:24px;overflow-x:auto;font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.85;color:var(--text)}
+  .cmt{color:var(--dim);font-style:italic}.kw{color:#c792ea}.fn{color:#82aaff}.str{color:#c3e88d}.num{color:#f78c6c}
+  .insight{border-left:3px solid var(--accent2);padding:16px 22px;background:rgba(0,212,170,0.04);border-radius:0 10px 10px 0;margin:20px 0;font-size:0.88rem;color:var(--muted)}
+  .insight strong{color:var(--accent2);display:block;margin-bottom:4px;font-size:0.82rem;font-family:'Space Mono',monospace;letter-spacing:0.05em}
+  .insight.warn{border-left-color:var(--warn);background:rgba(255,201,71,0.04)}.insight.warn strong{color:var(--warn)}
+  footer{text-align:center;padding:60px 24px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--dim);font-family:'Space Mono',monospace}
+  @media(max-width:600px){pre{font-size:0.7rem;padding:16px}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="dsa-mastery-python.html" class="brand">DSA Mastery in Python</a>
+  <a href="week1-foundation.html">Week 1</a>
+  <a href="week2-core-patterns.html">Week 2</a>
+  <a href="week3-trees-graphs.html">Week 3</a>
+  <a href="week4-dp-synthesis.html" class="active">Week 4</a>
+</nav>
+
+<div class="container">
+
+<div class="week-hero">
+  <div class="week-num">Week 4 of 4</div>
+  <h1>Dynamic Programming &amp; Full Synthesis</h1>
+  <p>DP is not a data structure — it's a thinking mode. The last week connects everything and builds the decision tree you'll use for the rest of your life. Python makes DP unusually pleasant: one decorator turns a plain recursive function into a memoized one.</p>
+</div>
+
+<!-- ============ DAY 22 ============ -->
+<div class="day-section" id="day22">
+  <div class="day-label">Day 22 · 90 min</div>
+  <h2>DP — 1D Problems + Memoization</h2>
+  <p>Every DP problem follows one process: <strong>define state → find recurrence → set base case → code it</strong>. Always start top-down (memoization), then convert to bottom-up if needed.</p>
+
+  <div class="insight">
+    <strong>THE DP LITMUS TEST</strong>
+    A problem is DP if it has: (1) overlapping subproblems — same subproblem is solved multiple times, and (2) optimal substructure — optimal solution uses optimal sub-solutions. If both, use DP. If only (2), greedy might work.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Climbing Stairs</h3>
+    <p>You can climb 1 or 2 steps. How many distinct ways to reach the top of n steps?</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">climbing_stairs.py</span>
+    </div>
+    <pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+<span class="kw">from</span> typing <span class="kw">import</span> Dict, List, Optional
+
+
+<span class="cmt"># TOP-DOWN: Memoization with an explicit dict — O(n) time, O(n) space</span>
+<span class="kw">def</span> <span class="fn">climb_stairs_memo</span>(n: int, memo: Optional[Dict[int, int]] = <span class="kw">None</span>) -&gt; int:
+    <span class="kw">if</span> memo <span class="kw">is</span> <span class="kw">None</span>:
+        memo = {}  <span class="cmt"># never write memo={} as a default — it's shared between calls!</span>
+    <span class="kw">if</span> n &lt;= <span class="num">2</span>:
+        <span class="kw">return</span> n            <span class="cmt"># base cases</span>
+    <span class="kw">if</span> n <span class="kw">in</span> memo:
+        <span class="kw">return</span> memo[n]      <span class="cmt"># already computed?</span>
+    memo[n] = <span class="fn">climb_stairs_memo</span>(n - <span class="num">1</span>, memo) + <span class="fn">climb_stairs_memo</span>(n - <span class="num">2</span>, memo)
+    <span class="kw">return</span> memo[n]
+
+
+<span class="cmt"># TOP-DOWN, the Pythonic way: @lru_cache writes the memo for you</span>
+<span class="kw">@</span><span class="fn">lru_cache</span>(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">climb_stairs_cached</span>(n: int) -&gt; int:
+    <span class="kw">if</span> n &lt;= <span class="num">2</span>:
+        <span class="kw">return</span> n
+    <span class="kw">return</span> <span class="fn">climb_stairs_cached</span>(n - <span class="num">1</span>) + <span class="fn">climb_stairs_cached</span>(n - <span class="num">2</span>)
+
+
+<span class="cmt"># BOTTOM-UP: Tabulation — O(n) time, O(n) space</span>
+<span class="kw">def</span> <span class="fn">climb_stairs_tab</span>(n: int) -&gt; int:
+    <span class="kw">if</span> n &lt;= <span class="num">2</span>:
+        <span class="kw">return</span> n
+    dp = [<span class="num">0</span>] * (n + <span class="num">1</span>)
+    dp[<span class="num">1</span>], dp[<span class="num">2</span>] = <span class="num">1</span>, <span class="num">2</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, n + <span class="num">1</span>):
+        dp[i] = dp[i - <span class="num">1</span>] + dp[i - <span class="num">2</span>]
+    <span class="kw">return</span> dp[n]
+
+
+<span class="cmt"># SPACE-OPTIMIZED: O(1) — only need last two values</span>
+<span class="kw">def</span> <span class="fn">climb_stairs</span>(n: int) -&gt; int:
+    <span class="kw">if</span> n &lt;= <span class="num">2</span>:
+        <span class="kw">return</span> n
+    prev2, prev1 = <span class="num">1</span>, <span class="num">2</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, n + <span class="num">1</span>):
+        prev2, prev1 = prev1, prev1 + prev2  <span class="cmt"># tuple assignment: no temp variable</span>
+    <span class="kw">return</span> prev1
+
+
+<span class="fn">print</span>(<span class="fn">climb_stairs_memo</span>(<span class="num">5</span>), <span class="fn">climb_stairs_cached</span>(<span class="num">5</span>), <span class="fn">climb_stairs_tab</span>(<span class="num">5</span>), <span class="fn">climb_stairs</span>(<span class="num">5</span>))  <span class="cmt"># 8 8 8 8</span>
+
+<span class="cmt"># DP PROCESS:
+# State: dp[i] = number of ways to reach step i
+# Recurrence: dp[i] = dp[i-1] + dp[i-2]
+# Base: dp[1]=1, dp[2]=2
+# This is literally Fibonacci. Recognize it.</span></pre>
+  </div>
+
+  <div class="insight">
+    <strong>PYTHON DP TOOLBOX</strong>
+    <code>@lru_cache(maxsize=None)</code> from <code>functools</code> memoizes any function whose arguments are hashable (ints, strings, tuples — not lists; convert with <code>tuple(nums)</code>). <code>float('inf')</code> is the "impossible" sentinel. <code>[0] * (n + 1)</code> builds a 1D table; <code>[[0] * cols for _ in range(rows)]</code> builds a 2D one. Deep top-down recursion can hit the ~1000-frame recursion limit — that's the moment to switch to bottom-up.
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: House Robber</h3>
+    <p>Rob houses along a street. Can't rob two adjacent houses. Maximize total money.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">house_robber.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">rob</span>(nums: List[int]) -&gt; int:
+    prev2 = <span class="num">0</span>  <span class="cmt"># dp[i-2]</span>
+    prev1 = <span class="num">0</span>  <span class="cmt"># dp[i-1]</span>
+
+    <span class="kw">for</span> num <span class="kw">in</span> nums:
+        prev2, prev1 = prev1, <span class="fn">max</span>(prev1, prev2 + num)
+    <span class="kw">return</span> prev1
+
+
+<span class="fn">print</span>(<span class="fn">rob</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">9</span>, <span class="num">3</span>, <span class="num">1</span>]))  <span class="cmt"># 12  (2 + 9 + 1)</span>
+<span class="fn">print</span>(<span class="fn">rob</span>([<span class="num">5</span>]))              <span class="cmt"># 5   (single house works too)</span>
+
+<span class="cmt"># State: dp[i] = max money robbing houses [0..i]
+# Recurrence: dp[i] = max(dp[i-1], dp[i-2] + nums[i])
+#   → either skip house i (take dp[i-1])
+#   → or rob house i (take dp[i-2] + nums[i])
+# This is the "take or skip" DP pattern — appears everywhere.</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Coin Change</h3>
+    <p>Given coin denominations and a target amount, find the fewest coins needed.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">coin_change.py</span>
+    </div>
+    <pre><span class="cmt"># O(amount × coins) time, O(amount) space</span>
+<span class="kw">def</span> <span class="fn">coin_change</span>(coins: List[int], amount: int) -&gt; int:
+    dp = [<span class="fn">float</span>(<span class="str">'inf'</span>)] * (amount + <span class="num">1</span>)
+    dp[<span class="num">0</span>] = <span class="num">0</span>  <span class="cmt"># base: 0 coins to make amount 0</span>
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, amount + <span class="num">1</span>):
+        <span class="kw">for</span> coin <span class="kw">in</span> coins:
+            <span class="kw">if</span> coin &lt;= i:
+                dp[i] = <span class="fn">min</span>(dp[i], dp[i - coin] + <span class="num">1</span>)
+    <span class="kw">return</span> -<span class="num">1</span> <span class="kw">if</span> dp[amount] == <span class="fn">float</span>(<span class="str">'inf'</span>) <span class="kw">else</span> dp[amount]
+
+
+<span class="fn">print</span>(<span class="fn">coin_change</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">5</span>], <span class="num">11</span>))  <span class="cmt"># 3   (5 + 5 + 1)</span>
+<span class="fn">print</span>(<span class="fn">coin_change</span>([<span class="num">2</span>], <span class="num">3</span>))         <span class="cmt"># -1</span>
+
+<span class="cmt"># State: dp[i] = min coins to make amount i
+# Recurrence: dp[i] = min(dp[i - coin] + 1) for each coin
+# This is "unbounded knapsack" — each coin can be used infinitely.
+# float('inf') is the standard "impossible" sentinel (inf + 1 is still inf).</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 23 ============ -->
+<div class="day-section" id="day23">
+  <div class="day-label">Day 23 · 90 min</div>
+  <h2>DP — 2D Problems</h2>
+  <p>2D DP adds one more dimension of state. The trick: <strong>always draw the table first</strong>. Fill in base cases, then fill cell by cell. The code writes itself once the table makes sense.</p>
+
+  <div class="topic-block">
+    <h3>Problem 1: Unique Paths</h3>
+    <p>Robot in top-left of m×n grid, can only move right or down. How many unique paths to bottom-right?</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">unique_paths.py</span>
+    </div>
+    <pre><span class="cmt"># O(m×n) time, O(m×n) space</span>
+<span class="kw">def</span> <span class="fn">unique_paths</span>(m: int, n: int) -&gt; int:
+    dp = [[<span class="num">1</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m)]  <span class="cmt"># NOT [[1] * n] * m — that aliases one row m times</span>
+    <span class="cmt"># First row and first column are all 1s (only one way to reach)</span>
+
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):
+            dp[r][c] = dp[r - <span class="num">1</span>][c] + dp[r][c - <span class="num">1</span>]  <span class="cmt"># from above + from left</span>
+    <span class="kw">return</span> dp[-<span class="num">1</span>][-<span class="num">1</span>]  <span class="cmt"># negative index = last row, last column</span>
+
+
+<span class="fn">print</span>(<span class="fn">unique_paths</span>(<span class="num">3</span>, <span class="num">7</span>))  <span class="cmt"># 28</span>
+<span class="fn">print</span>(<span class="fn">unique_paths</span>(<span class="num">3</span>, <span class="num">2</span>))  <span class="cmt"># 3</span>
+
+<span class="cmt"># State: dp[r][c] = number of paths to reach (r, c)
+# Recurrence: dp[r][c] = dp[r-1][c] + dp[r][c-1]
+# Base: first row = 1, first col = 1</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Longest Common Subsequence</h3>
+    <p>Given two strings, find the length of their longest common subsequence.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">lcs.py</span>
+    </div>
+    <pre><span class="cmt"># O(m×n) time and space</span>
+<span class="kw">def</span> <span class="fn">longest_common_subsequence</span>(text1: str, text2: str) -&gt; int:
+    m, n = <span class="fn">len</span>(text1), <span class="fn">len</span>(text2)
+    <span class="cmt"># dp[i][j] = LCS of text1[:i] and text2[:j]</span>
+    dp = [[<span class="num">0</span>] * (n + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>)]
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m + <span class="num">1</span>):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+            <span class="kw">if</span> text1[i - <span class="num">1</span>] == text2[j - <span class="num">1</span>]:
+                dp[i][j] = dp[i - <span class="num">1</span>][j - <span class="num">1</span>] + <span class="num">1</span>  <span class="cmt"># characters match → extend</span>
+            <span class="kw">else</span>:
+                dp[i][j] = <span class="fn">max</span>(dp[i - <span class="num">1</span>][j], dp[i][j - <span class="num">1</span>])  <span class="cmt"># skip one</span>
+    <span class="kw">return</span> dp[m][n]
+
+
+<span class="cmt"># Same recurrence, top-down — often the fastest way to write it in an interview</span>
+<span class="kw">def</span> <span class="fn">lcs_memo</span>(text1: str, text2: str) -&gt; int:
+    <span class="kw">@</span><span class="fn">lru_cache</span>(maxsize=<span class="kw">None</span>)
+    <span class="kw">def</span> <span class="fn">solve</span>(i: int, j: int) -&gt; int:
+        <span class="kw">if</span> i == <span class="fn">len</span>(text1) <span class="kw">or</span> j == <span class="fn">len</span>(text2):
+            <span class="kw">return</span> <span class="num">0</span>
+        <span class="kw">if</span> text1[i] == text2[j]:
+            <span class="kw">return</span> <span class="num">1</span> + <span class="fn">solve</span>(i + <span class="num">1</span>, j + <span class="num">1</span>)
+        <span class="kw">return</span> <span class="fn">max</span>(<span class="fn">solve</span>(i + <span class="num">1</span>, j), <span class="fn">solve</span>(i, j + <span class="num">1</span>))
+    <span class="kw">return</span> <span class="fn">solve</span>(<span class="num">0</span>, <span class="num">0</span>)
+
+
+<span class="fn">print</span>(<span class="fn">longest_common_subsequence</span>(<span class="str">"abcde"</span>, <span class="str">"ace"</span>))  <span class="cmt"># 3  ("ace")</span>
+<span class="fn">print</span>(<span class="fn">lcs_memo</span>(<span class="str">"abcde"</span>, <span class="str">"ace"</span>))                    <span class="cmt"># 3</span>
+<span class="fn">print</span>(<span class="fn">longest_common_subsequence</span>(<span class="str">"abc"</span>, <span class="str">"def"</span>))    <span class="cmt"># 0</span>
+
+<span class="cmt"># THE 2D DP TEMPLATE for string comparison:
+# Match → take diagonal + 1
+# No match → max(skip from string1, skip from string2)
+# Applies to: LCS, Edit Distance, Minimum Deletions</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Edit Distance</h3>
+    <p>Given two words, find the minimum operations (insert, delete, replace) to convert one into the other.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">edit_distance.py</span>
+    </div>
+    <pre><span class="cmt"># O(m×n) time and space</span>
+<span class="kw">def</span> <span class="fn">min_distance</span>(word1: str, word2: str) -&gt; int:
+    m, n = <span class="fn">len</span>(word1), <span class="fn">len</span>(word2)
+    dp = [[<span class="num">0</span>] * (n + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>)]
+
+    <span class="cmt"># Base cases: converting to/from empty string</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>):
+        dp[i][<span class="num">0</span>] = i  <span class="cmt"># delete all</span>
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n + <span class="num">1</span>):
+        dp[<span class="num">0</span>][j] = j  <span class="cmt"># insert all</span>
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m + <span class="num">1</span>):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+            <span class="kw">if</span> word1[i - <span class="num">1</span>] == word2[j - <span class="num">1</span>]:
+                dp[i][j] = dp[i - <span class="num">1</span>][j - <span class="num">1</span>]  <span class="cmt"># match — no operation</span>
+            <span class="kw">else</span>:
+                dp[i][j] = <span class="num">1</span> + <span class="fn">min</span>(
+                    dp[i - <span class="num">1</span>][j],      <span class="cmt"># delete</span>
+                    dp[i][j - <span class="num">1</span>],      <span class="cmt"># insert</span>
+                    dp[i - <span class="num">1</span>][j - <span class="num">1</span>],  <span class="cmt"># replace</span>
+                )
+    <span class="kw">return</span> dp[m][n]
+
+
+<span class="fn">print</span>(<span class="fn">min_distance</span>(<span class="str">"horse"</span>, <span class="str">"ros"</span>))           <span class="cmt"># 3</span>
+<span class="fn">print</span>(<span class="fn">min_distance</span>(<span class="str">"intention"</span>, <span class="str">"execution"</span>))  <span class="cmt"># 5</span>
+
+<span class="cmt"># Same template as LCS but with 3 operations instead of 2.
+# Match → diagonal (free). No match → 1 + min(delete, insert, replace).
+# Draw the table. Fill it. The code is just the table in code form.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 24 ============ -->
+<div class="day-section" id="day24">
+  <div class="day-label">Day 24 · 90 min</div>
+  <h2>DP — Knapsack Variants</h2>
+  <p>The knapsack family: <strong>"for each item, choose to include it or not."</strong> This pattern appears in partition problems, subset sums, and optimization under constraints.</p>
+
+  <div class="topic-block">
+    <h3>Problem 1: 0/1 Knapsack</h3>
+    <p>Given weights and values of n items, find the maximum value that fits in a knapsack of capacity W.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">knapsack_01.py</span>
+    </div>
+    <pre><span class="cmt"># O(n × W) time, O(n × W) space</span>
+<span class="kw">def</span> <span class="fn">knapsack</span>(weights: List[int], values: List[int], W: int) -&gt; int:
+    n = <span class="fn">len</span>(weights)
+    <span class="cmt"># dp[i][w] = max value using items [0..i-1] with capacity w</span>
+    dp = [[<span class="num">0</span>] * (W + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(n + <span class="num">1</span>)]
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+        wt, val = weights[i - <span class="num">1</span>], values[i - <span class="num">1</span>]
+        <span class="kw">for</span> w <span class="kw">in</span> <span class="fn">range</span>(W + <span class="num">1</span>):
+            dp[i][w] = dp[i - <span class="num">1</span>][w]  <span class="cmt"># skip item i</span>
+            <span class="kw">if</span> wt &lt;= w:
+                dp[i][w] = <span class="fn">max</span>(dp[i][w], dp[i - <span class="num">1</span>][w - wt] + val)  <span class="cmt"># take it</span>
+    <span class="kw">return</span> dp[n][W]
+
+
+<span class="fn">print</span>(<span class="fn">knapsack</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>], [<span class="num">1</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">7</span>], <span class="num">7</span>))  <span class="cmt"># 9  (weights 3 + 4)</span>
+
+<span class="cmt"># THE KNAPSACK TEMPLATE:
+# For each item: skip it (dp[i-1][w]) OR take it (dp[i-1][w-weight] + value)
+# dp[i-1] means each item used at most once (0/1 knapsack)
+# dp[i] means items can be reused (unbounded knapsack — like Coin Change)</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Partition Equal Subset Sum</h3>
+    <p>Can you partition an array into two subsets with equal sum?</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">partition_equal_subset.py</span>
+    </div>
+    <pre><span class="cmt"># Transform: can we find a subset that sums to total / 2?
+# This IS the 0/1 knapsack with target = sum / 2
+
+# O(n × sum) time, O(sum) space (1D optimization)</span>
+<span class="kw">def</span> <span class="fn">can_partition</span>(nums: List[int]) -&gt; bool:
+    total = <span class="fn">sum</span>(nums)
+    <span class="kw">if</span> total % <span class="num">2</span> != <span class="num">0</span>:
+        <span class="kw">return</span> <span class="kw">False</span>  <span class="cmt"># odd total → impossible</span>
+
+    target = total // <span class="num">2</span>  <span class="cmt"># // keeps it an int (/ would give a float)</span>
+    dp = [<span class="kw">False</span>] * (target + <span class="num">1</span>)
+    dp[<span class="num">0</span>] = <span class="kw">True</span>  <span class="cmt"># sum of 0 is always achievable</span>
+
+    <span class="kw">for</span> num <span class="kw">in</span> nums:
+        <span class="cmt"># Iterate BACKWARDS to avoid using same item twice</span>
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(target, num - <span class="num">1</span>, -<span class="num">1</span>):
+            dp[j] = dp[j] <span class="kw">or</span> dp[j - num]
+    <span class="kw">return</span> dp[target]
+
+
+<span class="fn">print</span>(<span class="fn">can_partition</span>([<span class="num">1</span>, <span class="num">5</span>, <span class="num">11</span>, <span class="num">5</span>]))  <span class="cmt"># True   ([1, 5, 5] and [11])</span>
+<span class="fn">print</span>(<span class="fn">can_partition</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">5</span>]))   <span class="cmt"># False</span>
+
+<span class="cmt"># KEY INSIGHT: iterating backwards ensures each number is used once.
+# Forward iteration would let you use the same number multiple times.
+# This is the 1D space-optimized 0/1 knapsack pattern.
+# range(target, num - 1, -1) counts target, target-1, ..., num (stop is exclusive).</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Target Sum</h3>
+    <p>Assign + or - to each number to reach a target sum. Count the number of ways.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">target_sum.py</span>
+    </div>
+    <pre><span class="cmt"># Transform: P - N = target, P + N = total
+# So P = (target + total) / 2
+# Count subsets that sum to P → 0/1 knapsack counting</span>
+
+<span class="kw">def</span> <span class="fn">find_target_sum_ways</span>(nums: List[int], target: int) -&gt; int:
+    total = <span class="fn">sum</span>(nums)
+    <span class="kw">if</span> (total + target) % <span class="num">2</span> != <span class="num">0</span> <span class="kw">or</span> <span class="fn">abs</span>(target) &gt; total:
+        <span class="kw">return</span> <span class="num">0</span>
+
+    P = (total + target) // <span class="num">2</span>
+    dp = [<span class="num">0</span>] * (P + <span class="num">1</span>)
+    dp[<span class="num">0</span>] = <span class="num">1</span>  <span class="cmt"># one way to make sum 0: choose nothing</span>
+
+    <span class="kw">for</span> num <span class="kw">in</span> nums:
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(P, num - <span class="num">1</span>, -<span class="num">1</span>):
+            dp[j] += dp[j - num]  <span class="cmt"># add ways that include this number</span>
+    <span class="kw">return</span> dp[P]
+
+
+<span class="fn">print</span>(<span class="fn">find_target_sum_ways</span>([<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>], <span class="num">3</span>))  <span class="cmt"># 5</span>
+<span class="fn">print</span>(<span class="fn">find_target_sum_ways</span>([<span class="num">1</span>], <span class="num">1</span>))               <span class="cmt"># 1</span>
+
+<span class="cmt"># The mathematical transform is the hard part.
+# Once you see it's a subset sum counting problem,
+# the code is the same knapsack template.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 25 ============ -->
+<div class="day-section" id="day25">
+  <div class="day-label">Day 25 · 60 min</div>
+  <h2>Pattern Recognition Sprint</h2>
+  <p>Take 6 unseen problems. Set a <strong>5-minute timer for each</strong>. Don't solve — just identify the pattern and explain WHY. This trains the diagnostic muscle.</p>
+
+  <div class="topic-block yellow">
+    <h3>Suggested Problem Set</h3>
+    <p>Try these without reading the tags or hints:</p>
+    <p><strong>LC 15</strong> — 3Sum (should be instant: sort + two pointers)<br>
+    <strong>LC 76</strong> — Minimum Window Substring (variable sliding window + frequency <code>Counter</code>)<br>
+    <strong>LC 200</strong> — Number of Islands (grid DFS)<br>
+    <strong>LC 322</strong> — Coin Change (unbounded knapsack DP)<br>
+    <strong>LC 46</strong> — Permutations (backtracking)<br>
+    <strong>LC 53</strong> — Maximum Subarray (Kadane's / DP)</p>
+    <p>For each: write the pattern name, the Python data structure you'd use (<code>dict</code>, <code>set</code>, <code>deque</code>, <code>heapq</code>, list-as-stack…), and the expected time complexity in under 60 seconds. If any take longer than 2 minutes, that pattern needs more work in Days 26–27.</p>
+  </div>
+</div>
+
+<!-- ============ DAY 26-27 ============ -->
+<div class="day-section" id="day26">
+  <div class="day-label">Days 26–27 · 90 min/day</div>
+  <h2>Weak Pattern Deep Dive</h2>
+  <p>Review your journal. Find the 2 patterns you've gotten wrong or hesitated on most. Spend <strong>both days entirely on those</strong>. Solve 5 problems each. No other patterns. Ruthless focus.</p>
+
+  <div class="insight warn">
+    <strong>COMMON WEAK SPOTS</strong>
+    Based on most learners at your level: DP state definition (people struggle to identify what the "state" is), Monotonic Stack (when to use increasing vs decreasing), and Backtracking pruning (knowing when to cut branches early). Python-specific slips to watch for: forgetting to copy a list before appending it to results, building 2D grids with <code>[[0] * n] * m</code>, and mutable default arguments. Check if these are your weak spots too.
+  </div>
+
+  <div class="topic-block">
+    <h3>If DP is your weak spot — The Thinking Framework</h3>
+    <p>For every DP problem, answer these 4 questions in order before writing code:</p>
+    <p><strong>1. What is the state?</strong> What variables fully describe a subproblem? (Usually: index into array, remaining capacity/target, or position in grid.) In Python, the state is literally the argument list of your <code>@lru_cache</code> function.<br><br>
+    <strong>2. What is the recurrence?</strong> How does the answer for state (i) relate to smaller states? (Usually: take vs skip, or try all options and take the best.)<br><br>
+    <strong>3. What is the base case?</strong> When is the answer obvious without recursion? (Usually: empty array, zero capacity, or reaching the end.)<br><br>
+    <strong>4. What is the answer?</strong> Which cell in the DP table is the final answer? (Usually: dp[n], dp[n][W], or dp[m][n].)</p>
+  </div>
+</div>
+
+<!-- ============ DAY 28 ============ -->
+<div class="day-section" id="day28">
+  <div class="day-label">Day 28 · 90 min</div>
+  <h2>Build Your Complete Decision Tree</h2>
+  <p>This is the capstone exercise. Write a personal reference document — your external brain. Keep it forever.</p>
+
+  <div class="topic-block yellow">
+    <h3>The Complete Decision Tree</h3>
+    <p><strong>"Find pair/complement/match"</strong> → Hash Map (<code>dict</code>)<br><br>
+    <strong>"Group by shared property"</strong> → Hash Map (canonical key, <code>defaultdict(list)</code>)<br><br>
+    <strong>"Top K / K most frequent"</strong> → <code>Counter</code> + Bucket Sort or Heap (<code>heapq.nlargest</code>)<br><br>
+    <strong>"Sorted array + find pair"</strong> → Two Pointers (inward)<br><br>
+    <strong>"Palindrome"</strong> → Two Pointers (inward) or expand from center<br><br>
+    <strong>"Fixed-size subarray"</strong> → Fixed Sliding Window<br><br>
+    <strong>"Longest/shortest subarray with condition"</strong> → Variable Sliding Window<br><br>
+    <strong>"Sorted + search/boundary"</strong> → Binary Search (<code>bisect</code>)<br><br>
+    <strong>"Matching/nesting"</strong> → Stack (plain list: <code>append</code>/<code>pop</code>)<br><br>
+    <strong>"Next greater/smaller"</strong> → Monotonic Stack<br><br>
+    <strong>"Cycle detection / middle of list"</strong> → Fast &amp; Slow Pointers<br><br>
+    <strong>"Range sum / running total"</strong> → Prefix Sum (<code>itertools.accumulate</code>)<br><br>
+    <strong>"Count subarrays summing to K"</strong> → Prefix Sum + Hash Map<br><br>
+    <strong>"Overlapping ranges"</strong> → Sort + Merge (<code>sorted(key=...)</code>)<br><br>
+    <strong>"Tree depth/structure"</strong> → DFS recursive<br><br>
+    <strong>"Level-by-level"</strong> → BFS (<code>deque</code> + <code>level_size</code>)<br><br>
+    <strong>"BST operations"</strong> → Inorder traversal<br><br>
+    <strong>"Connected components"</strong> → Grid DFS / Union-Find<br><br>
+    <strong>"Dependency ordering"</strong> → Topological Sort (Kahn's)<br><br>
+    <strong>"Generate all X"</strong> → Backtracking<br><br>
+    <strong>"Optimal with overlapping subproblems"</strong> → Dynamic Programming (<code>@lru_cache</code> first)<br><br>
+    <strong>"Take or skip each item"</strong> → 0/1 Knapsack DP<br><br>
+    <strong>"Two strings comparison"</strong> → 2D DP (LCS / Edit Distance template)</p>
+  </div>
+</div>
+
+<!-- ============ DAY 29 ============ -->
+<div class="day-section" id="day29">
+  <div class="day-label">Day 29 · 90 min</div>
+  <h2>Timed Mock Session</h2>
+  <p>Set a 90-minute timer. Solve 3 random medium problems in Python under exam conditions: <strong>no hints, no docs, no looking anything up</strong>.</p>
+
+  <div class="topic-block">
+    <h3>Grading Rubric</h3>
+    <p><strong>Pattern ID (40%):</strong> Did you identify the correct pattern within 3 minutes of reading the problem?<br><br>
+    <strong>Working Solution (40%):</strong> Does your code pass? Minor bugs are okay; wrong approach is not.<br><br>
+    <strong>Complexity Analysis (20%):</strong> Can you correctly state time and space complexity without thinking — including the hidden costs of Python built-ins (<code>list.pop(0)</code> and <code>x in list</code> are O(n), <code>x in set</code> is O(1), slicing copies)?</p>
+    <p>Target: solve 2 of 3 within 90 minutes with correct pattern ID on all 3. If you hit this, you're well ahead of most.</p>
+  </div>
+</div>
+
+<!-- ============ DAY 30 ============ -->
+<div class="day-section" id="day30">
+  <div class="day-label">Day 30 · 60 min</div>
+  <h2>The "What I Now Know" Document</h2>
+  <p>Write a 500-word honest assessment. This closes the loop and anchors your growth for the next chapter.</p>
+
+  <div class="topic-block yellow">
+    <h3>Prompts to Answer</h3>
+    <p><strong>Which 3 patterns are my strongest?</strong> (Can recognize and implement from memory under pressure.)<br><br>
+    <strong>Which 3 patterns still need work?</strong> (Hesitate on recognition, forget implementation details, or get complexity wrong.)<br><br>
+    <strong>What was my single biggest insight?</strong> (The one realization that changed how I approach problems.)<br><br>
+    <strong>What does my next 30 days look like?</strong> (More problems on weak patterns? Start timed practice? Explore advanced topics like segment trees or graph algorithms?)</p>
+  </div>
+
+  <div class="insight">
+    <strong>YOU'VE BUILT SOMETHING REAL</strong>
+    30 days ago you knew some DSA inconsistently. Now you have a decision tree of 15+ patterns, a problem journal, a practice system, and a Python toolkit (<code>collections</code>, <code>heapq</code>, <code>bisect</code>, <code>itertools</code>, <code>functools</code>) to express them in a few lines. The patterns don't expire. The decision tree only gets sharper. Keep going.
+  </div>
+</div>
+
+</div>
+
+<footer>Week 4 of 4 · DSA Mastery in Python · Dynamic Programming &amp; Synthesis · The journey continues.</footer>
+
+</body>
+</html>

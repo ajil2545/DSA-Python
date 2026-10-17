@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sorting Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="04-sorting.html" class="back-link">← Sorting</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 04</div>
+    <h1 class="page-title">Sorting <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Sorting problems with simple walkthroughs.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Sort Colors (Dutch National Flag)</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Sort a list of 0s, 1s, and 2s in place without the built-in sort.<br><br>
+        <strong>Think:</strong> Three-pointer approach. low pointer tracks where 0s go, high pointer tracks where 2s go, mid walks through. Swap 0s to the left, 2s to the right, 1s stay in middle.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>low=0, mid=0, high=end. mid walks through the list.</div></div>
+      <div class="step"><div class="step-num">2</div><div>If nums[mid]==0 → swap with nums[low], move both low and mid forward.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If nums[mid]==1 → it's in the right zone, just move mid forward.</div></div>
+      <div class="step"><div class="step-num">4</div><div>If nums[mid]==2 → swap with nums[high], move high back. Don't move mid (swapped value unchecked).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">sort_colors</span>(nums: List[int]) -&gt; <span class="kw">None</span>:
+    <span class="str">"""Sort 0s, 1s and 2s in place. Returns None, just like list.sort()."""</span>
+    low, mid, high = <span class="num">0</span>, <span class="num">0</span>, len(nums) - <span class="num">1</span>
+
+    <span class="kw">while</span> mid &lt;= high:
+        <span class="kw">if</span> nums[mid] == <span class="num">0</span>:
+            <span class="cm"># 0 belongs at the front</span>
+            nums[low], nums[mid] = nums[mid], nums[low]
+            low += <span class="num">1</span>
+            mid += <span class="num">1</span>
+        <span class="kw">elif</span> nums[mid] == <span class="num">1</span>:
+            <span class="cm"># 1 belongs in the middle, just advance</span>
+            mid += <span class="num">1</span>
+        <span class="kw">else</span>:
+            <span class="cm"># 2 belongs at the back</span>
+            nums[mid], nums[high] = nums[high], nums[mid]
+            high -= <span class="num">1</span>   <span class="cm"># don't advance mid — need to check swapped value</span>
+
+arr = [<span class="num">2</span>, <span class="num">0</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">0</span>]
+<span class="fn">sort_colors</span>(arr)
+print(arr)   <span class="cm"># [0, 0, 1, 1, 2, 2]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Merge Intervals</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Sort intervals by start time. Then walk through — if current interval's start ≤ previous interval's end, they overlap → merge by extending the end. Otherwise, start a new group.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log n)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">merge</span>(intervals: List[List[int]]) -&gt; List[List[int]]:
+    <span class="kw">if</span> <span class="kw">not</span> intervals:
+        <span class="kw">return</span> []
+
+    <span class="cm"># Sort by start time first — key= instead of a comparator</span>
+    intervals.sort(key=<span class="kw">lambda</span> iv: iv[<span class="num">0</span>])
+
+    result = [intervals[<span class="num">0</span>]]          <span class="cm"># start with first interval</span>
+
+    <span class="kw">for</span> start, end <span class="kw">in</span> intervals[<span class="num">1</span>:]:  <span class="cm"># unpack each [start, end] pair</span>
+        last = result[-<span class="num">1</span>]            <span class="cm"># negative index → last element</span>
+
+        <span class="kw">if</span> start &lt;= last[<span class="num">1</span>]:
+            <span class="cm"># Overlapping — merge by extending the end</span>
+            last[<span class="num">1</span>] = max(last[<span class="num">1</span>], end)
+        <span class="kw">else</span>:
+            <span class="cm"># No overlap — add as new interval</span>
+            result.append([start, end])
+
+    <span class="kw">return</span> result
+
+print(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">18</span>]]))
+<span class="cm"># [[1, 6], [8, 10], [15, 18]]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Kth Largest Element in Array</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Simplest way: sort descending, return index k-1. Better: keep a <strong>min-heap of size k</strong> with <code>heapq</code> — its smallest element is the kth largest, O(n log k). Optimal on average: QuickSelect — partition like quicksort but only recurse into the side containing index k. Average O(n).
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Simple Sort</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">find_kth_largest</span>(nums: List[int], k: int) -&gt; int:
+    nums.sort(reverse=<span class="kw">True</span>)   <span class="cm"># sort descending, in place</span>
+    <span class="kw">return</span> nums[k - <span class="num">1</span>]        <span class="cm"># kth largest is at index k-1</span>
+
+print(<span class="fn">find_kth_largest</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>], <span class="num">2</span>))   <span class="cm"># 5</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Min-Heap of Size k (O(n log k))</div>
+        <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">find_kth_largest_heap</span>(nums: List[int], k: int) -&gt; int:
+    heap = []                      <span class="cm"># heapq is a MIN-heap: heap[0] is the smallest</span>
+    <span class="kw">for</span> n <span class="kw">in</span> nums:
+        heapq.heappush(heap, n)
+        <span class="kw">if</span> len(heap) &gt; k:
+            heapq.heappop(heap)    <span class="cm"># drop the smallest → keep the k largest</span>
+    <span class="kw">return</span> heap[<span class="num">0</span>]                 <span class="cm"># smallest of the k largest = kth largest</span>
+
+print(<span class="fn">find_kth_largest_heap</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>], <span class="num">2</span>))   <span class="cm"># 5</span>
+print(heapq.nlargest(<span class="num">2</span>, [<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>])[-<span class="num">1</span>])      <span class="cm"># 5  — same idea, one line</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Sort a Nearly Sorted Array</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Every element is at most k positions away from its place in sorted order (a "k-sorted" array). Sort it faster than O(n log n).<br><br>
+        <strong>Think:</strong> The smallest element must be somewhere in the first k+1 slots. So keep a <strong>min-heap of size k+1</strong> sliding along the list: pop the smallest (it's final), push the next element. Each heap operation costs O(log k) instead of O(log n).
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Put the first k+1 elements in a list and <code>heapq.heapify</code> it — O(k).</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each remaining element: push it and pop the smallest in one call with <code>heapq.heappushpop</code>. The popped value goes to the output.</div></div>
+      <div class="step"><div class="step-num">3</div><div>When the input runs out, pop everything left in the heap (already in order).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n log k)</span></div>
+        <div class="ci-item">Space: <span>O(k)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Min-Heap of Size k+1</div>
+        <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">def</span> <span class="fn">sort_k_sorted</span>(nums: List[int], k: int) -&gt; List[int]:
+    <span class="str">"""Each element is at most k positions away from its sorted spot."""</span>
+    heap = nums[:k + <span class="num">1</span>]       <span class="cm"># the smallest element must be in here</span>
+    heapq.heapify(heap)       <span class="cm"># O(k)</span>
+    result = []
+
+    <span class="kw">for</span> x <span class="kw">in</span> nums[k + <span class="num">1</span>:]:
+        result.append(heapq.heappushpop(heap, x))   <span class="cm"># push x, pop the smallest → it's final</span>
+
+    <span class="kw">while</span> heap:
+        result.append(heapq.heappop(heap))          <span class="cm"># drain what's left, smallest first</span>
+
+    <span class="kw">return</span> result
+
+print(<span class="fn">sort_k_sorted</span>([<span class="num">6</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">2</span>, <span class="num">8</span>, <span class="num">10</span>, <span class="num">9</span>], <span class="num">3</span>))   <span class="cm"># [2, 3, 5, 6, 8, 9, 10]</span>
+print(<span class="fn">sort_k_sorted</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">3</span>, <span class="num">6</span>, <span class="num">5</span>], <span class="num">1</span>))       <span class="cm"># [1, 2, 3, 4, 5, 6]</span>
+print(<span class="fn">sort_k_sorted</span>([], <span class="num">2</span>))                           <span class="cm"># []</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-03-hashmaps.html" class="footer-back">← HashMap Solutions</a>
+    <a href="sol-05-linkedlist.html" class="footer-next">Linked List Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

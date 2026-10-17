@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graph Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="10-graphs.html" class="back-link">← Graphs</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 10</div>
+    <h1 class="page-title">Graph <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Graph problems — identify nodes, edges, and what you're searching for.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Clone Graph</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> DFS/BFS through the original graph. Use a dict to track already-cloned nodes (old → new). Node objects are hashable by identity, so they work directly as dict keys. For each node, create its clone and recursively clone all neighbors.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(V+E)</span></div>
+        <div class="ci-item">Space: <span>O(V)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">List</span>, <span class="cls">Optional</span>
+
+<span class="kw">class</span> <span class="cls">Node</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val: int = <span class="num">0</span>, neighbors: <span class="cls">Optional</span>[<span class="cls">List</span>[<span class="str">"Node"</span>]] = <span class="kw">None</span>):
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.neighbors = neighbors <span class="kw">if</span> neighbors <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span> <span class="kw">else</span> []
+
+<span class="kw">def</span> <span class="fn">clone_graph</span>(node: <span class="cls">Optional</span>[<span class="cls">Node</span>]) -&gt; <span class="cls">Optional</span>[<span class="cls">Node</span>]:
+    <span class="kw">if</span> node <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="kw">return</span> <span class="kw">None</span>
+
+    cloned: <span class="cls">Dict</span>[<span class="cls">Node</span>, <span class="cls">Node</span>] = {}  <span class="cm"># original → clone</span>
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(node: <span class="cls">Node</span>) -&gt; <span class="cls">Node</span>:
+        <span class="kw">if</span> node <span class="kw">in</span> cloned:
+            <span class="kw">return</span> cloned[node]    <span class="cm"># already cloned</span>
+
+        clone = <span class="cls">Node</span>(node.val)
+        cloned[node] = clone       <span class="cm"># register BEFORE recursing (handles cycles)</span>
+
+        <span class="kw">for</span> neighbor <span class="kw">in</span> node.neighbors:
+            clone.neighbors.<span class="fn">append</span>(<span class="fn">dfs</span>(neighbor))  <span class="cm"># clone each neighbor</span>
+
+        <span class="kw">return</span> clone
+
+    <span class="kw">return</span> <span class="fn">dfs</span>(node)
+
+<span class="cm"># 1 — 2</span>
+<span class="cm"># |   |</span>
+<span class="cm"># 4 — 3</span>
+n1, n2, n3, n4 = <span class="cls">Node</span>(<span class="num">1</span>), <span class="cls">Node</span>(<span class="num">2</span>), <span class="cls">Node</span>(<span class="num">3</span>), <span class="cls">Node</span>(<span class="num">4</span>)
+n1.neighbors = [n2, n4]
+n2.neighbors = [n1, n3]
+n3.neighbors = [n2, n4]
+n4.neighbors = [n1, n3]
+
+copy = <span class="fn">clone_graph</span>(n1)
+<span class="fn">print</span>(copy <span class="kw">is</span> <span class="kw">not</span> n1)                        <span class="cm"># True — a brand-new object</span>
+<span class="fn">print</span>(copy.val, [n.val <span class="kw">for</span> n <span class="kw">in</span> copy.neighbors])  <span class="cm"># 1 [2, 4]</span>
+<span class="fn">print</span>(copy.neighbors[<span class="num">0</span>].neighbors[<span class="num">0</span>] <span class="kw">is</span> copy)     <span class="cm"># True — cycle preserved in the copy</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Course Schedule (Topological Sort)</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given prerequisites [a, b] meaning "must take b before a", can you finish all courses?<br><br>
+        <strong>Think:</strong> This is cycle detection in a directed graph. Build adjacency list, then DFS with 3 states: unvisited (0), in progress (1), done (2). If DFS revisits an "in progress" node → cycle detected → return False.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Build adjacency list from prerequisites.</div></div>
+      <div class="step"><div class="step-num">2</div><div>DFS each course. Mark as "in progress" (1) when entered.</div></div>
+      <div class="step"><div class="step-num">3</div><div>If we encounter a node marked "in progress" → cycle! Return False.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Mark as "done" (2) when all neighbors are processed. Done nodes are safe.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(V+E)</span></div>
+        <div class="ci-item">Space: <span>O(V+E)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — DFS with 3 states</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">can_finish</span>(num_courses: int, prerequisites: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; bool:
+    <span class="cm"># Build adjacency list</span>
+    adj = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(num_courses)]   <span class="cm"># NOT [[]] * n — that shares one list!</span>
+    <span class="kw">for</span> course, prereq <span class="kw">in</span> prerequisites:
+        adj[prereq].<span class="fn">append</span>(course)
+
+    <span class="cm"># 0=unvisited, 1=in-progress, 2=done</span>
+    state = [<span class="num">0</span>] * num_courses
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(node: int) -&gt; bool:
+        <span class="kw">if</span> state[node] == <span class="num">1</span>:
+            <span class="kw">return</span> <span class="kw">False</span>  <span class="cm"># cycle!</span>
+        <span class="kw">if</span> state[node] == <span class="num">2</span>:
+            <span class="kw">return</span> <span class="kw">True</span>   <span class="cm"># already verified safe</span>
+
+        state[node] = <span class="num">1</span>   <span class="cm"># mark in-progress</span>
+
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[node]:
+            <span class="kw">if</span> <span class="kw">not</span> <span class="fn">dfs</span>(nxt):
+                <span class="kw">return</span> <span class="kw">False</span>
+
+        state[node] = <span class="num">2</span>   <span class="cm"># mark done</span>
+        <span class="kw">return</span> <span class="kw">True</span>
+
+    <span class="kw">return</span> <span class="fn">all</span>(<span class="fn">dfs</span>(i) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(num_courses))  <span class="cm"># all() short-circuits on first False</span>
+
+<span class="fn">print</span>(<span class="fn">can_finish</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>]]))          <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">can_finish</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">1</span>]]))  <span class="cm"># False (cycle)</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-label">ALTERNATIVE — Kahn's BFS (no recursion limit)</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">can_finish_kahn</span>(num_courses: int, prerequisites: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; bool:
+    adj = [[] <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(num_courses)]
+    indegree = [<span class="num">0</span>] * num_courses
+    <span class="kw">for</span> course, prereq <span class="kw">in</span> prerequisites:
+        adj[prereq].<span class="fn">append</span>(course)
+        indegree[course] += <span class="num">1</span>
+
+    queue = <span class="fn">deque</span>(i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(num_courses) <span class="kw">if</span> indegree[i] == <span class="num">0</span>)
+    taken = <span class="num">0</span>
+    <span class="kw">while</span> queue:
+        node = queue.<span class="fn">popleft</span>()
+        taken += <span class="num">1</span>
+        <span class="kw">for</span> nxt <span class="kw">in</span> adj[node]:
+            indegree[nxt] -= <span class="num">1</span>
+            <span class="kw">if</span> indegree[nxt] == <span class="num">0</span>:
+                queue.<span class="fn">append</span>(nxt)
+
+    <span class="kw">return</span> taken == num_courses   <span class="cm"># some course never reached in-degree 0 → cycle</span>
+
+<span class="fn">print</span>(<span class="fn">can_finish_kahn</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>]]))          <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">can_finish_kahn</span>(<span class="num">2</span>, [[<span class="num">1</span>, <span class="num">0</span>], [<span class="num">0</span>, <span class="num">1</span>]]))  <span class="cm"># False (cycle)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Pacific Atlantic Water Flow</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Instead of simulating water flow from each cell (expensive), reverse it. Start from Pacific edges (top row + left col) and DFS/BFS uphill. Start from Atlantic edges (bottom row + right col) and do the same. Cells reachable from BOTH sets are our answer — in Python that's literally a set intersection: <code>pacific &amp; atlantic</code>.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(R·C)</span></div>
+        <div class="ci-item">Space: <span>O(R·C)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Set</span>, <span class="cls">Tuple</span>
+
+<span class="kw">def</span> <span class="fn">pacific_atlantic</span>(heights: <span class="cls">List</span>[<span class="cls">List</span>[int]]) -&gt; <span class="cls">List</span>[<span class="cls">List</span>[int]]:
+    rows, cols = <span class="fn">len</span>(heights), <span class="fn">len</span>(heights[<span class="num">0</span>])
+    pacific: <span class="cls">Set</span>[<span class="cls">Tuple</span>[int, int]] = <span class="fn">set</span>()
+    atlantic: <span class="cls">Set</span>[<span class="cls">Tuple</span>[int, int]] = <span class="fn">set</span>()
+
+    <span class="kw">def</span> <span class="fn">dfs</span>(r, c, visited, prev_height):
+        <span class="kw">if</span> r &lt; <span class="num">0</span> <span class="kw">or</span> r &gt;= rows <span class="kw">or</span> c &lt; <span class="num">0</span> <span class="kw">or</span> c &gt;= cols:
+            <span class="kw">return</span>
+        <span class="kw">if</span> (r, c) <span class="kw">in</span> visited <span class="kw">or</span> heights[r][c] &lt; prev_height:
+            <span class="kw">return</span>
+        visited.<span class="fn">add</span>((r, c))
+        <span class="kw">for</span> dr, dc <span class="kw">in</span> ((<span class="num">1</span>, <span class="num">0</span>), (-<span class="num">1</span>, <span class="num">0</span>), (<span class="num">0</span>, <span class="num">1</span>), (<span class="num">0</span>, -<span class="num">1</span>)):
+            <span class="fn">dfs</span>(r + dr, c + dc, visited, heights[r][c])
+
+    <span class="cm"># DFS from all Pacific border cells (left column + top row)</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="fn">dfs</span>(r, <span class="num">0</span>, pacific, heights[r][<span class="num">0</span>])
+    <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+        <span class="fn">dfs</span>(<span class="num">0</span>, c, pacific, heights[<span class="num">0</span>][c])
+
+    <span class="cm"># DFS from all Atlantic border cells (right column + bottom row)</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(rows):
+        <span class="fn">dfs</span>(r, cols - <span class="num">1</span>, atlantic, heights[r][cols - <span class="num">1</span>])
+    <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(cols):
+        <span class="fn">dfs</span>(rows - <span class="num">1</span>, c, atlantic, heights[rows - <span class="num">1</span>][c])
+
+    <span class="cm"># Cells reachable from BOTH oceans</span>
+    <span class="kw">return</span> <span class="fn">sorted</span>([r, c] <span class="kw">for</span> r, c <span class="kw">in</span> pacific &amp; atlantic)
+
+heights = [
+    [<span class="num">1</span>, <span class="num">2</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">5</span>],
+    [<span class="num">3</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">4</span>],
+    [<span class="num">2</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">1</span>],
+    [<span class="num">6</span>, <span class="num">7</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">5</span>],
+    [<span class="num">5</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>],
+]
+<span class="fn">print</span>(<span class="fn">pacific_atlantic</span>(heights))
+<span class="cm"># [[0, 4], [1, 3], [1, 4], [2, 2], [3, 0], [3, 1], [4, 0]]</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Word Ladder</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Transform <code>begin_word</code> into <code>end_word</code> changing one letter at a time, where every intermediate word must be in <code>word_list</code>. Return the number of words in the shortest sequence (0 if impossible).<br><br>
+        <strong>Think:</strong> Words are nodes; two words are connected if they differ by one letter. "Shortest" in an unweighted graph → <strong>BFS</strong>. Comparing every pair is O(N²·L), so instead group words into <strong>wildcard buckets</strong>: "hot" belongs to "*ot", "h*t" and "ho*". All words in one bucket are neighbors.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>If end_word isn't in the list → return 0 immediately.</div></div>
+      <div class="step"><div class="step-num">2</div><div>Build <code>defaultdict(list)</code>: pattern → words matching it.</div></div>
+      <div class="step"><div class="step-num">3</div><div>BFS from begin_word with (word, steps). For each pattern of the current word, enqueue unvisited words in its bucket.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Empty a bucket after scanning it — every word in it is already visited, so it never needs scanning again.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(N·L²)</span></div>
+        <div class="ci-item">Space: <span>O(N·L²)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — BFS with Wildcard Buckets</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict, deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">ladder_length</span>(begin_word: str, end_word: str, word_list: <span class="cls">List</span>[str]) -&gt; int:
+    words = <span class="fn">set</span>(word_list)
+    <span class="kw">if</span> end_word <span class="kw">not in</span> words:
+        <span class="kw">return</span> <span class="num">0</span>
+
+    L = <span class="fn">len</span>(begin_word)
+    buckets = <span class="fn">defaultdict</span>(<span class="fn">list</span>)   <span class="cm"># "h*t" → ["hot", "hit", ...]</span>
+    <span class="kw">for</span> w <span class="kw">in</span> words | {begin_word}:
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(L):
+            buckets[w[:i] + <span class="str">"*"</span> + w[i + <span class="num">1</span>:]].<span class="fn">append</span>(w)
+
+    queue = <span class="fn">deque</span>([(begin_word, <span class="num">1</span>)])   <span class="cm"># (word, words in sequence so far)</span>
+    visited = {begin_word}
+    <span class="kw">while</span> queue:
+        word, steps = queue.<span class="fn">popleft</span>()
+        <span class="kw">if</span> word == end_word:
+            <span class="kw">return</span> steps
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(L):
+            pattern = word[:i] + <span class="str">"*"</span> + word[i + <span class="num">1</span>:]
+            <span class="kw">for</span> nxt <span class="kw">in</span> buckets[pattern]:
+                <span class="kw">if</span> nxt <span class="kw">not in</span> visited:
+                    visited.<span class="fn">add</span>(nxt)
+                    queue.<span class="fn">append</span>((nxt, steps + <span class="num">1</span>))
+            buckets[pattern] = []   <span class="cm"># bucket fully used — never scan it again</span>
+
+    <span class="kw">return</span> <span class="num">0</span>
+
+<span class="fn">print</span>(<span class="fn">ladder_length</span>(<span class="str">"hit"</span>, <span class="str">"cog"</span>, [<span class="str">"hot"</span>, <span class="str">"dot"</span>, <span class="str">"dog"</span>, <span class="str">"lot"</span>, <span class="str">"log"</span>, <span class="str">"cog"</span>]))  <span class="cm"># 5</span>
+<span class="fn">print</span>(<span class="fn">ladder_length</span>(<span class="str">"hit"</span>, <span class="str">"cog"</span>, [<span class="str">"hot"</span>, <span class="str">"dot"</span>, <span class="str">"dog"</span>, <span class="str">"lot"</span>, <span class="str">"log"</span>]))         <span class="cm"># 0</span>
+<span class="cm"># hit → hot → dot → dog → cog  (5 words)</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Alien Dictionary</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given words sorted in an unknown alphabet, return a valid letter order (any one), or "" if the input is contradictory.<br><br>
+        <strong>Think:</strong> Compare each <strong>adjacent</strong> pair of words. The first position where they differ tells you one rule: letter in w1 comes before letter in w2 → a directed edge. Then a topological sort of the letters is the alphabet. A cycle means no valid order. Special trap: if w2 is a proper prefix of w1 (e.g. "abc" before "ab"), the input is invalid.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Create a node for every letter that appears (even ones with no rules).</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each adjacent pair, find the first differing letter → add edge a → b (once). No difference and len(w1) &gt; len(w2) → return "".</div></div>
+      <div class="step"><div class="step-num">3</div><div>Kahn's algorithm: start a <code>deque</code> with all letters of in-degree 0, pop, append to order, decrement neighbors.</div></div>
+      <div class="step"><div class="step-num">4</div><div>If the order is shorter than the number of letters → cycle → return "".</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(C)</span></div>
+        <div class="ci-item">Space: <span>O(U + E)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION — Build Graph + Kahn's Topological Sort</div>
+        <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+<span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">alien_order</span>(words: <span class="cls">List</span>[str]) -&gt; str:
+    <span class="cm"># 1. Every letter that appears is a node</span>
+    graph = {c: <span class="fn">set</span>() <span class="kw">for</span> w <span class="kw">in</span> words <span class="kw">for</span> c <span class="kw">in</span> w}
+    indegree = {c: <span class="num">0</span> <span class="kw">for</span> c <span class="kw">in</span> graph}
+
+    <span class="cm"># 2. Adjacent pairs → first differing letter gives one edge</span>
+    <span class="kw">for</span> w1, w2 <span class="kw">in</span> <span class="fn">zip</span>(words, words[<span class="num">1</span>:]):
+        <span class="kw">for</span> a, b <span class="kw">in</span> <span class="fn">zip</span>(w1, w2):
+            <span class="kw">if</span> a != b:
+                <span class="kw">if</span> b <span class="kw">not in</span> graph[a]:      <span class="cm"># avoid counting a duplicate edge twice</span>
+                    graph[a].<span class="fn">add</span>(b)
+                    indegree[b] += <span class="num">1</span>
+                <span class="kw">break</span>                      <span class="cm"># only the FIRST difference matters</span>
+        <span class="kw">else</span>:                            <span class="cm"># for-else: loop ended without break</span>
+            <span class="kw">if</span> <span class="fn">len</span>(w1) &gt; <span class="fn">len</span>(w2):         <span class="cm"># "abc" before "ab" is impossible</span>
+                <span class="kw">return</span> <span class="str">""</span>
+
+    <span class="cm"># 3. Kahn's BFS (sorted only to make the output deterministic)</span>
+    queue = <span class="fn">deque</span>(<span class="fn">sorted</span>(c <span class="kw">for</span> c <span class="kw">in</span> graph <span class="kw">if</span> indegree[c] == <span class="num">0</span>))
+    order = []
+    <span class="kw">while</span> queue:
+        c = queue.<span class="fn">popleft</span>()
+        order.<span class="fn">append</span>(c)
+        <span class="kw">for</span> nxt <span class="kw">in</span> <span class="fn">sorted</span>(graph[c]):
+            indegree[nxt] -= <span class="num">1</span>
+            <span class="kw">if</span> indegree[nxt] == <span class="num">0</span>:
+                queue.<span class="fn">append</span>(nxt)
+
+    <span class="cm"># 4. Letters stuck with in-degree &gt; 0 are part of a cycle</span>
+    <span class="kw">if</span> <span class="fn">len</span>(order) &lt; <span class="fn">len</span>(graph):
+        <span class="kw">return</span> <span class="str">""</span>
+    <span class="kw">return</span> <span class="str">""</span>.<span class="fn">join</span>(order)
+
+<span class="fn">print</span>(<span class="fn">alien_order</span>([<span class="str">"wrt"</span>, <span class="str">"wrf"</span>, <span class="str">"er"</span>, <span class="str">"ett"</span>, <span class="str">"rftt"</span>]))   <span class="cm"># wertf</span>
+<span class="fn">print</span>(<span class="fn">alien_order</span>([<span class="str">"z"</span>, <span class="str">"x"</span>]))                         <span class="cm"># zx</span>
+<span class="fn">print</span>(<span class="fn">repr</span>(<span class="fn">alien_order</span>([<span class="str">"z"</span>, <span class="str">"x"</span>, <span class="str">"z"</span>])))              <span class="cm"># ''  (cycle z → x → z)</span>
+<span class="fn">print</span>(<span class="fn">repr</span>(<span class="fn">alien_order</span>([<span class="str">"abc"</span>, <span class="str">"ab"</span>])))                <span class="cm"># ''  (prefix case)</span>
+<span class="cm"># Rules from "wrt…": t→f, w→e, r→t, e→r  ⇒  w → e → r → t → f</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-heaps.html" class="footer-back">← Heap Solutions</a>
+    <a href="sol-trie.html" class="footer-next">Trie Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

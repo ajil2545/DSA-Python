@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 — Core Patterns | DSA Mastery in Python</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=DM+Serif+Display&display=swap');
+  :root{--bg:#0b0c10;--surface:#12141a;--surface2:#1a1d26;--border:#222531;--accent:#6c63ff;--accent2:#00d4aa;--accent3:#ff6b6b;--warn:#ffc947;--text:#e8eaf0;--muted:#7a7f99;--dim:#3a3f52}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;line-height:1.7}
+  .container{max-width:880px;margin:0 auto;padding:0 24px}
+  .topnav{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .topnav a{font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:0.08em;color:var(--muted);text-decoration:none;padding:6px 14px;border:1px solid var(--border);border-radius:100px;transition:0.18s}
+  .topnav a:hover,.topnav a.active{border-color:var(--accent);color:var(--accent)}
+  .topnav .brand{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);border:none;padding:0;margin-right:auto}
+  .week-hero{padding:80px 0 60px;position:relative}
+  .week-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 70% 0%,rgba(0,212,170,0.1) 0%,transparent 70%);pointer-events:none}
+  .week-num{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--accent2);margin-bottom:16px}
+  .week-hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,5vw,3.5rem);line-height:1.1;margin-bottom:20px}
+  .week-hero p{color:var(--muted);max-width:600px;font-size:1rem}
+  .day-section{padding:60px 0;border-top:1px solid var(--border)}
+  .day-label{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .day-section h2{font-family:'DM Serif Display',serif;font-size:clamp(1.5rem,3.5vw,2.2rem);line-height:1.15;margin-bottom:16px}
+  .day-section>p,.topic-block p{color:var(--muted);font-size:0.92rem;line-height:1.75;margin-bottom:16px}
+  .day-section>p strong,.topic-block p strong{color:var(--text)}
+  .topic-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px;margin:24px 0;position:relative;overflow:hidden}
+  .topic-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent)}
+  .topic-block h3{font-size:1.05rem;font-weight:600;margin-bottom:12px}
+  .topic-block.teal::before{background:var(--accent2)}
+  .topic-block.red::before{background:var(--accent3)}
+  .topic-block.yellow::before{background:var(--warn)}
+  .code-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:20px 0}
+  .code-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface2);border-bottom:1px solid var(--border)}
+  .code-title{font-family:'Space Mono',monospace;font-size:0.73rem;color:var(--muted)}
+  .code-dots{display:flex;gap:6px}.code-dots span{width:10px;height:10px;border-radius:50%}
+  .d1{background:#ff5f57}.d2{background:#ffbd2e}.d3{background:#28c940}
+  pre{padding:24px;overflow-x:auto;font-family:'Space Mono',monospace;font-size:0.78rem;line-height:1.85;color:var(--text)}
+  .cmt{color:var(--dim);font-style:italic}.kw{color:#c792ea}.fn{color:#82aaff}.str{color:#c3e88d}.num{color:#f78c6c}.cls{color:#ffcb6b}
+  .insight{border-left:3px solid var(--accent2);padding:16px 22px;background:rgba(0,212,170,0.04);border-radius:0 10px 10px 0;margin:20px 0;font-size:0.88rem;color:var(--muted)}
+  .insight strong{color:var(--accent2);display:block;margin-bottom:4px;font-size:0.82rem;font-family:'Space Mono',monospace;letter-spacing:0.05em}
+  .insight.warn{border-left-color:var(--warn);background:rgba(255,201,71,0.04)}.insight.warn strong{color:var(--warn)}
+  footer{text-align:center;padding:60px 24px;border-top:1px solid var(--border);font-size:0.78rem;color:var(--dim);font-family:'Space Mono',monospace}
+  @media(max-width:600px){pre{font-size:0.7rem;padding:16px}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="brand">DSA Mastery</a>
+  <a href="week1-foundation.html">Week 1</a>
+  <a href="week2-core-patterns.html" class="active">Week 2</a>
+  <a href="week3-trees-graphs.html">Week 3</a>
+  <a href="week4-dp-synthesis.html">Week 4</a>
+</nav>
+
+<div class="container">
+
+<div class="week-hero">
+  <div class="week-num">Week 2 of 4</div>
+  <h1>Stacks, Linked Lists &amp; Prefix Sums</h1>
+  <p>The underrated trio. Stacks and prefix sums show up in 30%+ of medium problems disguised as something else. Linked lists teach you pointer manipulation that transfers to trees and graphs.</p>
+</div>
+
+<!-- ============ DAY 8 ============ -->
+<div class="day-section" id="day8">
+  <div class="day-label">Day 8 · 90 min</div>
+  <h2>Stack + Monotonic Stack</h2>
+  <p>A stack is Last-In-First-Out. In Python, a plain <code>list</code> with <code>append()</code> and <code>pop()</code> is a perfect O(1) stack; peek with <code>stack[-1]</code> and test emptiness with <code>if stack:</code>. The <strong>monotonic stack</strong> is a stack that stays sorted — it's the key to "next greater/smaller element" problems.</p>
+
+  <div class="topic-block">
+    <h3>Problem 1: Valid Parentheses</h3>
+    <p>Given a string of brackets <code>(){}[]</code>, determine if the input is valid.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">valid_parentheses.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(n) space</span>
+<span class="kw">def</span> <span class="fn">is_valid</span>(s: <span class="fn">str</span>) -&gt; <span class="fn">bool</span>:
+    stack = []
+    pairs = {<span class="str">')'</span>: <span class="str">'('</span>, <span class="str">'}'</span>: <span class="str">'{'</span>, <span class="str">']'</span>: <span class="str">'['</span>}
+
+    <span class="kw">for</span> c <span class="kw">in</span> s:
+        <span class="kw">if</span> c <span class="kw">in</span> pairs:
+            <span class="cmt"># Closing bracket — top of stack must match.</span>
+            <span class="cmt"># Guard first: pop() on an empty list raises IndexError.</span>
+            <span class="kw">if</span> <span class="kw">not</span> stack <span class="kw">or</span> stack.<span class="fn">pop</span>() != pairs[c]:
+                <span class="kw">return</span> <span class="kw">False</span>
+        <span class="kw">else</span>:
+            stack.<span class="fn">append</span>(c)  <span class="cmt"># Opening bracket — push onto stack</span>
+    <span class="kw">return</span> <span class="kw">not</span> stack          <span class="cmt"># valid only if nothing is left open</span>
+
+<span class="fn">print</span>(<span class="fn">is_valid</span>(<span class="str">"()[]{}"</span>))   <span class="cmt"># True</span>
+<span class="fn">print</span>(<span class="fn">is_valid</span>(<span class="str">"(]"</span>))       <span class="cmt"># False</span>
+<span class="fn">print</span>(<span class="fn">is_valid</span>(<span class="str">"]"</span>))        <span class="cmt"># False — no crash on empty stack</span>
+
+<span class="cmt"># Pattern: Stack for matching/nesting
+# Trigger: brackets, nested structures, undo operations</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Daily Temperatures (Monotonic Stack)</h3>
+    <p>Given daily temperatures, for each day find how many days until a warmer day. Return 0 if no warmer day.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">daily_temperatures.py</span>
+    </div>
+    <pre><span class="cmt"># LAYER 1: Brute force — O(n²), check every future day</span>
+<span class="cmt"># LAYER 2: Monotonic Decreasing Stack — O(n) time, O(n) space</span>
+
+<span class="kw">def</span> <span class="fn">daily_temperatures</span>(temps):
+    result = [<span class="num">0</span>] * <span class="fn">len</span>(temps)   <span class="cmt"># flat list of ints — [0] * n is safe here</span>
+    stack = []                  <span class="cmt"># stores INDICES (not values!)</span>
+
+    <span class="kw">for</span> i, t <span class="kw">in</span> <span class="fn">enumerate</span>(temps):
+        <span class="cmt"># Pop all days colder than today — today is their answer</span>
+        <span class="kw">while</span> stack <span class="kw">and</span> t &gt; temps[stack[-<span class="num">1</span>]]:
+            prev_day = stack.<span class="fn">pop</span>()
+            result[prev_day] = i - prev_day
+        stack.<span class="fn">append</span>(i)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">daily_temperatures</span>([<span class="num">73</span>, <span class="num">74</span>, <span class="num">75</span>, <span class="num">71</span>, <span class="num">69</span>, <span class="num">72</span>, <span class="num">76</span>, <span class="num">73</span>]))
+<span class="cmt"># [1, 1, 4, 2, 1, 1, 0, 0]</span>
+
+<span class="cmt"># KEY INSIGHT: the stack maintains indices in decreasing temp order.
+# When a warmer day arrives, it "resolves" all colder days on the stack.
+# Each element is pushed and popped at most once → O(n) total.</span>
+
+<span class="cmt"># LAYER 3: Pattern — Monotonic Decreasing Stack
+# Trigger: "next greater element", "days until warmer/higher"
+# Stack stores: INDICES (not values) in decreasing order
+# Pop condition: current &gt; stack top</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Largest Rectangle in Histogram</h3>
+    <p>Given histogram bar heights, find the largest rectangle area. This is the "boss fight" of monotonic stack problems.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">largest_rectangle_histogram.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(n) space — Monotonic Increasing Stack</span>
+<span class="kw">def</span> <span class="fn">largest_rectangle_area</span>(heights):
+    stack = []        <span class="cmt"># stores indices, heights in increasing order</span>
+    max_area = <span class="num">0</span>
+    n = <span class="fn">len</span>(heights)
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(n + <span class="num">1</span>):
+        h = <span class="num">0</span> <span class="kw">if</span> i == n <span class="kw">else</span> heights[i]   <span class="cmt"># sentinel</span>
+
+        <span class="kw">while</span> stack <span class="kw">and</span> h &lt; heights[stack[-<span class="num">1</span>]]:
+            height = heights[stack.<span class="fn">pop</span>()]
+            <span class="cmt"># Width: from current index to the new stack top</span>
+            width = i - stack[-<span class="num">1</span>] - <span class="num">1</span> <span class="kw">if</span> stack <span class="kw">else</span> i
+            max_area = <span class="fn">max</span>(max_area, height * width)
+        stack.<span class="fn">append</span>(i)
+    <span class="kw">return</span> max_area
+
+<span class="fn">print</span>(<span class="fn">largest_rectangle_area</span>([<span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">2</span>, <span class="num">3</span>]))   <span class="cmt"># 10</span>
+
+<span class="cmt"># WHY IT WORKS: for each bar, we find the furthest it can extend
+# left and right without hitting a shorter bar. The stack gives us
+# both boundaries in amortized O(1) by maintaining increasing order.
+# Sentinel (height 0 at end) flushes all remaining bars.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 9 ============ -->
+<div class="day-section" id="day9">
+  <div class="day-label">Day 9 · 90 min</div>
+  <h2>Linked Lists in Python</h2>
+  <p>Python has no built-in linked list you can manipulate node by node (<code>collections.deque</code> is linked internally but hides its nodes). Building one teaches pointer manipulation — the exact skill you need for trees and graphs. A "pointer" in Python is just a name referencing a node object, exactly as you saw on Day 1. Focus on the <strong>pointer redirection</strong> pattern: always draw it out before coding.</p>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">linked_list_node.py</span>
+    </div>
+    <pre><span class="kw">from</span> typing <span class="kw">import</span> Optional, List
+
+<span class="cmt"># The building block — memorize this (LeetCode's exact definition)</span>
+<span class="kw">class</span> <span class="cls">ListNode</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, val=<span class="num">0</span>, next=<span class="kw">None</span>):   <span class="cmt"># `next` shadows a built-in; fine as an attribute</span>
+        <span class="kw">self</span>.val = val
+        <span class="kw">self</span>.next = next
+
+<span class="cmt"># Test helpers — build a list from Python values and back</span>
+<span class="kw">def</span> <span class="fn">build</span>(values: List[<span class="fn">int</span>]) -&gt; Optional[<span class="cls">ListNode</span>]:
+    dummy = <span class="cls">ListNode</span>()
+    tail = dummy
+    <span class="kw">for</span> v <span class="kw">in</span> values:
+        tail.next = <span class="cls">ListNode</span>(v)
+        tail = tail.next
+    <span class="kw">return</span> dummy.next
+
+<span class="kw">def</span> <span class="fn">to_list</span>(head: Optional[<span class="cls">ListNode</span>]) -&gt; List[<span class="fn">int</span>]:
+    out = []
+    <span class="kw">while</span> head:
+        out.<span class="fn">append</span>(head.val)
+        head = head.next
+    <span class="kw">return</span> out
+
+<span class="fn">print</span>(<span class="fn">to_list</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])))   <span class="cmt"># [1, 2, 3]</span></pre>
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Reverse Linked List</h3>
+    <p>The single most important linked list operation. If you can reverse a list, you can handle 90% of LL problems.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">reverse_linked_list.py</span>
+    </div>
+    <pre><span class="cmt"># Uses ListNode, build, to_list from linked_list_node.py</span>
+
+<span class="cmt"># Iterative — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">reverse_list</span>(head):
+    prev = <span class="kw">None</span>
+    curr = head
+
+    <span class="kw">while</span> curr:
+        nxt = curr.next      <span class="cmt"># save next</span>
+        curr.next = prev     <span class="cmt"># reverse pointer</span>
+        prev = curr          <span class="cmt"># advance prev</span>
+        curr = nxt           <span class="cmt"># advance curr</span>
+    <span class="kw">return</span> prev  <span class="cmt"># prev is the new head</span>
+
+<span class="cmt"># Pythonic one-liner body (right side is evaluated BEFORE any assignment):</span>
+<span class="cmt">#     curr.next, prev, curr = prev, curr, curr.next</span>
+
+<span class="cmt"># Recursive — O(n) time, O(n) space (call stack; Python's default limit is ~1000 frames)</span>
+<span class="kw">def</span> <span class="fn">reverse_list_recursive</span>(head):
+    <span class="kw">if</span> <span class="kw">not</span> head <span class="kw">or</span> <span class="kw">not</span> head.next:
+        <span class="kw">return</span> head
+    new_head = <span class="fn">reverse_list_recursive</span>(head.next)
+    head.next.next = head  <span class="cmt"># reverse the link</span>
+    head.next = <span class="kw">None</span>       <span class="cmt"># break old link</span>
+    <span class="kw">return</span> new_head
+
+<span class="fn">print</span>(<span class="fn">to_list</span>(<span class="fn">reverse_list</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]))))            <span class="cmt"># [5, 4, 3, 2, 1]</span>
+<span class="fn">print</span>(<span class="fn">to_list</span>(<span class="fn">reverse_list_recursive</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]))))        <span class="cmt"># [3, 2, 1]</span>
+
+<span class="cmt"># MANTRA: save → reverse → advance → advance
+# Draw the arrows on paper. Every time.</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Merge Two Sorted Lists</h3>
+    <p>Merge two sorted linked lists into one sorted list.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">merge_two_sorted_lists.py</span>
+    </div>
+    <pre><span class="cmt"># O(n + m) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">merge_two_lists</span>(l1, l2):
+    dummy = <span class="cls">ListNode</span>(<span class="num">0</span>)  <span class="cmt"># dummy head avoids edge cases</span>
+    tail = dummy
+
+    <span class="kw">while</span> l1 <span class="kw">and</span> l2:
+        <span class="kw">if</span> l1.val &lt;= l2.val:
+            tail.next = l1
+            l1 = l1.next
+        <span class="kw">else</span>:
+            tail.next = l2
+            l2 = l2.next
+        tail = tail.next
+    tail.next = l1 <span class="kw">or</span> l2  <span class="cmt"># attach remaining (`or` returns the first truthy operand)</span>
+    <span class="kw">return</span> dummy.next
+
+<span class="fn">print</span>(<span class="fn">to_list</span>(<span class="fn">merge_two_lists</span>(<span class="fn">build</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">4</span>]), <span class="fn">build</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>]))))
+<span class="cmt"># [1, 1, 2, 3, 4, 4]</span>
+
+<span class="cmt"># KEY TRICK: the dummy node. It eliminates "is head None?" checks.
+# You'll use this pattern in most LL construction problems.</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Linked List Cycle (Fast &amp; Slow Pointers)</h3>
+    <p>Determine if a linked list has a cycle.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">linked_list_cycle.py</span>
+    </div>
+    <pre><span class="cmt"># Floyd's Tortoise and Hare — O(n) time, O(1) space</span>
+<span class="kw">def</span> <span class="fn">has_cycle</span>(head):
+    slow = fast = head
+
+    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+        slow = slow.next        <span class="cmt"># 1 step</span>
+        fast = fast.next.next   <span class="cmt"># 2 steps</span>
+        <span class="kw">if</span> slow <span class="kw">is</span> fast:         <span class="cmt"># same NODE object → cycle (identity, not ==)</span>
+            <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">return</span> <span class="kw">False</span>  <span class="cmt"># fast hit None → no cycle</span>
+
+<span class="cmt"># BONUS: Find WHERE the cycle starts</span>
+<span class="kw">def</span> <span class="fn">detect_cycle</span>(head):
+    slow = fast = head
+
+    <span class="kw">while</span> fast <span class="kw">and</span> fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        <span class="kw">if</span> slow <span class="kw">is</span> fast:
+            <span class="cmt"># Reset one pointer to head, move both at speed 1</span>
+            entry = head
+            <span class="kw">while</span> entry <span class="kw">is not</span> slow:
+                entry = entry.next
+                slow = slow.next
+            <span class="kw">return</span> entry  <span class="cmt"># cycle start node</span>
+    <span class="kw">return</span> <span class="kw">None</span>
+
+head = <span class="fn">build</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">0</span>, -<span class="num">4</span>])
+<span class="fn">print</span>(<span class="fn">has_cycle</span>(head))              <span class="cmt"># False</span>
+head.next.next.next.next = head.next  <span class="cmt"># tail (-4) → node 2</span>
+<span class="fn">print</span>(<span class="fn">has_cycle</span>(head))              <span class="cmt"># True</span>
+<span class="fn">print</span>(<span class="fn">detect_cycle</span>(head).val)       <span class="cmt"># 2</span>
+
+<span class="cmt"># Pattern: Fast &amp; Slow Pointers (Floyd's)
+# Trigger: "cycle detection", "find middle node", "kth from end"
+# Why it works: if there's a cycle, fast gains 1 step per iteration,
+# so they must eventually meet. Math guarantees it.
+# (The O(n)-space alternative: a set of seen nodes — nodes are hashable by identity.)</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 10 ============ -->
+<div class="day-section" id="day10">
+  <div class="day-label">Day 10 · 90 min</div>
+  <h2>Prefix Sum + Merge Intervals</h2>
+
+  <div class="insight">
+    <strong>PATTERN TRIGGER</strong>
+    "Range sum query" or "subarray sum equals K" → Prefix Sum. "Overlapping intervals/scheduling" → Sort + Merge.
+  </div>
+
+  <div class="topic-block">
+    <h3>Problem 1: Range Sum Query</h3>
+    <p>Given an array, answer multiple queries: "what's the sum from index i to j?"</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">prefix_sum.py</span>
+    </div>
+    <pre><span class="kw">from</span> itertools <span class="kw">import</span> accumulate
+
+<span class="cmt"># Prefix Sum Array — O(n) build, O(1) per query</span>
+<span class="kw">class</span> <span class="cls">NumArray</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>, nums):
+        <span class="kw">self</span>.prefix = [<span class="num">0</span>]  <span class="cmt"># prefix[0] = 0 as sentinel</span>
+        <span class="kw">for</span> n <span class="kw">in</span> nums:
+            <span class="kw">self</span>.prefix.<span class="fn">append</span>(<span class="kw">self</span>.prefix[-<span class="num">1</span>] + n)
+        <span class="cmt"># Pythonic equivalent: self.prefix = [0] + list(accumulate(nums))</span>
+
+    <span class="kw">def</span> <span class="fn">sum_range</span>(<span class="kw">self</span>, i, j):
+        <span class="kw">return</span> <span class="kw">self</span>.prefix[j + <span class="num">1</span>] - <span class="kw">self</span>.prefix[i]
+
+na = <span class="cls">NumArray</span>([-<span class="num">2</span>, <span class="num">0</span>, <span class="num">3</span>, -<span class="num">5</span>, <span class="num">2</span>, -<span class="num">1</span>])
+<span class="fn">print</span>(na.<span class="fn">sum_range</span>(<span class="num">0</span>, <span class="num">2</span>))   <span class="cmt"># 1</span>
+<span class="fn">print</span>(na.<span class="fn">sum_range</span>(<span class="num">2</span>, <span class="num">5</span>))   <span class="cmt"># -1</span>
+<span class="fn">print</span>([<span class="num">0</span>] + <span class="fn">list</span>(<span class="fn">accumulate</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])))   <span class="cmt"># [0, 1, 3, 6]</span>
+
+<span class="cmt"># prefix = [0, a, a+b, a+b+c, ...]
+# sum(i..j) = prefix[j+1] - prefix[i]
+# The extra 0 at the start avoids edge cases.
+# (sum(nums[i:j+1]) per query would be O(n) each — that's what we're avoiding.)</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem 2: Subarray Sum Equals K</h3>
+    <p>Count the number of contiguous subarrays that sum to k. This combines prefix sum with hash map — a powerful fusion.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">subarray_sum_k.py</span>
+    </div>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> defaultdict
+
+<span class="cmt"># O(n) time, O(n) space — Prefix Sum + Hash Map combo</span>
+<span class="kw">def</span> <span class="fn">subarray_sum</span>(nums, k):
+    prefix_counts = <span class="fn">defaultdict</span>(<span class="fn">int</span>)
+    prefix_counts[<span class="num">0</span>] = <span class="num">1</span>   <span class="cmt"># empty prefix has sum 0</span>
+    running = count = <span class="num">0</span>
+
+    <span class="kw">for</span> num <span class="kw">in</span> nums:
+        running += num
+        <span class="cmt"># If (running - k) was seen before, there's a subarray summing to k.</span>
+        <span class="cmt"># .get() reads without inserting a key (plain [] on a defaultdict would insert 0)</span>
+        count += prefix_counts.<span class="fn">get</span>(running - k, <span class="num">0</span>)
+        prefix_counts[running] += <span class="num">1</span>
+    <span class="kw">return</span> count
+
+<span class="fn">print</span>(<span class="fn">subarray_sum</span>([<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>], <span class="num">2</span>))   <span class="cmt"># 2</span>
+<span class="fn">print</span>(<span class="fn">subarray_sum</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>], <span class="num">3</span>))   <span class="cmt"># 2</span>
+
+<span class="cmt"># WHY IT WORKS:
+# If prefix[j] - prefix[i] = k, then subarray [i+1..j] sums to k.
+# Rearranged: prefix[i] = prefix[j] - k
+# So for each j, count how many previous prefix sums equal (running - k).
+# This is the Two Sum pattern applied to prefix sums!</span></pre>
+  </div>
+
+  <div class="topic-block red">
+    <h3>Problem 3: Merge Intervals</h3>
+    <p>Given a collection of intervals, merge all overlapping intervals.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">merge_intervals.py</span>
+    </div>
+    <pre><span class="cmt"># O(n log n) time (sorting), O(n) space</span>
+<span class="kw">def</span> <span class="fn">merge</span>(intervals):
+    <span class="kw">if</span> <span class="kw">not</span> intervals:
+        <span class="kw">return</span> []
+    intervals.<span class="fn">sort</span>(key=<span class="kw">lambda</span> iv: iv[<span class="num">0</span>])   <span class="cmt"># sort by start</span>
+    merged = [<span class="fn">list</span>(intervals[<span class="num">0</span>])]          <span class="cmt"># copy, so we never mutate the caller's lists</span>
+
+    <span class="kw">for</span> start, end <span class="kw">in</span> intervals[<span class="num">1</span>:]:
+        last = merged[-<span class="num">1</span>]
+        <span class="kw">if</span> start &lt;= last[<span class="num">1</span>]:
+            <span class="cmt"># Overlapping — extend the end</span>
+            last[<span class="num">1</span>] = <span class="fn">max</span>(last[<span class="num">1</span>], end)
+        <span class="kw">else</span>:
+            <span class="cmt"># No overlap — add new interval</span>
+            merged.<span class="fn">append</span>([start, end])
+    <span class="kw">return</span> merged
+
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">6</span>], [<span class="num">8</span>, <span class="num">10</span>], [<span class="num">15</span>, <span class="num">18</span>]]))   <span class="cmt"># [[1, 6], [8, 10], [15, 18]]</span>
+<span class="fn">print</span>(<span class="fn">merge</span>([[<span class="num">1</span>, <span class="num">4</span>], [<span class="num">4</span>, <span class="num">5</span>]]))                      <span class="cmt"># [[1, 5]]</span>
+
+<span class="cmt"># Pattern: Sort + Linear Scan
+# Trigger: "overlapping ranges", "meeting rooms", "scheduling"
+# Always sort by start time first. Then single pass to merge.
+# Day 1 callback: merged = [intervals[0]] would ALIAS the input's first
+# interval, and last[1] = ... would silently edit the caller's data.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 11 ============ -->
+<div class="day-section" id="day11">
+  <div class="day-label">Day 11 · 90 min</div>
+  <h2>Blind Rewrite + Pattern Connections</h2>
+  <p>Rewrite 3 solutions from Days 8–10 from memory, then spend the rest of the session finding <strong>connections between patterns</strong>.</p>
+
+  <div class="topic-block yellow">
+    <h3>Pattern Fusions to Document</h3>
+    <p><strong>Prefix Sum + Hash Map</strong> = Subarray Sum Equals K. The hash map stores prefix sum frequencies, turning a nested loop into a single pass. This is literally Two Sum applied to running totals.</p>
+    <p><strong>Monotonic Stack + Array</strong> = Next Greater Element. The stack maintains a decreasing sequence; each pop resolves a "waiting" element.</p>
+    <p><strong>Sort + Two Pointers</strong> = 3Sum, Merge Intervals. Sorting creates structure that pointers or linear scans can exploit.</p>
+    <p>These fusions are where real problem-solving power comes from. A single pattern solves simple problems. <strong>Pattern combinations solve hard problems.</strong></p>
+  </div>
+</div>
+
+<!-- ============ DAY 12 ============ -->
+<div class="day-section" id="day12">
+  <div class="day-label">Day 12 · 90 min</div>
+  <h2>Mixed Problem Day — No Hints</h2>
+  <p>Solve these 3 problems <strong>without knowing the pattern going in</strong>. Identify the pattern before writing any code. This is the real skill.</p>
+
+  <div class="topic-block">
+    <h3>LeetCode 560 — Subarray Sum Equals K</h3>
+    <p>You already solved this on Day 10. Can you recognize it cold? Can you write it from memory? This is the test.</p>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>LeetCode 739 — Daily Temperatures</h3>
+    <p>Pattern recognition test: do you immediately see "monotonic stack" or do you start thinking about brute force? The speed of recognition is the measure of learning.</p>
+  </div>
+
+  <div class="topic-block red">
+    <h3>LeetCode 238 — Product of Array Except Self</h3>
+    <p>No division allowed. This is a prefix/suffix product problem — a twist on prefix sums.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">product_except_self.py</span>
+    </div>
+    <pre><span class="cmt"># O(n) time, O(1) extra space (output list doesn't count)</span>
+<span class="kw">def</span> <span class="fn">product_except_self</span>(nums):
+    n = <span class="fn">len</span>(nums)
+    result = [<span class="num">1</span>] * n
+
+    <span class="cmt"># Pass 1: left products (prefix product)</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):
+        result[i] = result[i - <span class="num">1</span>] * nums[i - <span class="num">1</span>]
+
+    <span class="cmt"># Pass 2: multiply by right products (suffix product)</span>
+    right_product = <span class="num">1</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">reversed</span>(<span class="fn">range</span>(n)):   <span class="cmt"># same as range(n - 1, -1, -1)</span>
+        result[i] *= right_product
+        right_product *= nums[i]
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">product_except_self</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]))        <span class="cmt"># [24, 12, 8, 6]</span>
+<span class="fn">print</span>(<span class="fn">product_except_self</span>([-<span class="num">1</span>, <span class="num">1</span>, <span class="num">0</span>, -<span class="num">3</span>, <span class="num">3</span>]))   <span class="cmt"># [0, 0, 9, 0, 0]</span>
+
+<span class="cmt"># KEY INSIGHT: product[i] = (product of everything left) × (product of everything right)
+# Two passes: left→right builds prefix products, right→left multiplies suffix products.
+# Pattern: Prefix/Suffix decomposition. Extends to any associative operation.</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 13 ============ -->
+<div class="day-section" id="day13">
+  <div class="day-label">Day 13 · 90 min</div>
+  <h2>Queue + Priority Queue (heapq)</h2>
+  <p>Python ships a binary heap in the standard library: <code>heapq</code>, a set of functions that treat a plain <code>list</code> as a <strong>min-heap</strong>. It is what you'll use in interviews. To understand what it does, read the hand-rolled version below first, then try rewriting it from memory.</p>
+
+  <div class="topic-block">
+    <h3>MinHeap Implementation (for later — understand the API now)</h3>
+    <p>A min-heap gives O(log n) insert/remove and O(1) peek at the minimum (a max-heap does the same for the maximum). For DSA problems, you mostly need: <code>push(val)</code>, <code>pop()</code> (remove min), <code>peek()</code>. With <code>heapq</code> those are <code>heappush(h, x)</code>, <code>heappop(h)</code>, and <code>h[0]</code>. There is no max-heap: <strong>push negated values</strong> instead.</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">min_heap.py</span>
+    </div>
+    <pre><span class="kw">import</span> heapq
+
+<span class="cmt"># MinHeap — complete implementation for DSA</span>
+<span class="kw">class</span> <span class="cls">MinHeap</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>):
+        <span class="kw">self</span>.data = []
+
+    <span class="kw">def</span> <span class="fn">push</span>(<span class="kw">self</span>, val):
+        <span class="kw">self</span>.data.<span class="fn">append</span>(val)
+        <span class="kw">self</span>.<span class="fn">_bubble_up</span>(<span class="fn">len</span>(<span class="kw">self</span>.data) - <span class="num">1</span>)
+
+    <span class="kw">def</span> <span class="fn">pop</span>(<span class="kw">self</span>):
+        smallest = <span class="kw">self</span>.data[<span class="num">0</span>]
+        last = <span class="kw">self</span>.data.<span class="fn">pop</span>()
+        <span class="kw">if</span> <span class="kw">self</span>.data:
+            <span class="kw">self</span>.data[<span class="num">0</span>] = last
+            <span class="kw">self</span>.<span class="fn">_sink_down</span>(<span class="num">0</span>)
+        <span class="kw">return</span> smallest
+
+    <span class="kw">def</span> <span class="fn">peek</span>(<span class="kw">self</span>):
+        <span class="kw">return</span> <span class="kw">self</span>.data[<span class="num">0</span>]
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(<span class="kw">self</span>):          <span class="cmt"># enables len(heap) and `if heap:`</span>
+        <span class="kw">return</span> <span class="fn">len</span>(<span class="kw">self</span>.data)
+
+    <span class="kw">def</span> <span class="fn">_bubble_up</span>(<span class="kw">self</span>, i):
+        data = <span class="kw">self</span>.data
+        <span class="kw">while</span> i &gt; <span class="num">0</span>:
+            parent = (i - <span class="num">1</span>) // <span class="num">2</span>
+            <span class="kw">if</span> data[i] &gt;= data[parent]:
+                <span class="kw">break</span>
+            data[i], data[parent] = data[parent], data[i]   <span class="cmt"># tuple swap</span>
+            i = parent
+
+    <span class="kw">def</span> <span class="fn">_sink_down</span>(<span class="kw">self</span>, i):
+        data, n = <span class="kw">self</span>.data, <span class="fn">len</span>(<span class="kw">self</span>.data)
+        <span class="kw">while</span> <span class="kw">True</span>:
+            smallest = i
+            l, r = <span class="num">2</span> * i + <span class="num">1</span>, <span class="num">2</span> * i + <span class="num">2</span>
+            <span class="kw">if</span> l &lt; n <span class="kw">and</span> data[l] &lt; data[smallest]:
+                smallest = l
+            <span class="kw">if</span> r &lt; n <span class="kw">and</span> data[r] &lt; data[smallest]:
+                smallest = r
+            <span class="kw">if</span> smallest == i:
+                <span class="kw">break</span>
+            data[i], data[smallest] = data[smallest], data[i]
+            i = smallest
+
+<span class="cmt"># Usage:</span>
+heap = <span class="cls">MinHeap</span>()
+heap.<span class="fn">push</span>(<span class="num">5</span>); heap.<span class="fn">push</span>(<span class="num">2</span>); heap.<span class="fn">push</span>(<span class="num">8</span>)
+<span class="fn">print</span>(heap.<span class="fn">pop</span>())    <span class="cmt"># 2 (smallest)</span>
+<span class="fn">print</span>(heap.<span class="fn">peek</span>())   <span class="cmt"># 5 (new smallest)</span>
+
+<span class="cmt"># The same thing with the standard library:</span>
+h = []
+<span class="kw">for</span> x <span class="kw">in</span> (<span class="num">5</span>, <span class="num">2</span>, <span class="num">8</span>):
+    heapq.<span class="fn">heappush</span>(h, x)
+<span class="fn">print</span>(heapq.<span class="fn">heappop</span>(h), h[<span class="num">0</span>])        <span class="cmt"># 2 5</span>
+
+<span class="cmt"># Max-heap trick: negate on the way in and out</span>
+mx = [-x <span class="kw">for</span> x <span class="kw">in</span> (<span class="num">5</span>, <span class="num">2</span>, <span class="num">8</span>)]
+heapq.<span class="fn">heapify</span>(mx)                     <span class="cmt"># O(n) build</span>
+<span class="fn">print</span>(-heapq.<span class="fn">heappop</span>(mx))             <span class="cmt"># 8 (largest)</span></pre>
+  </div>
+
+  <div class="topic-block teal">
+    <h3>Problem: K Closest Points to Origin</h3>
+    <p>Given points array, find k closest to origin (0,0).</p>
+  </div>
+
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dots"><span class="d1"></span><span class="d2"></span><span class="d3"></span></div>
+      <span class="code-title">k_closest_points.py</span>
+    </div>
+    <pre><span class="kw">import</span> heapq
+
+<span class="cmt"># Approach 1: Sort — O(n log n)</span>
+<span class="kw">def</span> <span class="fn">k_closest_sort</span>(points, k):
+    <span class="kw">return</span> <span class="fn">sorted</span>(points, key=<span class="kw">lambda</span> p: p[<span class="num">0</span>] ** <span class="num">2</span> + p[<span class="num">1</span>] ** <span class="num">2</span>)[:k]
+
+<span class="cmt"># Approach 2: MaxHeap of size k — O(n log k)
+# Keep a max-heap of size k. For each point, if its distance
+# is smaller than the heap's max, replace. Final heap = k closest.
+# (heapq is a MinHeap, so store NEGATED distances to simulate a MaxHeap)</span>
+<span class="kw">def</span> <span class="fn">k_closest</span>(points, k):
+    heap = []   <span class="cmt"># entries: (-dist, x, y)</span>
+    <span class="kw">for</span> x, y <span class="kw">in</span> points:
+        d = -(x * x + y * y)
+        <span class="kw">if</span> <span class="fn">len</span>(heap) &lt; k:
+            heapq.<span class="fn">heappush</span>(heap, (d, x, y))
+        <span class="kw">elif</span> d &gt; heap[<span class="num">0</span>][<span class="num">0</span>]:               <span class="cmt"># closer than the farthest kept</span>
+            heapq.<span class="fn">heapreplace</span>(heap, (d, x, y))  <span class="cmt"># pop + push in one O(log k) step</span>
+    <span class="kw">return</span> [[x, y] <span class="kw">for</span> _, x, y <span class="kw">in</span> heap]
+
+<span class="fn">print</span>(<span class="fn">k_closest_sort</span>([[<span class="num">1</span>, <span class="num">3</span>], [-<span class="num">2</span>, <span class="num">2</span>]], <span class="num">1</span>))                  <span class="cmt"># [[-2, 2]]</span>
+<span class="fn">print</span>(<span class="fn">sorted</span>(<span class="fn">k_closest</span>([[<span class="num">3</span>, <span class="num">3</span>], [<span class="num">5</span>, -<span class="num">1</span>], [-<span class="num">2</span>, <span class="num">4</span>]], <span class="num">2</span>)))   <span class="cmt"># [[-2, 4], [3, 3]]</span>
+
+<span class="cmt"># One-liner from the standard library (also O(n log k)):</span>
+<span class="fn">print</span>(heapq.<span class="fn">nsmallest</span>(<span class="num">1</span>, [[<span class="num">1</span>, <span class="num">3</span>], [-<span class="num">2</span>, <span class="num">2</span>]], key=<span class="kw">lambda</span> p: p[<span class="num">0</span>] ** <span class="num">2</span> + p[<span class="num">1</span>] ** <span class="num">2</span>))   <span class="cmt"># [[-2, 2]]</span></pre>
+  </div>
+</div>
+
+<!-- ============ DAY 14 ============ -->
+<div class="day-section" id="day14">
+  <div class="day-label">Day 14 · 60 min</div>
+  <h2>Week 2 Review + Journal Audit</h2>
+
+  <div class="topic-block yellow">
+    <h3>Updated Decision Tree</h3>
+    <p>Add these to your Week 1 tree:</p>
+    <p><strong>"Matching/nesting brackets or undo"</strong> → Stack (a plain list)<br><br>
+    <strong>"Next greater/smaller element"</strong> → Monotonic Stack<br><br>
+    <strong>"Reverse a linked list"</strong> → prev/curr pointer redirection (or a dummy head when building one)<br><br>
+    <strong>"Detect a cycle / find the middle of a linked list"</strong> → Fast &amp; Slow Pointers<br><br>
+    <strong>"Range sum query or running total"</strong> → Prefix Sum<br><br>
+    <strong>"Count subarrays summing to K"</strong> → Prefix Sum + Hash Map<br><br>
+    <strong>"Overlapping intervals"</strong> → Sort by start + Linear merge<br><br>
+    <strong>"K smallest/largest/closest"</strong> → Heap (<code>heapq</code>, or Sort for simplicity)</p>
+  </div>
+
+  <div class="insight">
+    <strong>JOURNAL AUDIT</strong>
+    Re-read every entry. Mark patterns as green (solid), yellow (shaky), or red (need restudy). Spend remaining time exclusively on red patterns. No new material today.
+  </div>
+</div>
+
+</div>
+
+<footer>Week 2 of 4 · DSA Mastery in Python · Core Patterns</footer>
+
+</body>
+</html>

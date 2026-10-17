@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Greedy Algorithms — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Greedy Algorithms</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">17 / 19</div>
+    <h1 class="page-title">Greedy <span class="highlight">Algorithms</span></h1>
+    <p class="page-subtitle">Take the best-looking choice now and never look back. When it works it beats DP on simplicity and speed — the skill is knowing when it works.</p>
+  </div>
+
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">TYPICAL TIME</div><div class="complexity-value">O(n log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">SORT-FREE SCAN</div><div class="complexity-value">O(n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">HEAP STEP</div><div class="complexity-value">O(log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">EXTRA SPACE</div><div class="complexity-value">O(1)–O(n)</div></div>
+  </div>
+  <div class="callout"><strong>Mindset:</strong> greedy is a hypothesis, not a technique you apply blindly. Every greedy solution comes with a reason the local choice is safe.</div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">The Greedy Choice Property</h2>
+    <p class="explanation">A greedy algorithm builds the answer one step at a time and, at every step, takes the choice that <strong>looks best right now</strong> — it never goes back to reconsider. That only works when the problem has the <strong>greedy choice property</strong> (some optimal answer starts with the locally best choice) and <strong>optimal substructure</strong> (after making that choice, what remains is a smaller copy of the same problem).</p>
+    <p class="explanation">Greedy vs. DP in one sentence: <strong>DP tries every choice and keeps the best; greedy commits to one choice and proves it never needs the others.</strong> When you can prove it, greedy is usually simpler and faster (often just a sort plus one pass).</p>
+    <div class="diagram">
+      <div class="diagram-title">GREEDY = ONE PATH THROUGH THE DECISION TREE</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">DP explores every branch          Greedy follows one branch
+        root                              root
+      /  |  \                               |
+     a   b   c                             b   ← best-looking choice
+    /|\ /|\ /|\                             |
+   ...  ...  ...                           b2  ← best-looking again
+O(states x choices)               O(n) or O(n log n) after sorting</pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">When Greedy Fails — Coin Change</h2>
+    <p class="explanation">The classic trap: "to make change, always take the biggest coin that fits". With US coins <code>[1, 5, 10, 25]</code> this happens to be optimal (the system is <em>canonical</em>). With coins <code>[1, 3, 4]</code> and amount <code>6</code>, greedy takes 4 + 1 + 1 = 3 coins, but 3 + 3 = 2 coins is better. Grabbing the 4 early destroyed a better future — the greedy choice property does not hold, so you need DP.</p>
+    <div class="diagram">
+      <div class="diagram-title">COINS [1, 3, 4], AMOUNT 6</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">Greedy (largest first):   6 -4-&gt; 2 -1-&gt; 1 -1-&gt; 0      3 coins  ✗
+Optimal (DP):             6 -3-&gt; 3 -3-&gt; 0             2 coins  ✓
+
+dp[a] = 1 + min(dp[a - c] for c in coins if c &lt;= a)
+a  :  0  1  2  3  4  5  6
+dp :  0  1  2  1  1  2  2</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Greedy vs DP Coin Change</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+
+<span class="kw">def</span> <span class="fn">greedy_coins</span>(coins: <span class="cls">List</span>[int], amount: int) -&gt; int:
+    count = <span class="num">0</span>
+    <span class="kw">for</span> coin <span class="kw">in</span> <span class="fn">sorted</span>(coins, reverse=<span class="kw">True</span>):
+        take, amount = <span class="fn">divmod</span>(amount, coin)   <span class="cm"># use as many of this coin as fit</span>
+        count += take
+    <span class="kw">return</span> count <span class="kw">if</span> amount == <span class="num">0</span> <span class="kw">else</span> -<span class="num">1</span>
+
+
+<span class="kw">def</span> <span class="fn">dp_coins</span>(coins: <span class="cls">List</span>[int], amount: int) -&gt; int:
+    INF = <span class="fn">float</span>(<span class="str">'inf'</span>)
+    dp = [<span class="num">0</span>] + [INF] * amount               <span class="cm"># dp[a] = fewest coins that make a</span>
+    <span class="kw">for</span> a <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, amount + <span class="num">1</span>):
+        <span class="kw">for</span> coin <span class="kw">in</span> coins:
+            <span class="kw">if</span> coin &lt;= a:
+                dp[a] = <span class="fn">min</span>(dp[a], dp[a - coin] + <span class="num">1</span>)
+    <span class="kw">return</span> dp[amount] <span class="kw">if</span> dp[amount] != INF <span class="kw">else</span> -<span class="num">1</span>
+
+
+<span class="fn">print</span>(<span class="fn">greedy_coins</span>([<span class="num">1</span>, <span class="num">5</span>, <span class="num">10</span>, <span class="num">25</span>], <span class="num">63</span>))  <span class="cm"># 6  (25+25+10+1+1+1) — optimal for canonical coins</span>
+<span class="fn">print</span>(<span class="fn">greedy_coins</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>], <span class="num">6</span>))        <span class="cm"># 3  (4+1+1) — WRONG</span>
+<span class="fn">print</span>(<span class="fn">dp_coins</span>([<span class="num">1</span>, <span class="num">3</span>, <span class="num">4</span>], <span class="num">6</span>))            <span class="cm"># 2  (3+3) — DP finds the true optimum</span></pre>
+    </div>
+    <div class="callout warn"><strong>Rule of thumb:</strong> before trusting a greedy idea, spend 60 seconds hunting for a small counter-example (2–4 items). If you find one, switch to DP. If every attempt fails, try to prove it with an exchange argument (next section).</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 03</div>
+    <h2 class="section-title">Exchange-Argument Intuition</h2>
+    <p class="explanation">How do you convince yourself (or an interviewer) a greedy choice is safe? The <strong>exchange argument</strong>: take any optimal solution <em>OPT</em>. If it does not contain your greedy choice <em>g</em>, show you can <strong>swap</strong> one of its choices for <em>g</em> without making it worse. Then some optimal solution starts with <em>g</em>, and you repeat the argument on the rest.</p>
+    <p class="explanation">Example — <strong>activity selection</strong> (pick the most non-overlapping meetings). Greedy: always take the meeting that <strong>ends earliest</strong>. Proof sketch: let OPT's first meeting be <em>x</em>. Our pick <em>g</em> ends no later than <em>x</em>, so replacing <em>x</em> with <em>g</em> cannot collide with anything after it. Same count, now starting with <em>g</em>. ✓</p>
+    <div class="diagram">
+      <div class="diagram-title">SWAP OPT'S FIRST PICK FOR THE EARLIEST-ENDING ONE</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">time:   0    2    4    6    8    10   12
+g       [---------)                       ← ends earliest
+x            [---------)                  ← OPT's first choice
+next                        [---------)   ← OPT's second choice
+g ends no later than x, and x ends before "next" starts → swapping x for g is safe</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Activity Selection (Earliest End First)</div>
+      <pre><span class="kw">def</span> <span class="fn">max_activities</span>(activities):
+    count, last_end = <span class="num">0</span>, <span class="fn">float</span>(<span class="str">'-inf'</span>)
+    <span class="kw">for</span> start, end <span class="kw">in</span> <span class="fn">sorted</span>(activities, key=<span class="kw">lambda</span> a: a[<span class="num">1</span>]):   <span class="cm"># sort by END time</span>
+        <span class="kw">if</span> start &gt;= last_end:          <span class="cm"># compatible with everything chosen so far</span>
+            count += <span class="num">1</span>
+            last_end = end
+    <span class="kw">return</span> count
+
+
+meetings = [(<span class="num">1</span>, <span class="num">4</span>), (<span class="num">3</span>, <span class="num">5</span>), (<span class="num">0</span>, <span class="num">6</span>), (<span class="num">5</span>, <span class="num">7</span>), (<span class="num">3</span>, <span class="num">9</span>), (<span class="num">5</span>, <span class="num">9</span>),
+            (<span class="num">6</span>, <span class="num">10</span>), (<span class="num">8</span>, <span class="num">11</span>), (<span class="num">8</span>, <span class="num">12</span>), (<span class="num">2</span>, <span class="num">14</span>), (<span class="num">12</span>, <span class="num">16</span>)]
+<span class="fn">print</span>(<span class="fn">max_activities</span>(meetings))  <span class="cm"># 4  -&gt; (1,4) (5,7) (8,11) (12,16)</span></pre>
+    </div>
+    <div class="callout"><strong>Why not sort by start or by length?</strong> Earliest start fails on [(0, 100), (1, 2), (3, 4)] (picks 1 instead of 2). Shortest first fails on [(0, 5), (4, 7), (6, 11)] (picks the middle one, which blocks both others). Trying the wrong key against a tiny input is the fastest way to find the right one.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Sort-Then-Scan</h2>
+    <p class="explanation">The most common greedy shape: <strong>sort by the quantity that decides priority</strong>, then make one pass and take/skip each item. Python makes the sort a one-liner with <code>sorted(items, key=...)</code> and <code>reverse=True</code>; tuples compare lexicographically, so <code>key=lambda x: (-x[1], x[0])</code> gives "descending by second field, ties ascending by first".</p>
+    <p class="explanation">Example — <strong>Maximum Units on a Truck</strong>: each box type is <code>[count, units_per_box]</code>, the truck holds <code>truck_size</code> boxes. Every slot is identical, so fill slots with the most valuable boxes first. Exchange argument: swapping a cheaper box in for a richer one can only lose units.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Maximum Units on a Truck</div>
+      <pre><span class="kw">def</span> <span class="fn">maximum_units</span>(box_types, truck_size):
+    total = <span class="num">0</span>
+    <span class="kw">for</span> boxes, units <span class="kw">in</span> <span class="fn">sorted</span>(box_types, key=<span class="kw">lambda</span> b: b[<span class="num">1</span>], reverse=<span class="kw">True</span>):
+        take = <span class="fn">min</span>(boxes, truck_size)    <span class="cm"># take as many of the richest boxes as fit</span>
+        total += take * units
+        truck_size -= take
+        <span class="kw">if</span> truck_size == <span class="num">0</span>:
+            <span class="kw">break</span>
+    <span class="kw">return</span> total
+
+
+<span class="fn">print</span>(<span class="fn">maximum_units</span>([[<span class="num">1</span>, <span class="num">3</span>], [<span class="num">2</span>, <span class="num">2</span>], [<span class="num">3</span>, <span class="num">1</span>]], <span class="num">4</span>))               <span class="cm"># 8   (3 + 2*2 + 1)</span>
+<span class="fn">print</span>(<span class="fn">maximum_units</span>([[<span class="num">5</span>, <span class="num">10</span>], [<span class="num">2</span>, <span class="num">5</span>], [<span class="num">4</span>, <span class="num">7</span>], [<span class="num">3</span>, <span class="num">9</span>]], <span class="num">10</span>))     <span class="cm"># 91  (50 + 27 + 14)</span></pre>
+    </div>
+    <div class="use-cases">
+      <div class="use-case">Assign Cookies — sort both, match smallest</div>
+      <div class="use-case">Activity selection — sort by end</div>
+      <div class="use-case">Boats to Save People — sort + two pointers</div>
+      <div class="use-case">Non-overlapping Intervals — sort by end</div>
+      <div class="use-case">Minimum Arrows to Burst Balloons</div>
+      <div class="use-case">Largest Number — custom comparator</div>
+    </div>
+    <div class="callout"><strong>Custom comparisons:</strong> Python 3's <code>sorted</code> has no <code>cmp</code> argument. When the order is pairwise (e.g. Largest Number: is <code>a + b &gt; b + a</code> as strings?), wrap a two-argument function with <code>functools.cmp_to_key</code>.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 02</div>
+    <h2 class="section-title">Running-State Greedy (One Pass, No Sort)</h2>
+    <p class="explanation">Many array greedies keep a single piece of running state and update it as they scan: the <strong>farthest reachable index</strong> (Jump Game), the <strong>current fuel</strong> (Gas Station), or the <strong>last index of each character</strong> (Partition Labels). The greedy insight is usually "if the running state goes bad here, no earlier starting point can fix it".</p>
+    <div class="diagram">
+      <div class="diagram-title">JUMP GAME — TRACK THE FARTHEST REACH</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">index :  0   1   2   3   4
+nums  : [2,  3,  1,  1,  4]
+reach :  2   4   4   4   8      reach = max(reach, i + nums[i])
+if i ever exceeds reach → index i is unreachable → False</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Farthest Reach</div>
+      <pre><span class="kw">def</span> <span class="fn">can_reach_end</span>(nums):
+    reach = <span class="num">0</span>
+    <span class="kw">for</span> i, jump <span class="kw">in</span> <span class="fn">enumerate</span>(nums):
+        <span class="kw">if</span> i &gt; reach:              <span class="cm"># we can never stand on index i</span>
+            <span class="kw">return</span> <span class="kw">False</span>
+        reach = <span class="fn">max</span>(reach, i + jump)
+    <span class="kw">return</span> <span class="kw">True</span>
+
+
+<span class="fn">print</span>(<span class="fn">can_reach_end</span>([<span class="num">2</span>, <span class="num">3</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">4</span>]))  <span class="cm"># True</span>
+<span class="fn">print</span>(<span class="fn">can_reach_end</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">0</span>, <span class="num">4</span>]))  <span class="cm"># False (stuck at index 3)</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 03</div>
+    <h2 class="section-title">Heap-Driven Greedy</h2>
+    <p class="explanation">When the "best choice right now" changes as you go (new items arrive, combined items re-enter the pool), sorting once is not enough — keep the candidates in a <strong>heap</strong> and pop the best each step. Python's <code>heapq</code> is a min-heap on a plain list: <code>heappush</code>, <code>heappop</code>, <code>heapify</code> (O(n)) and <code>heapreplace</code>. For a max-heap, push negated values.</p>
+    <p class="explanation">Example — <strong>Minimum Cost to Connect Sticks</strong>: joining sticks of length <code>a</code> and <code>b</code> costs <code>a + b</code>. Always join the <strong>two shortest</strong> sticks (this is exactly Huffman coding): long sticks get added into the total fewer times.</p>
+    <div class="diagram">
+      <div class="diagram-title">STICKS [1, 8, 3, 5]</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">heap [1, 3, 5, 8]  pop 1, 3 → push 4    cost  4
+heap [4, 5, 8]     pop 4, 5 → push 9    cost  9   (total 13)
+heap [8, 9]        pop 8, 9 → push 17   cost 17   (total 30)</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Connect Sticks with heapq</div>
+      <pre><span class="kw">import</span> heapq
+
+
+<span class="kw">def</span> <span class="fn">connect_sticks</span>(sticks):
+    heap = <span class="fn">list</span>(sticks)            <span class="cm"># copy so we don't mutate the caller's list</span>
+    heapq.<span class="fn">heapify</span>(heap)            <span class="cm"># O(n)</span>
+    cost = <span class="num">0</span>
+    <span class="kw">while</span> <span class="fn">len</span>(heap) &gt; <span class="num">1</span>:
+        a = heapq.<span class="fn">heappop</span>(heap)    <span class="cm"># two cheapest sticks</span>
+        b = heapq.<span class="fn">heappop</span>(heap)
+        cost += a + b
+        heapq.<span class="fn">heappush</span>(heap, a + b)
+    <span class="kw">return</span> cost
+
+
+<span class="fn">print</span>(<span class="fn">connect_sticks</span>([<span class="num">2</span>, <span class="num">4</span>, <span class="num">3</span>]))     <span class="cm"># 14</span>
+<span class="fn">print</span>(<span class="fn">connect_sticks</span>([<span class="num">1</span>, <span class="num">8</span>, <span class="num">3</span>, <span class="num">5</span>]))  <span class="cm"># 30</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Max-Heap by Negation (Last Stone Weight)</div>
+      <pre><span class="kw">import</span> heapq
+
+
+<span class="kw">def</span> <span class="fn">last_stone_weight</span>(stones):
+    heap = [-s <span class="kw">for</span> s <span class="kw">in</span> stones]    <span class="cm"># negate: heapq only gives the minimum</span>
+    heapq.<span class="fn">heapify</span>(heap)
+    <span class="kw">while</span> <span class="fn">len</span>(heap) &gt; <span class="num">1</span>:
+        first = -heapq.<span class="fn">heappop</span>(heap)   <span class="cm"># heaviest</span>
+        second = -heapq.<span class="fn">heappop</span>(heap)  <span class="cm"># second heaviest</span>
+        <span class="kw">if</span> first != second:
+            heapq.<span class="fn">heappush</span>(heap, -(first - second))
+    <span class="kw">return</span> -heap[<span class="num">0</span>] <span class="kw">if</span> heap <span class="kw">else</span> <span class="num">0</span>
+
+
+<span class="fn">print</span>(<span class="fn">last_stone_weight</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">4</span>, <span class="num">1</span>, <span class="num">8</span>, <span class="num">1</span>]))  <span class="cm"># 1</span></pre>
+    </div>
+    <div class="callout"><strong>Interview checklist for greedy:</strong> (1) state the greedy rule in one sentence, (2) try to break it with a tiny example, (3) give the exchange-argument sketch, (4) code it — usually a sort or a heap plus one loop.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Jump Game <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Jump Game II <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Gas Station <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Assign Cookies <span class="problem-tag easy">EASY</span></li>
+      <li>Task Scheduler <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Partition Labels <span class="problem-tag medium">MEDIUM</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="16-bit-manipulation.html" class="footer-back">← Bit Manipulation</a>
+    <a href="18-intervals.html" class="footer-next">Intervals →</a>
+  </div>
+</div>
+</body>
+</html>

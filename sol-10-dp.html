@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DP Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="13-dynamic-programming.html" class="back-link">← Dynamic Programming</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-advanced">ADVANCED</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 13</div>
+    <h1 class="page-title">Dynamic Programming <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Every DP solution follows the same recipe: define state → find recurrence → handle base cases.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Climbing Stairs</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> To reach stair n, you can take 1 or 2 steps. How many distinct ways?<br><br>
+        <strong>Think:</strong> To reach step n, you must have come from step n-1 (took 1 step) OR step n-2 (took 2 steps). So ways(n) = ways(n-1) + ways(n-2). That's Fibonacci! Base cases: 1 way to reach step 1, 2 ways to reach step 2.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> functools <span class="kw">import</span> lru_cache
+
+
+<span class="kw">def</span> <span class="fn">climb_stairs</span>(n: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    <span class="kw">if</span> n &lt;= <span class="num">2</span>:
+        <span class="kw">return</span> n
+
+    prev2, prev1 = <span class="num">1</span>, <span class="num">2</span>  <span class="cm"># ways to reach step n-2, step n-1</span>
+
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="num">3</span>, n + <span class="num">1</span>):
+        <span class="cm"># ways(n) = ways(n-1) + ways(n-2) — tuple assignment, no temp needed</span>
+        prev2, prev1 = prev1, prev1 + prev2
+
+    <span class="kw">return</span> prev1
+
+
+<span class="cm"># Top-down version: same recurrence, Python caches it for you</span>
+<span class="fn">@lru_cache</span>(maxsize=<span class="kw">None</span>)
+<span class="kw">def</span> <span class="fn">climb_stairs_memo</span>(n: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    <span class="kw">if</span> n &lt;= <span class="num">2</span>:
+        <span class="kw">return</span> n
+    <span class="kw">return</span> <span class="fn">climb_stairs_memo</span>(n - <span class="num">1</span>) + <span class="fn">climb_stairs_memo</span>(n - <span class="num">2</span>)
+
+
+<span class="cm"># n=5: 1,2,3,5,8  → 8 ways
+# (only need last 2 values, O(1) space)</span>
+<span class="fn">print</span>(<span class="fn">climb_stairs</span>(<span class="num">5</span>))       <span class="cm"># 8</span>
+<span class="fn">print</span>(<span class="fn">climb_stairs_memo</span>(<span class="num">5</span>))  <span class="cm"># 8</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">House Robber</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Rob houses along a street, but can't rob two adjacent houses. Maximize stolen amount.<br><br>
+        <strong>Think:</strong> At each house you have two choices: rob it (can't have robbed previous) OR skip it (keep previous max). rob(i) = max(nums[i] + rob(i-2), rob(i-1)).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">rob</span>(nums: List[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    prev2 = <span class="num">0</span>  <span class="cm"># max if we stop 2 houses back</span>
+    prev1 = <span class="num">0</span>  <span class="cm"># max if we stop 1 house back</span>
+
+    <span class="kw">for</span> amount <span class="kw">in</span> nums:
+        <span class="cm"># Rob current: prev2 + amount
+        # Skip current: prev1</span>
+        prev2, prev1 = prev1, <span class="fn">max</span>(prev2 + amount, prev1)
+
+    <span class="kw">return</span> prev1  <span class="cm"># maximum of all possibilities</span>
+
+
+<span class="cm"># [2,7,9,3,1]:
+# house 2: max(0+2, 0)=2
+# house 7: max(0+7, 2)=7
+# house 9: max(2+9, 7)=11
+# house 3: max(7+3, 11)=11
+# house 1: max(11+1, 11)=12  → answer: 12</span>
+<span class="fn">print</span>(<span class="fn">rob</span>([<span class="num">2</span>, <span class="num">7</span>, <span class="num">9</span>, <span class="num">3</span>, <span class="num">1</span>]))  <span class="cm"># 12</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">Longest Increasing Subsequence</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Find the length of the longest strictly increasing subsequence (not necessarily contiguous).<br><br>
+        <strong>Think:</strong> dp[i] = length of LIS ending at index i. For each i, look at all j &lt; i where nums[j] &lt; nums[i]. dp[i] = max(dp[j]) + 1. Answer = max of all dp values. (The bonus <code>bisect</code> version below runs in O(n log n).)
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n²)</span></div>
+        <div class="ci-item">Space: <span>O(n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> bisect <span class="kw">import</span> bisect_left
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">length_of_lis</span>(nums: List[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    <span class="kw">if</span> <span class="kw">not</span> nums:
+        <span class="kw">return</span> <span class="num">0</span>
+    <span class="cm"># dp[i] = length of longest increasing subsequence ending at i</span>
+    dp = [<span class="num">1</span>] * <span class="fn">len</span>(nums)  <span class="cm"># every element alone = LIS of 1</span>
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(nums)):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(i):
+            <span class="kw">if</span> nums[j] &lt; nums[i]:
+                <span class="cm"># nums[i] can extend the sequence ending at j</span>
+                dp[i] = <span class="fn">max</span>(dp[i], dp[j] + <span class="num">1</span>)
+
+    <span class="kw">return</span> <span class="fn">max</span>(dp)
+
+
+<span class="cm"># Bonus — O(n log n) with bisect: tails[k] = smallest tail of an
+# increasing subsequence of length k+1</span>
+<span class="kw">def</span> <span class="fn">length_of_lis_fast</span>(nums: List[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    tails: List[<span class="cls">int</span>] = []
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        i = <span class="fn">bisect_left</span>(tails, x)
+        <span class="kw">if</span> i == <span class="fn">len</span>(tails):
+            tails.append(x)   <span class="cm"># x extends the longest sequence</span>
+        <span class="kw">else</span>:
+            tails[i] = x      <span class="cm"># x is a smaller tail for length i+1</span>
+    <span class="kw">return</span> <span class="fn">len</span>(tails)
+
+
+<span class="cm"># [10,9,2,5,3,7,101,18]:
+# dp: [1, 1, 1, 2, 2, 3,  4,  4]
+#                         ↑ answer = max(dp) = 4 (e.g. 2,3,7,101 or 2,5,7,18)</span>
+<span class="fn">print</span>(<span class="fn">length_of_lis</span>([<span class="num">10</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">7</span>, <span class="num">101</span>, <span class="num">18</span>]))       <span class="cm"># 4</span>
+<span class="fn">print</span>(<span class="fn">length_of_lis_fast</span>([<span class="num">10</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">5</span>, <span class="num">3</span>, <span class="num">7</span>, <span class="num">101</span>, <span class="num">18</span>]))  <span class="cm"># 4</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Edit Distance</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Minimum operations (insert, delete, replace) to convert word1 to word2.<br><br>
+        <strong>Think:</strong> 2D DP. dp[i][j] = min edits to convert <code>word1[:i]</code> (first i chars) to <code>word2[:j]</code>. If the last chars match: dp[i][j] = dp[i-1][j-1] (free). Otherwise: 1 + min(delete, insert, replace).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(m·n)</span></div>
+        <div class="ci-item">Space: <span>O(m·n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">min_distance</span>(word1: <span class="cls">str</span>, word2: <span class="cls">str</span>) -&gt; <span class="cls">int</span>:
+    m, n = <span class="fn">len</span>(word1), <span class="fn">len</span>(word2)
+
+    <span class="cm"># dp[i][j] = min edits for word1[:i] → word2[:j]
+    # Build with a comprehension — NOT [[0] * (n+1)] * (m+1), which aliases rows!</span>
+    dp = [[<span class="num">0</span>] * (n + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>)]
+    <span class="cm"># Base: dp[0][j] = j (insert j chars), dp[i][0] = i (delete i chars)</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>):
+        dp[i][<span class="num">0</span>] = i
+    <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(n + <span class="num">1</span>):
+        dp[<span class="num">0</span>][j] = j
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m + <span class="num">1</span>):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+            <span class="kw">if</span> word1[i - <span class="num">1</span>] == word2[j - <span class="num">1</span>]:
+                dp[i][j] = dp[i - <span class="num">1</span>][j - <span class="num">1</span>]  <span class="cm"># chars match, free!</span>
+            <span class="kw">else</span>:
+                dp[i][j] = <span class="num">1</span> + <span class="fn">min</span>(
+                    dp[i - <span class="num">1</span>][j],      <span class="cm"># delete from word1</span>
+                    dp[i][j - <span class="num">1</span>],      <span class="cm"># insert into word1</span>
+                    dp[i - <span class="num">1</span>][j - <span class="num">1</span>],  <span class="cm"># replace</span>
+                )
+
+    <span class="kw">return</span> dp[m][n]
+
+
+<span class="fn">print</span>(<span class="fn">min_distance</span>(<span class="str">"horse"</span>, <span class="str">"ros"</span>))            <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">min_distance</span>(<span class="str">"intention"</span>, <span class="str">"execution"</span>))  <span class="cm"># 5</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Unique Paths</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Robot starts top-left, reaches bottom-right, can only move right or down. Count unique paths.<br><br>
+        <strong>Think:</strong> dp[r][c] = paths to reach cell (r,c) = paths from above + paths from left. First row and column all equal 1 (only one way to reach them).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(m·n)</span></div>
+        <div class="ci-item">Space: <span>O(m·n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> math <span class="kw">import</span> factorial
+
+
+<span class="kw">def</span> <span class="fn">unique_paths</span>(m: <span class="cls">int</span>, n: <span class="cls">int</span>) -&gt; <span class="cls">int</span>:
+    <span class="cm"># Fill entire grid with 1s (first row + col are all 1)</span>
+    dp = [[<span class="num">1</span>] * n <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m)]
+
+    <span class="cm"># Fill interior: paths to (r,c) = from top + from left</span>
+    <span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m):
+        <span class="kw">for</span> c <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n):
+            dp[r][c] = dp[r - <span class="num">1</span>][c] + dp[r][c - <span class="num">1</span>]
+
+    <span class="kw">return</span> dp[-<span class="num">1</span>][-<span class="num">1</span>]  <span class="cm"># bottom-right corner (negative index!)</span>
+
+
+<span class="fn">print</span>(<span class="fn">unique_paths</span>(<span class="num">3</span>, <span class="num">7</span>))  <span class="cm"># 28</span>
+<span class="cm"># Cross-check with combinatorics: choose which (m-1) of the
+# (m-1)+(n-1) moves are "down" → C(8, 2)  (math.comb on 3.8+)</span>
+<span class="fn">print</span>(<span class="fn">factorial</span>(<span class="num">8</span>) // (<span class="fn">factorial</span>(<span class="num">2</span>) * <span class="fn">factorial</span>(<span class="num">6</span>)))  <span class="cm"># 28</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">06</span><span class="solution-title">Longest Common Subsequence</span><span class="problem-tag medium">MEDIUM</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Given two strings, return the length of their longest common subsequence (characters in order, not necessarily contiguous).<br><br>
+        <strong>Think:</strong> dp[i][j] = LCS length of <code>text1[:i]</code> and <code>text2[:j]</code>. If the last chars match, extend the diagonal: dp[i-1][j-1] + 1. Otherwise drop one char from either string: max(dp[i-1][j], dp[i][j-1]).
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(m·n)</span></div>
+        <div class="ci-item">Space: <span>O(m·n)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">def</span> <span class="fn">longest_common_subsequence</span>(text1: <span class="cls">str</span>, text2: <span class="cls">str</span>) -&gt; <span class="cls">int</span>:
+    m, n = <span class="fn">len</span>(text1), <span class="fn">len</span>(text2)
+    <span class="cm"># Row 0 and column 0 stay 0: LCS with an empty string is 0</span>
+    dp = [[<span class="num">0</span>] * (n + <span class="num">1</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(m + <span class="num">1</span>)]
+
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, m + <span class="num">1</span>):
+        <span class="kw">for</span> j <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+            <span class="kw">if</span> text1[i - <span class="num">1</span>] == text2[j - <span class="num">1</span>]:
+                dp[i][j] = dp[i - <span class="num">1</span>][j - <span class="num">1</span>] + <span class="num">1</span>        <span class="cm"># match → extend</span>
+            <span class="kw">else</span>:
+                dp[i][j] = <span class="fn">max</span>(dp[i - <span class="num">1</span>][j], dp[i][j - <span class="num">1</span>])  <span class="cm"># skip one char</span>
+
+    <span class="kw">return</span> dp[m][n]
+
+
+<span class="fn">print</span>(<span class="fn">longest_common_subsequence</span>(<span class="str">"abcde"</span>, <span class="str">"ace"</span>))  <span class="cm"># 3  ("ace")</span>
+<span class="fn">print</span>(<span class="fn">longest_common_subsequence</span>(<span class="str">"abc"</span>, <span class="str">"def"</span>))    <span class="cm"># 0</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">07</span><span class="solution-title">Burst Balloons</span><span class="problem-tag hard">HARD</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Problem:</strong> Bursting balloon i earns <code>nums[i-1] * nums[i] * nums[i+1]</code> (its current neighbours; out-of-range neighbours count as 1). Maximize the total coins from bursting all balloons.<br><br>
+        <strong>Think:</strong> Interval DP. Pad the array with 1 on both ends. Instead of choosing which balloon to burst <em>first</em>, choose which balloon k in the open interval (l, r) is burst <em>last</em>: at that moment its neighbours are exactly l and r, so dp[l][r] = max over k of dp[l][k] + vals[l]·vals[k]·vals[r] + dp[k][r]. Fill by increasing interval length.
+      </div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n³)</span></div>
+        <div class="ci-item">Space: <span>O(n²)</span></div>
+      </div>
+      <div class="code-block">
+        <div class="code-label">SOLUTION</div>
+        <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+
+<span class="kw">def</span> <span class="fn">max_coins</span>(nums: List[<span class="cls">int</span>]) -&gt; <span class="cls">int</span>:
+    vals = [<span class="num">1</span>] + nums + [<span class="num">1</span>]       <span class="cm"># virtual 1-balloons on both ends</span>
+    size = <span class="fn">len</span>(vals)
+    <span class="cm"># dp[l][r] = max coins from bursting everything strictly between l and r</span>
+    dp = [[<span class="num">0</span>] * size <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(size)]
+
+    <span class="kw">for</span> length <span class="kw">in</span> <span class="fn">range</span>(<span class="num">2</span>, size):           <span class="cm"># distance r - l</span>
+        <span class="kw">for</span> l <span class="kw">in</span> <span class="fn">range</span>(size - length):
+            r = l + length
+            <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(l + <span class="num">1</span>, r):         <span class="cm"># k = last balloon burst in (l, r)</span>
+                coins = dp[l][k] + vals[l] * vals[k] * vals[r] + dp[k][r]
+                dp[l][r] = <span class="fn">max</span>(dp[l][r], coins)
+
+    <span class="kw">return</span> dp[<span class="num">0</span>][size - <span class="num">1</span>]
+
+
+<span class="fn">print</span>(<span class="fn">max_coins</span>([<span class="num">3</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">8</span>]))  <span class="cm"># 167</span>
+<span class="fn">print</span>(<span class="fn">max_coins</span>([<span class="num">1</span>, <span class="num">5</span>]))        <span class="cm"># 10</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Coin Change</strong> (also on the lesson's practice list) is solved step by step on the <a href="13-dynamic-programming.html">Dynamic Programming lesson page</a> — memoized, <code>@lru_cache</code> and tabulated versions.
+  </div>
+
+  <div class="page-footer">
+    <a href="sol-12-recursion.html" class="footer-back">← Recursion Solutions</a>
+    <a href="sol-11-binarysearch.html" class="footer-next">Binary Search Solutions →</a>
+  </div>
+</div>
+</body>
+</html>

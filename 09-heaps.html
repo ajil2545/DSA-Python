@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heaps — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="back-link">← Back</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Heaps &amp; Priority Queues</span>
+    <span class="nav-level level-intermediate">INTERMEDIATE</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">09 / 19</div>
+    <h1 class="page-title">Heaps <span class="highlight">&amp;</span><br>Priority Queues</h1>
+    <p class="page-subtitle">Always have the min (or max) at the top in O(1). Insert and remove in O(log n). Perfect for "top K" problems and streaming data.</p>
+  </div>
+  <div class="complexity-box">
+    <div class="complexity-item"><div class="complexity-label">PEEK MIN</div><div class="complexity-value">O(1)</div></div>
+    <div class="complexity-item"><div class="complexity-label">INSERT</div><div class="complexity-value">O(log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">EXTRACT MIN</div><div class="complexity-value">O(log n)</div></div>
+    <div class="complexity-item"><div class="complexity-label">BUILD HEAP</div><div class="complexity-value">O(n)</div></div>
+  </div>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 01</div>
+    <h2 class="section-title">What is a Heap?</h2>
+    <p class="explanation">A <strong>complete binary tree</strong> stored in a list with one rule: every parent is less than or equal to (min-heap) or greater than or equal to (max-heap) its children. The root is always the min or max. It's NOT fully sorted — just partially ordered.</p>
+    <div class="diagram">
+      <div class="diagram-title">MIN-HEAP AS LIST</div>
+      <pre style="background:transparent; border:none; padding:0; color:#64748b;">
+  Tree:        1
+             /   \
+            3     2
+           / \   /
+          7   5 4
+
+  List:    [1, 3, 2, 7, 5, 4]
+  Index:    0  1  2  3  4  5
+
+  Parent of index i  = (i - 1) // 2
+  Left child of i    = 2*i + 1
+  Right child of i   = 2*i + 2</pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 02</div>
+    <h2 class="section-title">Min-Heap Implementation</h2>
+    <p class="explanation">Two operations maintain heap order: <strong>bubble up</strong> after insert (swap with parent if smaller), and <strong>sink down</strong> after extract (move the last element to the root, then keep swapping it with its smaller child). In real Python code you would use <code>heapq</code> (below) — but building it once by hand is how you understand it.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — MinHeap (from scratch)</div>
+      <pre><span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="kw">class</span> <span class="cls">MinHeap</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.heap: List[int] = []
+
+    <span class="kw">def</span> <span class="fn">__len__</span>(<span class="kw">self</span>) -&gt; int:
+        <span class="kw">return</span> <span class="fn">len</span>(<span class="kw">self</span>.heap)
+
+    <span class="kw">def</span> <span class="fn">peek</span>(<span class="kw">self</span>) -&gt; int:
+        <span class="kw">return</span> <span class="kw">self</span>.heap[<span class="num">0</span>]  <span class="cm"># min is always root</span>
+
+    <span class="kw">def</span> <span class="fn">insert</span>(<span class="kw">self</span>, val: int) -&gt; <span class="kw">None</span>:
+        <span class="kw">self</span>.heap.append(val)
+        <span class="kw">self</span>.<span class="fn">_bubble_up</span>()    <span class="cm"># restore heap property</span>
+
+    <span class="kw">def</span> <span class="fn">extract_min</span>(<span class="kw">self</span>) -&gt; int:
+        last = <span class="kw">self</span>.heap.pop()  <span class="cm"># raises IndexError if empty</span>
+        <span class="kw">if</span> <span class="kw">not</span> <span class="kw">self</span>.heap:
+            <span class="kw">return</span> last         <span class="cm"># it was the only element</span>
+        smallest = <span class="kw">self</span>.heap[<span class="num">0</span>]
+        <span class="kw">self</span>.heap[<span class="num">0</span>] = last   <span class="cm"># move last to root</span>
+        <span class="kw">self</span>.<span class="fn">_sink_down</span>()    <span class="cm"># restore heap property</span>
+        <span class="kw">return</span> smallest
+
+    <span class="kw">def</span> <span class="fn">_bubble_up</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        h = <span class="kw">self</span>.heap
+        i = <span class="fn">len</span>(h) - <span class="num">1</span>
+        <span class="kw">while</span> i &gt; <span class="num">0</span>:
+            parent = (i - <span class="num">1</span>) // <span class="num">2</span>
+            <span class="kw">if</span> h[parent] &lt;= h[i]:
+                <span class="kw">break</span>
+            h[parent], h[i] = h[i], h[parent]  <span class="cm"># tuple-swap</span>
+            i = parent
+
+    <span class="kw">def</span> <span class="fn">_sink_down</span>(<span class="kw">self</span>) -&gt; <span class="kw">None</span>:
+        h = <span class="kw">self</span>.heap
+        n = <span class="fn">len</span>(h)
+        i = <span class="num">0</span>
+        <span class="kw">while</span> <span class="kw">True</span>:
+            smallest = i
+            left, right = <span class="num">2</span> * i + <span class="num">1</span>, <span class="num">2</span> * i + <span class="num">2</span>
+            <span class="kw">if</span> left &lt; n <span class="kw">and</span> h[left] &lt; h[smallest]:
+                smallest = left
+            <span class="kw">if</span> right &lt; n <span class="kw">and</span> h[right] &lt; h[smallest]:
+                smallest = right
+            <span class="kw">if</span> smallest == i:
+                <span class="kw">break</span>
+            h[i], h[smallest] = h[smallest], h[i]
+            i = smallest
+
+mh = <span class="cls">MinHeap</span>()
+<span class="kw">for</span> x <span class="kw">in</span> [<span class="num">5</span>, <span class="num">3</span>, <span class="num">7</span>, <span class="num">1</span>, <span class="num">4</span>, <span class="num">2</span>]:
+    mh.insert(x)
+<span class="fn">print</span>(mh.heap)                                  <span class="cm"># → [1, 3, 2, 5, 4, 7]</span>
+<span class="fn">print</span>([mh.extract_min() <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(mh))])  <span class="cm"># → [1, 2, 3, 4, 5, 7]</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">CONCEPT 03</div>
+    <h2 class="section-title">Python's heapq Module</h2>
+    <p class="explanation"><code>heapq</code> turns any plain <code>list</code> into a <strong>min-heap</strong> in place — no class needed. <code>heap[0]</code> is always the smallest. There is no built-in max-heap: <strong>negate the values</strong> on the way in and on the way out.</p>
+    <div class="code-block">
+      <div class="code-label">PYTHON — heapq Essentials</div>
+      <pre><span class="kw">import</span> heapq
+
+heap = []
+heapq.heappush(heap, <span class="num">5</span>)          <span class="cm"># O(log n)</span>
+heapq.heappush(heap, <span class="num">1</span>)
+heapq.heappush(heap, <span class="num">3</span>)
+<span class="fn">print</span>(heap[<span class="num">0</span>])                   <span class="cm"># peek min → 1   (O(1))</span>
+<span class="fn">print</span>(heapq.heappop(heap))       <span class="cm"># pop min  → 1   (O(log n))</span>
+
+nums = [<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>]
+heapq.heapify(nums)               <span class="cm"># O(n) build, in place</span>
+<span class="fn">print</span>(nums[<span class="num">0</span>])                   <span class="cm"># → 1</span>
+
+<span class="cm"># push then pop in one step (faster than the two calls)</span>
+<span class="fn">print</span>(heapq.heappushpop(nums, <span class="num">0</span>))  <span class="cm"># → 0  (0 is smaller than everything, so it comes straight back)</span>
+
+<span class="cm"># Top-k helpers: O(n log k)</span>
+data = [<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>]
+<span class="fn">print</span>(heapq.nlargest(<span class="num">2</span>, data))   <span class="cm"># → [6, 5]</span>
+<span class="fn">print</span>(heapq.nsmallest(<span class="num">2</span>, data))  <span class="cm"># → [1, 2]</span>
+words = [<span class="str">"kiwi"</span>, <span class="str">"fig"</span>, <span class="str">"banana"</span>]
+<span class="fn">print</span>(heapq.nsmallest(<span class="num">1</span>, words, key=<span class="fn">len</span>))  <span class="cm"># → ['fig']</span>
+
+<span class="cm"># Max-heap: negate in, negate out</span>
+max_heap = []
+<span class="kw">for</span> x <span class="kw">in</span> [<span class="num">3</span>, <span class="num">8</span>, <span class="num">1</span>]:
+    heapq.heappush(max_heap, -x)
+<span class="fn">print</span>(-max_heap[<span class="num">0</span>])               <span class="cm"># peek max → 8</span>
+<span class="fn">print</span>(-heapq.heappop(max_heap))   <span class="cm"># pop max  → 8</span></pre>
+    </div>
+    <div class="code-block">
+      <div class="code-label">PYTHON — Priority Queue with Tuples</div>
+      <pre><span class="kw">import</span> heapq
+<span class="kw">import</span> itertools
+
+<span class="cm"># Tuples compare element by element: (priority, counter, item).</span>
+<span class="cm"># The counter breaks ties so Python never has to compare the items</span>
+<span class="cm"># themselves (dicts / custom objects would raise TypeError).</span>
+counter = itertools.count()
+pq = []
+heapq.heappush(pq, (<span class="num">2</span>, <span class="fn">next</span>(counter), {<span class="str">"task"</span>: <span class="str">"write"</span>}))
+heapq.heappush(pq, (<span class="num">1</span>, <span class="fn">next</span>(counter), {<span class="str">"task"</span>: <span class="str">"plan"</span>}))
+heapq.heappush(pq, (<span class="num">1</span>, <span class="fn">next</span>(counter), {<span class="str">"task"</span>: <span class="str">"review"</span>}))  <span class="cm"># same priority</span>
+
+<span class="kw">while</span> pq:
+    priority, _, item = heapq.heappop(pq)
+    <span class="fn">print</span>(priority, item[<span class="str">"task"</span>])
+<span class="cm"># 1 plan</span>
+<span class="cm"># 1 review   ← FIFO among equal priorities, thanks to the counter</span>
+<span class="cm"># 2 write</span></pre>
+    </div>
+    <div class="callout"><strong>Python note:</strong> <code>queue.PriorityQueue</code> also exists, but like <code>queue.Queue</code> it is a locking, thread-safe wrapper around <code>heapq</code> — slower and meant for threads. For algorithms use <code>heapq</code> directly on a list.</div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">TECHNIQUE 01</div>
+    <h2 class="section-title">Kth Largest Element</h2>
+    <p class="explanation">Classic heap pattern: maintain a <strong>min-heap of size k</strong>. When it exceeds k, pop the smallest. At the end, the root is the kth largest.</p>
+    <div class="code-block">
+      <div class="code-label">EXAMPLE — Kth Largest: sort vs. MinHeap vs. heapq</div>
+      <pre><span class="kw">import</span> heapq
+<span class="kw">from</span> typing <span class="kw">import</span> List
+
+<span class="cm"># Interview shorthand — O(n log n)</span>
+<span class="kw">def</span> <span class="fn">find_kth_largest</span>(nums: List[int], k: int) -&gt; int:
+    <span class="kw">return</span> <span class="fn">sorted</span>(nums, reverse=<span class="kw">True</span>)[k - <span class="num">1</span>]  <span class="cm"># kth largest is at index k-1</span>
+
+<span class="cm"># With our MinHeap — O(n log k):</span>
+<span class="kw">def</span> <span class="fn">kth_largest_heap</span>(nums: List[int], k: int) -&gt; int:
+    heap = <span class="cls">MinHeap</span>()
+    <span class="kw">for</span> n <span class="kw">in</span> nums:
+        heap.insert(n)
+        <span class="kw">if</span> <span class="fn">len</span>(heap) &gt; k:
+            heap.extract_min()  <span class="cm"># keep only k largest</span>
+    <span class="kw">return</span> heap.peek()          <span class="cm"># smallest of the k largest = kth largest</span>
+
+<span class="cm"># Idiomatic Python with heapq — O(n log k):</span>
+<span class="kw">def</span> <span class="fn">kth_largest_heapq</span>(nums: List[int], k: int) -&gt; int:
+    heap = nums[:k]
+    heapq.heapify(heap)
+    <span class="kw">for</span> n <span class="kw">in</span> nums[k:]:
+        <span class="kw">if</span> n &gt; heap[<span class="num">0</span>]:
+            heapq.heapreplace(heap, n)  <span class="cm"># pop min + push n in one O(log k) step</span>
+    <span class="kw">return</span> heap[<span class="num">0</span>]
+    <span class="cm"># one-liner: return heapq.nlargest(k, nums)[-1]</span>
+
+<span class="fn">print</span>(<span class="fn">find_kth_largest</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>], <span class="num">2</span>))   <span class="cm"># → 5</span>
+<span class="fn">print</span>(<span class="fn">kth_largest_heap</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>], <span class="num">2</span>))   <span class="cm"># → 5</span>
+<span class="fn">print</span>(<span class="fn">kth_largest_heapq</span>([<span class="num">3</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">6</span>, <span class="num">4</span>], <span class="num">2</span>))  <span class="cm"># → 5</span></pre>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">PRACTICE</div>
+    <h2 class="section-title">Problems to Solve</h2>
+    <ul class="problem-list">
+      <li>Kth Largest Element in an Array <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Top K Frequent Elements <span class="problem-tag medium">MEDIUM</span></li>
+      <li>K Closest Points to Origin <span class="problem-tag medium">MEDIUM</span></li>
+      <li>Find Median from Data Stream <span class="problem-tag hard">HARD</span></li>
+      <li>Merge K Sorted Lists <span class="problem-tag hard">HARD</span></li>
+    </ul>
+  </section>
+
+  <div class="page-footer">
+    <a href="08-trees.html" class="footer-back">← Trees</a>
+    <a href="10-graphs.html" class="footer-next">Graphs →</a>
+  </div>
+</div>
+</body>
+</html>

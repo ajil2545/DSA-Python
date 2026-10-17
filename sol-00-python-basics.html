@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python Basics Solutions — DSA Roadmap</title>
+<link rel="stylesheet" href="shared.css">
+<style>
+/* page-local helpers (tables + inline code) */
+.ops-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-family: 'Space Mono', monospace; font-size: 12px; }
+.ops-table th { text-align: left; font-size: 10px; letter-spacing: 2px; color: var(--accent); background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 12px; }
+.ops-table td { color: white; border-bottom: 1px solid var(--border); padding: 8px 12px; vertical-align: top; line-height: 1.6; }
+.ops-table td.o { color: var(--accent); font-weight: 700; white-space: nowrap; }
+.ops-table td.o.bad { color: var(--advanced); }
+.ops-table td.o.mid { color: var(--accent3); }
+.ops-table td.t { color: #ffa657; white-space: nowrap; }
+.table-wrap { overflow-x: auto; }
+.explanation code, .callout code, .think-box code, .step code, .ops-table code, .problem-list code {
+  font-family: 'Space Mono', monospace; color: #a5d6ff; background: var(--code-bg);
+  border: 1px solid var(--border); padding: 0 5px; font-size: 0.95em;
+}
+details.answer { margin: 12px 0 4px; font-family: 'Space Mono', monospace; font-size: 12px; color: white; }
+details.answer summary { cursor: pointer; color: var(--accent); letter-spacing: 1px; }
+details.answer .callout { margin-top: 12px; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 40px; }
+.toc a { font-family: 'Space Mono', monospace; font-size: 11px; color: white; text-decoration: none; border: 1px solid var(--border); background: var(--surface); padding: 4px 10px; }
+.toc a:hover { color: var(--accent); border-color: var(--accent); }
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="00-python-basics.html" class="back-link">← Python Basics</a>
+    <span class="nav-sep">/</span>
+    <span class="nav-title">Solutions</span>
+    <span class="nav-level level-beginner">BEGINNER</span>
+  </div>
+</nav>
+<div class="container">
+  <div class="page-header">
+    <div class="page-num">SOLUTIONS 00</div>
+    <h1 class="page-title">Python Basics <span class="highlight">Solutions</span></h1>
+    <p class="page-subtitle">Five warm-ups that train the core loop patterns — plus a “guess the complexity” quiz to sharpen your Big-O instincts.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">01</span><span class="solution-title">Find Max Without max()</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Keep a running “best so far”. Start it at the <strong>first element</strong> (not 0 — the list may be all negative) and compare every other element against it. Decide up front what an empty list should return.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Handle the empty list (return <code>None</code>, or raise <code>ValueError</code> like the built-in does).</div></div>
+      <div class="step"><div class="step-num">2</div><div>Set <code>best = nums[0]</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Loop over the elements; whenever <code>x &gt; best</code>, replace <code>best</code>.</div></div>
+      <div class="step"><div class="step-num">4</div><div>Return <code>best</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+        <div class="code-block">
+          <div class="code-label">SOLUTION</div>
+          <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Optional</span>
+
+<span class="kw">def</span> <span class="fn">find_max</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">Optional</span>[int]:
+    <span class="kw">if</span> <span class="kw">not</span> nums:
+        <span class="kw">return</span> <span class="kw">None</span>
+    best = nums[<span class="num">0</span>]               <span class="cm"># NOT 0: [-5, -2] must return -2</span>
+    <span class="kw">for</span> x <span class="kw">in</span> nums:               <span class="cm"># re-checking nums[0] is harmless; nums[1:] would copy (O(n) space)</span>
+        <span class="kw">if</span> x &gt; best:
+            best = x
+    <span class="kw">return</span> best
+
+<span class="kw">def</span> <span class="fn">find_max_index</span>(nums: <span class="cls">List</span>[int]) -&gt; int:
+    best_i = <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(nums)):
+        <span class="kw">if</span> nums[i] &gt; nums[best_i]:
+            best_i = i
+    <span class="kw">return</span> best_i
+
+<span class="fn">print</span>(<span class="fn">find_max</span>([<span class="num">3</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">7</span>]))       <span class="cm"># 9</span>
+<span class="fn">print</span>(<span class="fn">find_max</span>([-<span class="num">5</span>, -<span class="num">2</span>, -<span class="num">9</span>]))       <span class="cm"># -2</span>
+<span class="fn">print</span>(<span class="fn">find_max</span>([]))                 <span class="cm"># None</span>
+<span class="fn">print</span>(<span class="fn">find_max_index</span>([<span class="num">3</span>, <span class="num">9</span>, <span class="num">2</span>, <span class="num">9</span>])) <span class="cm"># 1   first occurrence wins with &gt;</span></pre>
+        </div>
+    <div class="callout"><strong>Built-in:</strong> <code>max(nums)</code> does the same O(n) loop in C; <code>max(nums, default=None)</code> avoids the error on empty input.</div>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">02</span><span class="solution-title">Count Frequencies</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Walk the input once and keep a dict from item → count. <code>d.get(x, 0) + 1</code> avoids a <code>KeyError</code> the first time you see an item. Then learn the shortcuts: <code>defaultdict(int)</code> and <code>Counter</code>.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Create an empty dict <code>counts</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>For each item: <code>counts[x] = counts.get(x, 0) + 1</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Return the dict. To find the most common, scan for the max value (or use <code>Counter.most_common</code>).</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(k) for k distinct items</span></div>
+      </div>
+        <div class="code-block">
+          <div class="code-label">SOLUTION — Plain dict</div>
+          <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">Dict</span>, <span class="cls">Hashable</span>, <span class="cls">Iterable</span>
+
+<span class="kw">def</span> <span class="fn">count_frequencies</span>(items: <span class="cls">Iterable</span>[<span class="cls">Hashable</span>]) -&gt; <span class="cls">Dict</span>[<span class="cls">Hashable</span>, int]:
+    counts = {}
+    <span class="kw">for</span> x <span class="kw">in</span> items:
+        counts[x] = counts.<span class="fn">get</span>(x, <span class="num">0</span>) + <span class="num">1</span>
+    <span class="kw">return</span> counts
+
+freq = <span class="fn">count_frequencies</span>(<span class="str">"banana"</span>)
+<span class="fn">print</span>(freq)                          <span class="cm"># {'b': 1, 'a': 3, 'n': 2}</span>
+<span class="fn">print</span>(<span class="fn">max</span>(freq, key=freq.get))       <span class="cm"># a</span>
+<span class="fn">print</span>(<span class="fn">count_frequencies</span>([<span class="num">3</span>, <span class="num">1</span>, <span class="num">3</span>]))  <span class="cm"># {3: 2, 1: 1}</span></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">SOLUTION — collections Shortcuts</div>
+          <pre><span class="kw">from</span> collections <span class="kw">import</span> <span class="cls">Counter</span>, defaultdict
+
+counts = <span class="fn">defaultdict</span>(int)            <span class="cm"># missing keys start at 0</span>
+<span class="kw">for</span> word <span class="kw">in</span> <span class="str">"the cat and the hat"</span>.<span class="fn">split</span>():
+    counts[word] += <span class="num">1</span>
+<span class="fn">print</span>(<span class="fn">dict</span>(counts))                  <span class="cm"># {'the': 2, 'cat': 1, 'and': 1, 'hat': 1}</span>
+
+c = <span class="cls">Counter</span>(<span class="str">"banana"</span>)
+<span class="fn">print</span>(c)                             <span class="cm"># Counter({'a': 3, 'n': 2, 'b': 1})</span>
+<span class="fn">print</span>(c.<span class="fn">most_common</span>(<span class="num">1</span>))              <span class="cm"># [('a', 3)]</span>
+<span class="fn">print</span>(c[<span class="str">"z"</span>])                        <span class="cm"># 0   missing keys count as 0</span>
+<span class="fn">print</span>(<span class="cls">Counter</span>(<span class="str">"listen"</span>) == <span class="cls">Counter</span>(<span class="str">"silent"</span>))   <span class="cm"># True   anagram check</span></pre>
+        </div>
+
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">03</span><span class="solution-title">FizzBuzz</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> For 1..n: multiples of 15 → “FizzBuzz”, of 3 → “Fizz”, of 5 → “Buzz”, otherwise the number. The only trap is <strong>order</strong>: test 15 (both) first, or build the string piece by piece so the order can't go wrong.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Loop <code>i</code> over <code>range(1, n + 1)</code> (stop is exclusive!).</div></div>
+      <div class="step"><div class="step-num">2</div><div>Build <code>s</code>: add “Fizz” if <code>i % 3 == 0</code>, add “Buzz” if <code>i % 5 == 0</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div>Append <code>s or str(i)</code> — an empty string is falsy, so <code>or</code> falls back to the number.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(n) for the output list</span></div>
+      </div>
+        <div class="code-block">
+          <div class="code-label">SOLUTION</div>
+          <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">fizzbuzz</span>(n: int) -&gt; <span class="cls">List</span>[str]:
+    out = []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+        s = <span class="str">""</span>
+        <span class="kw">if</span> i % <span class="num">3</span> == <span class="num">0</span>:
+            s += <span class="str">"Fizz"</span>
+        <span class="kw">if</span> i % <span class="num">5</span> == <span class="num">0</span>:
+            s += <span class="str">"Buzz"</span>
+        out.<span class="fn">append</span>(s <span class="kw">or</span> <span class="fn">str</span>(i))
+    <span class="kw">return</span> out
+
+<span class="kw">def</span> <span class="fn">fizzbuzz_classic</span>(n: int) -&gt; <span class="cls">List</span>[str]:
+    out = []
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, n + <span class="num">1</span>):
+        <span class="kw">if</span> i % <span class="num">15</span> == <span class="num">0</span>:          <span class="cm"># check the combined case FIRST</span>
+            out.<span class="fn">append</span>(<span class="str">"FizzBuzz"</span>)
+        <span class="kw">elif</span> i % <span class="num">3</span> == <span class="num">0</span>:
+            out.<span class="fn">append</span>(<span class="str">"Fizz"</span>)
+        <span class="kw">elif</span> i % <span class="num">5</span> == <span class="num">0</span>:
+            out.<span class="fn">append</span>(<span class="str">"Buzz"</span>)
+        <span class="kw">else</span>:
+            out.<span class="fn">append</span>(<span class="fn">str</span>(i))
+    <span class="kw">return</span> out
+
+<span class="fn">print</span>(<span class="fn">fizzbuzz</span>(<span class="num">15</span>))
+<span class="cm"># ['1', '2', 'Fizz', '4', 'Buzz', 'Fizz', '7', '8', 'Fizz', 'Buzz', '11', 'Fizz', '13', '14', 'FizzBuzz']</span>
+<span class="fn">print</span>(<span class="fn">fizzbuzz</span>(<span class="num">15</span>) == <span class="fn">fizzbuzz_classic</span>(<span class="num">15</span>))   <span class="cm"># True</span>
+<span class="cm"># one print call for all lines: 1, 2, Fizz, 4, Buzz on separate lines</span>
+<span class="fn">print</span>(<span class="str">"\n"</span>.<span class="fn">join</span>(<span class="fn">fizzbuzz</span>(<span class="num">5</span>)))</pre>
+        </div>
+
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">04</span><span class="solution-title">Reverse a List In Place</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> “In place” means O(1) extra space — you may not build a second list. Use <strong>two pointers</strong>: one at each end, swap, move both inward, stop when they meet. Python's tuple swap <code>a[i], a[j] = a[j], a[i]</code> needs no temp variable.
+      </div>
+      <div class="step"><div class="step-num">1</div><div><code>i = 0</code>, <code>j = len(nums) - 1</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>While <code>i &lt; j</code>: swap <code>nums[i]</code> and <code>nums[j]</code>.</div></div>
+      <div class="step"><div class="step-num">3</div><div><code>i += 1</code>, <code>j -= 1</code>. Return nothing — the caller's list itself changed.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+        <div class="code-block">
+          <div class="code-label">SOLUTION — Two Pointers</div>
+          <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>
+
+<span class="kw">def</span> <span class="fn">reverse_in_place</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="kw">None</span>:
+    i, j = <span class="num">0</span>, <span class="fn">len</span>(nums) - <span class="num">1</span>
+    <span class="kw">while</span> i &lt; j:
+        nums[i], nums[j] = nums[j], nums[i]
+        i += <span class="num">1</span>
+        j -= <span class="num">1</span>
+
+a = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]
+<span class="fn">reverse_in_place</span>(a)
+<span class="fn">print</span>(a)                 <span class="cm"># [5, 4, 3, 2, 1]</span>
+b = [<span class="num">1</span>, <span class="num">2</span>]
+<span class="fn">reverse_in_place</span>(b)
+<span class="fn">print</span>(b)                 <span class="cm"># [2, 1]</span>
+empty = []
+<span class="fn">reverse_in_place</span>(empty)  <span class="cm"># loop never runs: i=0, j=-1</span>
+<span class="fn">print</span>(empty)             <span class="cm"># []</span></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">COMPARE — Built-ins and Their Space Cost</div>
+          <pre>a = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+a.<span class="fn">reverse</span>()              <span class="cm"># in place, O(1) extra space, returns None</span>
+<span class="fn">print</span>(a)                 <span class="cm"># [3, 2, 1]</span>
+
+b = [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>]
+c = b[::-<span class="num">1</span>]              <span class="cm"># NEW list: O(n) extra space, b unchanged</span>
+<span class="fn">print</span>(b, c)              <span class="cm"># [1, 2, 3] [3, 2, 1]</span>
+
+b[:] = b[::-<span class="num">1</span>]           <span class="cm"># replaces contents of the same object (still O(n) temp space)</span>
+<span class="fn">print</span>(b)                 <span class="cm"># [3, 2, 1]</span>
+<span class="fn">print</span>(<span class="fn">list</span>(<span class="fn">reversed</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>])))   <span class="cm"># [3, 2, 1]   reversed() is a lazy iterator</span></pre>
+        </div>
+
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">05</span><span class="solution-title">Second Largest Element</span><span class="problem-tag easy">EASY</span></div>
+    <div class="solution-body">
+      <div class="think-box">
+        <strong>Think:</strong> Sorting works (<code>sorted(set(nums))[-2]</code>) but costs O(n log n). One pass is enough: track <code>first</code> and <code>second</code>. When a new maximum arrives, the old maximum is demoted to second. Decide whether duplicates count — here we want the second largest <strong>distinct</strong> value, and return <code>None</code> if it doesn't exist.
+      </div>
+      <div class="step"><div class="step-num">1</div><div>Start <code>first = second = float('-inf')</code>.</div></div>
+      <div class="step"><div class="step-num">2</div><div>If <code>x &gt; first</code>: <code>second, first = first, x</code> (demote, then promote).</div></div>
+      <div class="step"><div class="step-num">3</div><div>Elif <code>first &gt; x &gt; second</code>: <code>second = x</code> (strict, so duplicates of the max are ignored).</div></div>
+      <div class="step"><div class="step-num">4</div><div>Return <code>None</code> if <code>second</code> is still <code>-inf</code>.</div></div>
+      <div class="complexity-inline">
+        <div class="ci-item">Time: <span>O(n)</span></div>
+        <div class="ci-item">Space: <span>O(1)</span></div>
+      </div>
+        <div class="code-block">
+          <div class="code-label">SOLUTION — One Pass</div>
+          <pre><span class="kw">from</span> typing <span class="kw">import</span> <span class="cls">List</span>, <span class="cls">Optional</span>
+
+<span class="kw">def</span> <span class="fn">second_largest</span>(nums: <span class="cls">List</span>[int]) -&gt; <span class="cls">Optional</span>[int]:
+    first = second = <span class="fn">float</span>(<span class="str">"-inf"</span>)
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        <span class="kw">if</span> x &gt; first:
+            second, first = first, x     <span class="cm"># old max becomes second</span>
+        <span class="kw">elif</span> first &gt; x &gt; second:         <span class="cm"># chained comparison</span>
+            second = x
+    <span class="kw">return</span> <span class="kw">None</span> <span class="kw">if</span> second == <span class="fn">float</span>(<span class="str">"-inf"</span>) <span class="kw">else</span> second
+
+<span class="fn">print</span>(<span class="fn">second_largest</span>([<span class="num">5</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">3</span>]))   <span class="cm"># 3</span>
+<span class="fn">print</span>(<span class="fn">second_largest</span>([<span class="num">2</span>, <span class="num">8</span>, <span class="num">6</span>, <span class="num">8</span>]))   <span class="cm"># 6</span>
+<span class="fn">print</span>(<span class="fn">second_largest</span>([-<span class="num">1</span>, -<span class="num">4</span>]))       <span class="cm"># -4</span>
+<span class="fn">print</span>(<span class="fn">second_largest</span>([<span class="num">7</span>, <span class="num">7</span>]))         <span class="cm"># None</span>
+<span class="fn">print</span>(<span class="fn">second_largest</span>([]))             <span class="cm"># None</span></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-label">ALTERNATIVES — Shorter but Slower or More Memory</div>
+          <pre><span class="kw">import</span> heapq
+
+nums = [<span class="num">5</span>, <span class="num">1</span>, <span class="num">5</span>, <span class="num">3</span>]
+distinct = <span class="fn">sorted</span>(<span class="fn">set</span>(nums))                  <span class="cm"># O(n log n) time, O(n) space</span>
+<span class="fn">print</span>(distinct[-<span class="num">2</span>] <span class="kw">if</span> <span class="fn">len</span>(distinct) &gt; <span class="num">1</span> <span class="kw">else</span> <span class="kw">None</span>)   <span class="cm"># 3</span>
+<span class="fn">print</span>(heapq.<span class="fn">nlargest</span>(<span class="num">2</span>, <span class="fn">set</span>(nums))[-<span class="num">1</span>])       <span class="cm"># 3   O(n log k) with k = 2</span></pre>
+        </div>
+
+    </div>
+  </div>
+
+  <div class="page-header" style="padding-top:20px;">
+    <div class="page-num">BONUS</div>
+    <h1 class="page-title">Guess the <span class="highlight">Complexity</span></h1>
+    <p class="page-subtitle">Decide the time complexity of each function before you open the answer. Look for loops, halving, and hidden O(n) operations inside loops.</p>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">Q1</span><span class="solution-title">Inner Loop With a Fixed Size</span><span class="problem-tag medium">GUESS</span></div>
+    <div class="solution-body">
+        <div class="code-block">
+          <div class="code-label">WHAT IS THE TIME COMPLEXITY?</div>
+          <pre><span class="kw">def</span> <span class="fn">mystery_a</span>(nums):
+    total = <span class="num">0</span>
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        <span class="kw">for</span> y <span class="kw">in</span> nums[:<span class="num">3</span>]:
+            total += x * y
+    <span class="kw">return</span> total
+
+<span class="fn">print</span>(<span class="fn">mystery_a</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>]))   <span class="cm"># 60</span></pre>
+        </div>
+      <details class="answer">
+        <summary>▸ Show answer</summary>
+        <div class="callout"><strong>O(n)</strong> — the inner loop runs at most 3 times no matter how big <code>n</code> is, and <code>nums[:3]</code> copies at most 3 items. O(3n) = O(n). Nested loops only multiply when <em>both</em> depend on n.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">Q2</span><span class="solution-title">Doubling Counter</span><span class="problem-tag medium">GUESS</span></div>
+    <div class="solution-body">
+        <div class="code-block">
+          <div class="code-label">WHAT IS THE TIME COMPLEXITY?</div>
+          <pre><span class="kw">def</span> <span class="fn">mystery_b</span>(n):
+    count = <span class="num">0</span>
+    i = <span class="num">1</span>
+    <span class="kw">while</span> i &lt; n:
+        i *= <span class="num">2</span>
+        count += <span class="num">1</span>
+    <span class="kw">return</span> count
+
+<span class="fn">print</span>(<span class="fn">mystery_b</span>(<span class="num">1000</span>))   <span class="cm"># 10</span></pre>
+        </div>
+      <details class="answer">
+        <summary>▸ Show answer</summary>
+        <div class="callout"><strong>O(log n)</strong> — <code>i</code> doubles each step: 1, 2, 4, … reaches n after log₂ n iterations. Any loop that multiplies or divides its variable by a constant is logarithmic.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">Q3</span><span class="solution-title">Dedupe With a List</span><span class="problem-tag medium">GUESS</span></div>
+    <div class="solution-body">
+        <div class="code-block">
+          <div class="code-label">WHAT IS THE TIME COMPLEXITY?</div>
+          <pre><span class="kw">def</span> <span class="fn">mystery_c</span>(nums):
+    result = []
+    <span class="kw">for</span> x <span class="kw">in</span> nums:
+        <span class="kw">if</span> x <span class="kw">not</span> <span class="kw">in</span> result:
+            result.<span class="fn">append</span>(x)
+    <span class="kw">return</span> result
+
+<span class="fn">print</span>(<span class="fn">mystery_c</span>([<span class="num">1</span>, <span class="num">2</span>, <span class="num">1</span>, <span class="num">3</span>, <span class="num">2</span>]))   <span class="cm"># [1, 2, 3]</span></pre>
+        </div>
+      <details class="answer">
+        <summary>▸ Show answer</summary>
+        <div class="callout"><strong>O(n²)</strong> — <code>x not in result</code> scans a <strong>list</strong>, which is O(n). Inside a loop of n iterations that's O(n²) when most items are distinct. Fix: keep a parallel <code>set</code> for membership (or <code>list(dict.fromkeys(nums))</code>) → O(n).</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">Q4</span><span class="solution-title">Sort, Then One Pass</span><span class="problem-tag medium">GUESS</span></div>
+    <div class="solution-body">
+        <div class="code-block">
+          <div class="code-label">WHAT IS THE TIME COMPLEXITY?</div>
+          <pre><span class="kw">def</span> <span class="fn">mystery_d</span>(nums):
+    nums = <span class="fn">sorted</span>(nums)
+    best = <span class="num">0</span>
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">1</span>, <span class="fn">len</span>(nums)):
+        best = <span class="fn">max</span>(best, nums[i] - nums[i - <span class="num">1</span>])
+    <span class="kw">return</span> best
+
+<span class="fn">print</span>(<span class="fn">mystery_d</span>([<span class="num">3</span>, <span class="num">9</span>, <span class="num">1</span>, <span class="num">4</span>]))   <span class="cm"># 5</span></pre>
+        </div>
+      <details class="answer">
+        <summary>▸ Show answer</summary>
+        <div class="callout"><strong>O(n log n)</strong> — sequential steps add: O(n log n) for the sort + O(n) for the loop = O(n log n). The dominant term wins. Space is O(n) because <code>sorted</code> returns a new list.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="solution-card">
+    <div class="solution-header"><span class="solution-num">Q5</span><span class="solution-title">Building a String Backwards</span><span class="problem-tag medium">GUESS</span></div>
+    <div class="solution-body">
+        <div class="code-block">
+          <div class="code-label">WHAT IS THE TIME COMPLEXITY?</div>
+          <pre><span class="kw">def</span> <span class="fn">mystery_e</span>(s):
+    out = <span class="str">""</span>
+    <span class="kw">for</span> ch <span class="kw">in</span> s:
+        out = ch + out
+    <span class="kw">return</span> out
+
+<span class="fn">print</span>(<span class="fn">mystery_e</span>(<span class="str">"hello"</span>))   <span class="cm"># olleh</span></pre>
+        </div>
+      <details class="answer">
+        <summary>▸ Show answer</summary>
+        <div class="callout"><strong>O(n²)</strong> — strings are immutable, so <code>ch + out</code> creates a brand-new string of length 1, 2, 3, … n: 1 + 2 + … + n = O(n²) character copies. Fix: <code>s[::-1]</code>, or collect characters in a list and <code>''.join(reversed(chars))</code> → O(n).</div>
+      </details>
+    </div>
+  </div>
+
+    <div class="callout"><strong>Scorecard:</strong> 5/5 — you're ready for <a href="01-arrays.html" style="color:var(--accent)">Arrays</a>. Missed Q3 or Q5? Re-read “Spot the Hidden Loop” on the <a href="00-python-basics.html#counting" style="color:var(--accent)">lesson page</a>; those hidden O(n) operations are the most common source of Time Limit Exceeded in Python.</div>
+  <div class="page-footer">
+    <a href="00-python-basics.html" class="footer-back">← Python Basics</a>
+    <a href="sol-01-arrays.html" class="footer-next">Array Solutions →</a>
+  </div>
+</div>
+</body>
+</html>
